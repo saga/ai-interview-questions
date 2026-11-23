@@ -166,9 +166,10 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
   const loadingRef = useRef(false);
   const configReady = isConfigValid(config);
 
-  // 面试是否正在进行：真源是 App 层 Agent 会话的状态，不再是本侧栏的 controller 引用。
-  const interviewRunning = agentInterview.phase === 'running';
-  const interviewDone = agentInterview.phase === 'done';
+  // Agent 模拟面试仅属于 AI 学习体系。其他课程不能读取、展示或受其运行状态影响。
+  const isAiTrack = trackId === 'ai';
+  const interviewRunning = isAiTrack && agentInterview.phase === 'running';
+  const interviewDone = isAiTrack && agentInterview.phase === 'done';
   // 当前题：面试运行时用 Agent 会话的题；否则退回本侧栏自己的题（question 模式）。
   const activeInterviewQuestion = interviewRunning ? agentInterview.currentQuestion : null;
   /**
@@ -201,13 +202,20 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
     const previous = previousAgentPhaseRef.current;
     const current = agentInterview.phase;
     previousAgentPhaseRef.current = current;
-    if (previous !== 'running' || current !== 'done') return;
+    if (!isAiTrack) return;
+
+    // 除了捕获本组件挂载期间的 running → done，也处理切换课程期间结束的 AI 面试：
+    // 回到 AI 课程时若仍残留 interview ConversationSession，就清掉旧 transcript。
+    const justFinished = previous === 'running' && current === 'done';
+    const staleInterviewSession = current === 'done' && convSession?.context.mode === 'interview';
+    if (!justFinished && !staleInterviewSession) return;
+
     setConvSession(null);
     clearTrackSession();
     setChatQuestion(null);
     // 保留「上一场已结束」标记，让用户明确自己已不在原面试中（与 end_interview 分支同口径）。
     setConversationContext({ ...initialConversationContext(), mode: 'interview', endedAt: Date.now() });
-  }, [agentInterview.phase]);
+  }, [agentInterview.phase, isAiTrack, convSession?.context.mode]);
 
   useEffect(() => { if (listRef.current) listRef.current.scrollTop = listRef.current.scrollHeight; }, [messages, loading]);
   useEffect(() => {
@@ -242,7 +250,7 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
     const sid = crypto.randomUUID();
     // 节奏取自共享的 Agent 会话（真源），不再是侧栏自己的 ref：
     // 同一场面试在「Agent 面试页」与侧栏必须呈现同一个节奏。
-    const s = createConversationSession(sid, agentInterview.feedbackMode);
+    const s = createConversationSession(sid, isAiTrack ? agentInterview.feedbackMode : undefined);
     s.context.mode = mode;
     s.messages = messages;
     return s;
@@ -268,9 +276,13 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
     const { nextMessages, provider } = ctx;
     const deps = { bank, profile: profile ?? emptyProfile(), config, provider };
 
-    if (trackId !== 'ai' && (command.kind === 'start_interview' || command.kind === 'continue_interview')) {
+    if (!isAiTrack && command.kind === 'start_interview') {
       appendAssistant('Agent 模拟面试目前只在 AI 学习体系中提供。当前课程仍可使用 Copilot 进行知识讲解、题目练习和答案分析。');
       return;
+    }
+    // 其他课程里的「下一题 / 换一道」表示继续选择题训练，不是 Agent 面试续题。
+    if (!isAiTrack && command.kind === 'continue_interview') {
+      command = { ...command, kind: 'ask_question' };
     }
 
     // --- end_interview ---
@@ -488,7 +500,7 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
       return;
     }
     const history = messages.map((m) => ({ role: m.role, content: m.content }));
-    const activeQuestion = chatQuestion ?? currentQuestion ?? agentInterview.currentQuestion?.question ?? null;
+    const activeQuestion = chatQuestion ?? currentQuestion ?? (isAiTrack ? agentInterview.currentQuestion?.question : null) ?? null;
     // ADR-065 P0-2：从会话里取出用户实际作答与评分诊断，注入 Copilot，使其从"泛知识解释器"
     // 升级为"个性化教练"。当前题尚未作答（无 records）时为 null。
     // 优先取「Agent 面试反馈卡桥接而来」的上下文：那道题与它的评分不在本侧栏的 session 里，
@@ -674,7 +686,7 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
           <Space size={10}><span className="copilot-brand-mark"><CommentOutlined /></span><span><Typography.Text className="copilot-title" strong>学习 Copilot</Typography.Text><Typography.Text className="copilot-subtitle" style={{ display: 'block' }}>{courseLabel} · 即时训练助手</Typography.Text></span></Space><Button type="text" icon={<CloseOutlined />} onClick={onClose} />
         </div>
         {currentQuestion && !chatQuestion && (<div className="copilot-context"><div className="copilot-context-label">正在辅导</div><div className="copilot-context-value">{currentQuestion.topic} · {currentQuestion.difficulty}</div></div>)}
-        {conversationContext.endedAt && (<div className="copilot-context" style={{ background: '#fffbe6', borderColor: '#ffe58f' }}><div className="copilot-context-label">上一场训练已结束</div><div className="copilot-context-value">回复「下一题」开始新一轮，或「开始模拟面试」。</div></div>)}
+        {conversationContext.endedAt && (<div className="copilot-context" style={{ background: '#fffbe6', borderColor: '#ffe58f' }}><div className="copilot-context-label">上一场训练已结束</div><div className="copilot-context-value">回复「下一题」开始新一轮{isAiTrack ? '，或「开始模拟面试」' : ''}。</div></div>)}
         {chatQuestion && (<div className="copilot-context" style={{ maxHeight: 220, overflowY: 'auto' }}><div className="copilot-context-label">题目模式 · {conversationContext.mode} · 已练 {convSession?.questions.length ?? 0} 题</div><Typography.Text strong>{chatQuestion.question}</Typography.Text>{chatQuestion.formats.choice && (<div style={{ marginTop: 8 }}>{chatQuestion.formats.choice.options.map((option, i) => (<div key={`${chatQuestion.id}-${i}`} style={{ fontSize: 12, marginTop: 4 }}>{String.fromCharCode(65 + i)}. {option}</div>))}</div>)}</div>)}
         <div ref={listRef} style={{ flex: 1, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
           {messages.length === 0 ? (<><div className="copilot-welcome"><div className="copilot-welcome-title">你好，我来陪你练</div><div className="copilot-welcome-copy">解释考点、拆解思路、给出提示，也可以根据你的薄弱项安排下一步。</div></div><Prompts className="copilot-prompts" vertical title={<div className="copilot-prompts-title">从这里开始</div>} items={quickPrompts.map((p) => ({ key: p.key, description: p.label }))} onItemClick={(info) => handleSend(info?.data?.description as string)} />{!configReady && (<Typography.Text type="warning" style={{ fontSize: 12 }}>尚未配置 AI 引擎，Copilot 将无法联网作答。请先在“设置”中配置 DeepSeek / OpenRouter / Gemini / 本地模型等。</Typography.Text>)}</>) : (<Bubble.List items={messages.map((m) => ({ key: m.key, role: m.role, content: m.content, loading: false }))} role={role} autoScroll />)}
@@ -707,7 +719,7 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
             </div>
           )}
           {/* 逐题反馈卡（immediate）：与独立 Agent 面试页共用同一组件与同一份投影 */}
-          {agentInterview.awaitingFeedback && agentInterview.feedback && (
+          {isAiTrack && agentInterview.awaitingFeedback && agentInterview.feedback && (
             <InterviewFeedbackCard
               feedback={agentInterview.feedback}
               onContinue={() => void handleContinueFeedback()}
@@ -729,7 +741,7 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
               )}
             </div>
           )}
-          {agentInterview.error && (
+          {isAiTrack && agentInterview.error && (
             <Typography.Text type="danger" style={{ fontSize: 12 }}>{agentInterview.error}</Typography.Text>
           )}
         </div>
@@ -739,7 +751,7 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
           {convSession && convSession.questions.length>0 && (<Button size="small" onClick={() => handleSend('结束')}>结束训练</Button>)}
         </Flex>
         <div style={{ padding: 12, borderTop: '1px solid #f0f0f0' }}>
-          <Sender value={input} onChange={setInput} onSubmit={() => handleSend(input)} loading={loading} placeholder={configReady ? '输入问题，Shift+Enter 换行…' : '可先说“给我出一道题”；普通问答需配置 AI…'} disabled={loading || agentInterview.submitting || agentInterview.continuing || interviewBusy} />
+          <Sender value={input} onChange={setInput} onSubmit={() => handleSend(input)} loading={loading} placeholder={configReady ? '输入问题，Shift+Enter 换行…' : '可先说“给我出一道题”；普通问答需配置 AI…'} disabled={loading || (isAiTrack && (agentInterview.submitting || agentInterview.continuing)) || interviewBusy} />
         </div>
       </>)}
       </div>
