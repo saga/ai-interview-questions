@@ -8,7 +8,7 @@ Vite + React 19 + TypeScript + Ant Design 单页应用（五个页面：训练 /
 
 - 首屏训练入口：**继续训练**（按薄弱项）/ **快速训练**（自动选题，10 分钟）/ 自定义训练（折叠的高级配置）
 - **Learner Memory**：本地记录每次训练的分数、弱项、掌握度与趋势，据此推荐下一次训练（薄弱主题优先出题）
-- 题库驱动（`src/data/questions/` 按 topic/批次拆分为 JSON 文件，`src/data/variants/` 存放离线变体；AI 课程保留六个能力域，Snowflake、Security Architecture 和校招面试均为独立课程体系），题目按课程采用相应形态：AI 题库多为选择/开放双形态，校招行为面试题全部为开放式，LLM 变体出题保持知识点不变
+- 题库驱动（`src/data/questions/` 按 topic/批次拆分为 JSON 文件，`src/data/variants/` 存放离线变体；AI 课程保留六个能力域，Snowflake、Security Architecture 和校招面试均为独立课程体系），题目按课程采用相应形态：AI 题库支持选择/开放双形态，校招面试 500 题全部为情境式选择题（375 单选、125 多选），LLM 变体出题保持知识点不变
 - 开放题 Agent 多维评分（正确性 / 完整性 / 架构 / 表达）+ 选择题确定性判分
 - 结果页对比上次得分、给出亮点/待加强与 AI 训练建议；进度页展示主题掌握度与趋势
 - 模拟面试（对话式追问训练）：进入 interview 模式后复用与独立面试页**同一套** `pi-agent-core` 运行时（`createInterviewAgent`）——统一选题 / 评分 / 收尾逻辑，不再维护独立的简化版 Agent 面试；未配置 AI 也能开始，选择题照常确定性判分
