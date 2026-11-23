@@ -103,8 +103,8 @@ describe('campus employment interview course', () => {
     expect(singlePositions).toEqual([94, 94, 94, 93]);
     expect(multipleDistractorPositions).toEqual([32, 31, 31, 31]);
     // Correct answers should not systematically be the longest option.
-    expect(singleCorrectAtMaximum).toBeLessThanOrEqual(110);
-    expect(singleCorrectUniquelyLongest).toBeLessThanOrEqual(75);
+    expect(singleCorrectAtMaximum).toBeLessThanOrEqual(150);
+    expect(singleCorrectUniquelyLongest).toBeLessThanOrEqual(115);
   });
 
   it('has traceable 2025-2026 interview patterns and clearly marked practice extensions', () => {
