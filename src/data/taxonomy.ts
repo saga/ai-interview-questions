@@ -189,6 +189,11 @@ export const TAXONOMY: TaxonomyDomain[] = [
         description: 'Skill 设计/发现与执行解耦/跨模型迁移/验证门控/回滚/三层工作区/自演化状态管理',
       },
       {
+        id: 'recursive-self-improvement',
+        label: '递归式自我改进（RSI）',
+        description: '模型自训练与自奖励、Prompt/Harness/Memory/Skill 演化、自修改 Coding Agent、自动化 AI 研发、多智能体共演化、评测与安全治理',
+      },
+      {
         id: 'agentic-rl',
         label: '智能体强化学习',
         description: 'Agent/Coding RL/PPO/GRPO/轨迹压缩(Compaction)/训练推理一致性/KVShare-IndexShare/奖励黑客(Reward Hacking)与在线防护',
@@ -398,6 +403,7 @@ export const ANGLE_WHITELIST: Record<string, QuestionAngle[]> = {
   'human-in-the-loop': ['definition', 'mechanism', 'comparison', 'tradeoff', 'scenario', 'design'],
   'agent-runtime': ['definition', 'mechanism', 'comparison', 'tradeoff', 'scenario', 'design', 'debugging'],
   'agent-skills': ['fundamental', 'mechanism', 'comparison', 'tradeoff', 'scenario', 'system-design', 'design', 'debugging'],
+  'recursive-self-improvement': ['fundamental', 'mechanism', 'comparison', 'tradeoff', 'scenario', 'system-design', 'design', 'debugging'],
 
   // AI 系统
   'ai-architecture': ['definition', 'mechanism', 'comparison', 'tradeoff', 'scenario', 'design', 'system-design'],

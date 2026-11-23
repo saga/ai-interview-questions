@@ -3601,3 +3601,12 @@ assemble 能直接落盘，问题被留在池子里而不是暴露在生成时�
 - 覆盖 psql/Schema/类型/权限/CRUD/JOIN/JSONB/窗口函数/事务/MVCC/锁/备份/PITR/WAL/复制/PgBouncer/VACUUM/分区/监控/内存/EXPLAIN/索引/全文搜索/PostGIS/pgvector。
 - 新增 200 题覆盖矩阵与 PostgreSQL 18 官方文档映射，更新学习体系主题数和学习路线；修正 PostgreSQL 15 起支持 `UNIQUE NULLS NOT DISTINCT` 的版本说明。
 - 静态预检：100 道 easy、100 道 medium；59 单选、141 多选；题目结构与知识点引用有效。未运行 TypeScript、Vitest、完整题库 CLI 门禁或 build。
+
+
+## 2026-11-23 — 基于 Awesome RSI 新增 200 道初级 / 中级开放题
+
+- 分析 [lobehub/awesome-rsi](https://github.com/lobehub/awesome-rsi)，整理 RSI 定义、模型级改进、Harness/Memory/Skill 演化、多智能体共演化、自动化 AI 研发、具身演化、进化搜索、内省、安全、基准和工具资料。
+- 在 AI → Agent 工程下新增 `recursive-self-improvement` 主题，保持 AI、Snowflake 和 Security Architecture 顶层课程边界不变。
+- 新增 16 个 KnowledgeNode 和 200 道原创开放题：120 道初级（easy）、80 道中级（medium）；每题包含参考答案、解释、考察角度、误解映射和来源链接。
+- 新增 `docs/rsi-learning-path.md` 与 `docs/rsi-question-coverage-200.md`，记录重要论文、框架、基准和逐知识点题目映射。
+- 静态预检：题量、难度分布、开放题格式、ID/题干唯一性和知识引用检查通过。未在完整工作区运行 TypeScript、Vitest、题库 CLI 或 Vite build。

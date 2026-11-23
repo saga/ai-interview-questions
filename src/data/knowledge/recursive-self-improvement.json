@@ -1,0 +1,494 @@
+[
+  {
+    "id": "rsi-definitions-evidence",
+    "name": "RSI 定义、边界与证据层级",
+    "area": "agent-engineering",
+    "topic": "recursive-self-improvement",
+    "priority": "P0",
+    "summary": "RSI 不能仅凭模型会反思或系统可以修改自身来判定。需要区分当前任务表现、可跨任务保留的系统更新，以及改进器本身的效率或质量是否提升；同时记录更新对象、反馈来源、保留工件、固定条件与独立验证方法",
+    "required": [
+      "Self-refinement 只改善当前输出，不必产生跨任务保留的状态变化",
+      "Persistent self-improvement 将变化写入权重、记忆、技能、Prompt、Harness 或代码并影响后续任务",
+      "Recursive self-improvement 要证明产生更新的机制本身也因更新而变得更有效",
+      "Task gain、retained gain、improver gain 是不同证据层级，不能相互替代",
+      "结构上存在自指或递归依赖，不代表实测改进有效或可持续",
+      "证据应记录更新目标、反馈来源、保留工件、固定条件、验证方法和资源预算"
+    ],
+    "misconceptions": [
+      "反思变好就等于递归改进",
+      "读写自身代码就证明改进有效",
+      "训练集升分即可证明跨任务迁移"
+    ],
+    "angles": [
+      "fundamental",
+      "comparison",
+      "mechanism",
+      "scenario",
+      "tradeoff",
+      "design",
+      "debugging",
+      "system-design"
+    ]
+  },
+  {
+    "id": "rsi-loop-design",
+    "name": "反馈闭环与改进流程设计",
+    "area": "agent-engineering",
+    "topic": "recursive-self-improvement",
+    "priority": "P0",
+    "summary": "典型 RSI 工程闭环由任务执行、结果采集、失败归因、候选生成、隔离评测、门控发布和持续监控组成。改进职责最好与在线执行职责分离，所有变更保留版本、实验记录和回滚路径；外层循环还可以优化内层改进策略",
+    "required": [
+      "闭环至少包含执行、反馈、诊断、候选生成、验证、保留和监控",
+      "反馈需结构化并关联任务、上下文、动作、结果和软件版本",
+      "候选变更应先在隔离环境评估，再决定是否晋级到生产版本",
+      "保留成功与失败实验的轨迹、参数、预算和评测结果",
+      "监控上线后的长期回归、分布漂移、成本和安全影响",
+      "外层改进循环可以优化内层循环的搜索策略、反馈或评测机制"
+    ],
+    "misconceptions": [
+      "在线任务后立即覆盖生产 Skill",
+      "只保存最终答案就保留了完整轨迹",
+      "候选通过一次测试就无需监控"
+    ],
+    "angles": [
+      "mechanism",
+      "fundamental",
+      "debugging",
+      "design",
+      "scenario",
+      "tradeoff",
+      "system-design"
+    ]
+  },
+  {
+    "id": "rsi-self-training-reward",
+    "name": "自训练、自奖励与 AI 反馈",
+    "area": "agent-engineering",
+    "topic": "recursive-self-improvement",
+    "priority": "P1",
+    "summary": "模型可以生成训练样本、偏好或评分，并用这些反馈更新自身策略；RLAIF、自奖励语言模型和自博弈微调是代表性路线。核心风险是模型偏差被循环放大、评判器与策略共谋、奖励投机和缺少外部校准",
+    "required": [
+      "Self-training 使用模型生成或筛选的数据继续训练模型",
+      "RLAIF 使用 AI 反馈构造偏好或奖励信号，不等于完全没有外部约束",
+      "Self-rewarding 让模型参与生成答案和评估答案，需校准评判质量",
+      "奖励模型、规则验证器和环境结果提供不同强度的监督信号",
+      "重复迭代可能放大偏差、奖励黑客和评估器漂移",
+      "独立人工标注或可验证数据可作为周期性校准锚点"
+    ],
+    "misconceptions": [
+      "自评高分就等于客观正确",
+      "RLAIF 无需任何外部校准",
+      "奖励上升即可排除奖励黑客"
+    ],
+    "angles": [
+      "fundamental",
+      "comparison",
+      "mechanism",
+      "scenario",
+      "tradeoff",
+      "design",
+      "debugging",
+      "system-design"
+    ]
+  },
+  {
+    "id": "rsi-synthetic-data-distillation",
+    "name": "合成数据、自蒸馏与模型坍塌",
+    "area": "agent-engineering",
+    "topic": "recursive-self-improvement",
+    "priority": "P1",
+    "summary": "合成数据可扩展训练覆盖，但质量取决于生成、验证、去重、难度和多样性管理。Self-Instruct、拒绝采样和自蒸馏可以形成改进循环；若低质量或单一分布样本不断回流，可能导致错误累积、尾部分布丢失和模型坍塌",
+    "required": [
+      "合成数据应标记生成模型、提示、过滤过程和版本",
+      "过滤可结合规则、执行验证、模型评判和人工抽样",
+      "多样性、难度和长尾覆盖不能只用样本数量替代",
+      "迭代自蒸馏可能强化强项，也可能放大错误或缩窄分布",
+      "模型坍塌与重复采样、低多样性和错误反馈累积有关",
+      "人类数据、可信来源或独立验证可帮助稳定数据分布"
+    ],
+    "misconceptions": [
+      "合成数据量大就一定质量高",
+      "自生成数据回灌不会改变分布",
+      "训练损失下降就能忽略长尾覆盖"
+    ],
+    "angles": [
+      "fundamental",
+      "mechanism",
+      "design",
+      "tradeoff",
+      "scenario",
+      "debugging",
+      "system-design"
+    ]
+  },
+  {
+    "id": "rsi-self-play-curriculum",
+    "name": "自博弈、挑战者与课程自演化",
+    "area": "agent-engineering",
+    "topic": "recursive-self-improvement",
+    "priority": "P1",
+    "summary": "Self-play 和 Challenger–Solver 通过一个角色提出能力边界附近的任务，另一个角色尝试解决，再根据结果调整课程或策略。难度、任务有效性和解题信号需要共同校准，否则挑战者可能生成无解题、重复题或奖励投机题",
+    "required": [
+      "Self-play 通过策略间交互或自生成偏好形成学习信号",
+      "Challenger 负责提出有挑战但可验证的任务，Solver 负责解决",
+      "课程难度应围绕当前能力边界动态调整",
+      "验证器或多数投票可过滤部分伪标签，但不能保证绝对正确",
+      "挑战者和求解者可能形成共适应，需要外部锚点检查",
+      "应监控任务多样性、可解性、难度和迁移能力"
+    ],
+    "misconceptions": [
+      "挑战越难越好，即使无解也可以训练",
+      "挑战者与求解者互相升分就证明外部能力提高",
+      "Self-play 无需外部评估和质量约束"
+    ],
+    "angles": [
+      "fundamental",
+      "mechanism",
+      "tradeoff",
+      "scenario",
+      "design",
+      "comparison",
+      "debugging",
+      "system-design"
+    ]
+  },
+  {
+    "id": "rsi-prompt-program-optimization",
+    "name": "Prompt、程序与优化器演化",
+    "area": "agent-engineering",
+    "topic": "recursive-self-improvement",
+    "priority": "P1",
+    "summary": "OPRO、Promptbreeder、TextGrad、DSPy 和 STOP 等工作展示了对 Prompt、程序或生成改进策略进行自动搜索的路径。需要优化目标、评测数据、版本比较和泛化检查；同时要区分仅优化任务 Prompt 与优化生成 Prompt 的改进器",
+    "required": [
+      "OPRO 根据历史候选及其分数提出新候选",
+      "Promptbreeder 还会演化生成变异提示的元提示",
+      "TextGrad 使用文本反馈指导复合系统中的变量更新",
+      "DSPy 面向声明式 LM 程序，根据指标优化提示和示例",
+      "STOP 展示改进程序可以成为下一轮自身改进的对象",
+      "Prompt 优化需要独立验证集、固定评测协议和版本回滚"
+    ],
+    "misconceptions": [
+      "Prompt 分数提升等于底层权重变强",
+      "反复搜索同一评测集不会过拟合",
+      "Promptbreeder 不涉及改进提示生成机制"
+    ],
+    "angles": [
+      "fundamental",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "design",
+      "tradeoff",
+      "system-design",
+      "debugging"
+    ]
+  },
+  {
+    "id": "rsi-memory-context-evolution",
+    "name": "记忆与上下文演化",
+    "area": "agent-engineering",
+    "topic": "recursive-self-improvement",
+    "priority": "P1",
+    "summary": "经验驱动 Agent 会将成功和失败轨迹提炼为长期可复用的策略、记忆结构或上下文工作手册。记忆演化不等于不断追加对话；需要提炼、关联、检索、更新、遗忘和验证，并控制过时信息、隐私泄漏和记忆膨胀",
+    "required": [
+      "经验记忆应从任务轨迹中提炼可复用规则，而非无差别存储全部对话",
+      "记忆需要检索、冲突处理、时效和来源信息",
+      "上下文演化可以更新结构化策略手册或上下文工件",
+      "记忆机制本身也可成为元学习或搜索对象",
+      "记忆应经过后续任务验证，避免把偶然成功写成通用规则",
+      "隐私、删除和数据访问策略应贯穿记忆生命周期"
+    ],
+    "misconceptions": [
+      "所有历史对话都永久追加",
+      "一次成功经验无需验证就适用所有任务",
+      "长期记忆永不过时也无需访问控制"
+    ],
+    "angles": [
+      "fundamental",
+      "mechanism",
+      "comparison",
+      "design",
+      "debugging",
+      "tradeoff",
+      "scenario",
+      "system-design"
+    ]
+  },
+  {
+    "id": "rsi-skill-harness-evolution",
+    "name": "Skill、子 Agent 与 Harness 演化",
+    "area": "agent-engineering",
+    "topic": "recursive-self-improvement",
+    "priority": "P1",
+    "summary": "Harness-level RSI 通过修改 Agent 外围的提示、工具、技能、工作流、子 Agent 结构和运行策略改善任务能力。可执行子 Agent 累积、Skill 复用和 Harness 搜索通常比直接改模型权重更容易验证，但必须防止技能膨胀、过拟合和未经审查的在线热更新",
+    "required": [
+      "Harness 包括 Prompt、工具定义、工作流、记忆、执行策略和子 Agent 结构",
+      "Skill 应沉淀可迁移过程性知识，并带有适用条件和验证证据",
+      "成功轨迹可抽象成可复用子 Agent 或工具，但需要验证任务边界",
+      "技能与权重更新是不同的改进路径，可以独立或联合演化",
+      "Skill 晋级应经过回归评测、版本管理和回滚门控",
+      "渐进式披露和模块化可减少主上下文负担"
+    ],
+    "misconceptions": [
+      "Skill 越多越好",
+      "Harness 只是一段 System Prompt",
+      "执行 Agent 可直接热写生产 Skill"
+    ],
+    "angles": [
+      "fundamental",
+      "mechanism",
+      "comparison",
+      "design",
+      "scenario",
+      "tradeoff",
+      "system-design",
+      "debugging"
+    ]
+  },
+  {
+    "id": "rsi-verification-evaluation",
+    "name": "自验证、评测与独立监督",
+    "area": "agent-engineering",
+    "topic": "recursive-self-improvement",
+    "priority": "P0",
+    "summary": "自我批评和自我纠错可以帮助发现问题，但模型内部反馈并不总是可靠，甚至可能让推理退化。高质量 RSI 需要外部工具、可执行测试、过程验证器、独立留出集和评估器校准，并把评测器本身视为可能被优化和操纵的对象",
+    "required": [
+      "Self-Refine 和 Chain-of-Verification 提供迭代反馈或核验流程，但不保证事实正确",
+      "工具交互和可执行测试可提供模型之外的验证证据",
+      "过程奖励模型检查中间步骤，结果奖励关注最终结果",
+      "训练/搜索集与独立留出评测应分离",
+      "评估器可能被候选系统操纵，需交叉验证和定期校准",
+      "自纠错收益应在匹配基线和独立任务上验证"
+    ],
+    "misconceptions": [
+      "多轮自批评一定能纠错",
+      "Judge 高分可以代替外部验证",
+      "优化集高分就证明泛化"
+    ],
+    "angles": [
+      "fundamental",
+      "comparison",
+      "mechanism",
+      "scenario",
+      "design",
+      "tradeoff",
+      "debugging",
+      "system-design"
+    ]
+  },
+  {
+    "id": "rsi-coding-agent-modification",
+    "name": "自修改 Coding Agent",
+    "area": "agent-engineering",
+    "topic": "recursive-self-improvement",
+    "priority": "P1",
+    "summary": "自修改 Coding Agent 将自身 Harness、脚本或代码作为优化对象，生成补丁后执行测试并保留有效版本。Darwin Gödel Machine 等工作采用经验验证和候选档案，而不是假设理论上可证明最优；真实工程必须加入沙箱、回归测试、资源限制和回滚",
+    "required": [
+      "Agent 读取并修改自身代码或执行脚手架，形成候选版本",
+      "候选补丁应在隔离环境中构建、测试和评测",
+      "基准任务需要避免答案泄漏、测试污染和环境不一致",
+      "候选档案保留有效版本和对应评测证据",
+      "改进可来自搜索策略、工具、代码结构或任务执行逻辑",
+      "应控制文件访问、网络、凭证、资源和发布权限"
+    ],
+    "misconceptions": [
+      "代码能运行就证明修改更好",
+      "一个软件基准代表所有编程任务",
+      "自修改程序可直接生产运行无需隔离"
+    ],
+    "angles": [
+      "fundamental",
+      "mechanism",
+      "design",
+      "comparison",
+      "scenario",
+      "tradeoff",
+      "debugging",
+      "system-design"
+    ]
+  },
+  {
+    "id": "rsi-automated-ai-rd",
+    "name": "自动化 AI 研发与 AI-for-AI",
+    "area": "agent-engineering",
+    "topic": "recursive-self-improvement",
+    "priority": "P1",
+    "summary": "自动化 AI R&D 将研究假设、实验设计、代码实现、训练运行、结果分析和下一轮实验连接成循环。AI Scientist、AutoResearch、MLEvolve、FT-Dojo 等展示了不同范围的自动研究能力；研究结论必须可复现，并与独立审查和真实资源预算绑定",
+    "required": [
+      "研发流程包括假设、实验设计、实现、执行、分析、复核和下一轮计划",
+      "实验环境应可执行、可复现并记录代码、数据、模型和配置版本",
+      "代理指标和最终研究目标必须区分",
+      "独立审查用于发现实现错误、统计误判和过度主张",
+      "自动化研究系统也需要时间、算力和并发预算",
+      "外层研究循环可优化内层实验搜索策略"
+    ],
+    "misconceptions": [
+      "自动生成论文就等于可靠科学发现",
+      "实验代码运行成功就证明假设成立",
+      "AI R&D 瓶颈只有模型智力"
+    ],
+    "angles": [
+      "fundamental",
+      "mechanism",
+      "scenario",
+      "design",
+      "tradeoff",
+      "comparison",
+      "system-design",
+      "debugging"
+    ]
+  },
+  {
+    "id": "rsi-multi-agent-coevolution",
+    "name": "多智能体协同与共演化",
+    "area": "agent-engineering",
+    "topic": "recursive-self-improvement",
+    "priority": "P1",
+    "summary": "多智能体 RSI 把单个 Agent 扩展为多个角色或群体，通过共享经验、角色协商、任务分工和共同演化提高系统能力。群体多样性、通信协议、共享状态和独立评价十分重要；增加 Agent 数量本身不会自动带来收益",
+    "required": [
+      "Proposer、Solver、Critic 和 Verifier 等角色可以形成互补闭环",
+      "群体共演化可以更新个体策略、协作方式和团队结构",
+      "保留个体上下文和共享全局状态之间需要权衡",
+      "角色多样性有助探索，但通信和协调增加成本",
+      "应评估单体基线、团队收益、重复劳动和错误传播",
+      "独立评估可以发现团队内部的共同盲点"
+    ],
+    "misconceptions": [
+      "Agent 数量越多系统越强",
+      "多个 Agent 达成一致就代表独立验证",
+      "共享全部状态可自动消除协调问题"
+    ],
+    "angles": [
+      "fundamental",
+      "mechanism",
+      "tradeoff",
+      "design",
+      "system-design",
+      "scenario",
+      "debugging"
+    ]
+  },
+  {
+    "id": "rsi-embodied-adaptation",
+    "name": "具身智能与物理环境自改进",
+    "area": "agent-engineering",
+    "topic": "recursive-self-improvement",
+    "priority": "P2",
+    "summary": "具身自改进依赖真实或仿真环境中的感知、动作和反馈，将失败恢复轨迹转化为策略、技能或模型更新。与纯软件环境相比，物理执行涉及安全、硬件磨损、环境随机性和仿真到现实迁移，必须使用受控试验和安全回退",
+    "required": [
+      "环境反馈来自真实物理状态，而不只是模型生成的文本评价",
+      "仿真可以降低探索成本，但存在 sim-to-real 差距",
+      "失败恢复轨迹可成为技能和策略更新的数据来源",
+      "物理动作需要速度、力、空间和安全区域约束",
+      "真实设备试验应有暂停、接管和恢复机制",
+      "跨设备或环境迁移需要重新验证传感器、动力学和安全边界"
+    ],
+    "misconceptions": [
+      "仿真成功就保证现实安全",
+      "物理 Agent 可无限试错",
+      "Skill 可跨硬件直接复用动作"
+    ],
+    "angles": [
+      "fundamental",
+      "comparison",
+      "scenario",
+      "design",
+      "mechanism",
+      "tradeoff",
+      "debugging",
+      "system-design"
+    ]
+  },
+  {
+    "id": "rsi-evolutionary-search",
+    "name": "进化搜索、开放式演化与候选档案",
+    "area": "agent-engineering",
+    "topic": "recursive-self-improvement",
+    "priority": "P2",
+    "summary": "进化式 RSI 使用变异、交叉、选择、候选档案和评估器，在程序、模型组合、任务或环境空间中持续探索。开放式搜索关注新颖性和能力扩展，不应只追逐单一分数；多目标评价、种群多样性和档案质量能降低过早收敛",
+    "required": [
+      "Mutation 生成候选变体，Crossover 组合已有候选特征",
+      "Selection 根据适应度或约束选择后续候选",
+      "Archive 保留历史有效候选和其证据",
+      "Novelty 可鼓励搜索进入不同的行为或解空间区域",
+      "单一 fitness 容易诱发指标投机和搜索坍缩",
+      "开放式搜索需要监控多样性、资源预算和可验证产出"
+    ],
+    "misconceptions": [
+      "变异次数越多越容易有效改进",
+      "只保留单一 fitness 第一名就够",
+      "开放式演化无需安全约束"
+    ],
+    "angles": [
+      "fundamental",
+      "mechanism",
+      "tradeoff",
+      "scenario",
+      "comparison",
+      "design",
+      "debugging",
+      "system-design"
+    ]
+  },
+  {
+    "id": "rsi-safety-governance",
+    "name": "RSI 安全、目标保持与治理",
+    "area": "agent-engineering",
+    "topic": "recursive-self-improvement",
+    "priority": "P0",
+    "summary": "自演化系统的风险不仅来自单次模型输出，还会通过记忆、工具、技能和后续训练跨轮次累积并传播。重点包括目标漂移、评估器漂移、Reward Tampering、误差遗传、权限扩张、不可逆修改和监督失效；安全属性必须在每次状态转移后重新验证",
+    "required": [
+      "目标漂移可能由环境反馈、奖励投机或长期记忆更新引起",
+      "评估器漂移会使系统逐步优化错误或变化的标准",
+      "Reward Tampering 是系统操纵奖励生成或评估过程",
+      "新版本应重新验证安全约束和继承状态",
+      "高风险修改需要独立授权、隔离执行和可恢复发布",
+      "停止、人工接管、回滚和事件审计应在运行时可用"
+    ],
+    "misconceptions": [
+      "初始版本通过评测就能保证后续一直安全",
+      "奖励函数不可能被 Agent 操纵",
+      "运行日志可替代修改权限控制"
+    ],
+    "angles": [
+      "fundamental",
+      "mechanism",
+      "design",
+      "system-design",
+      "scenario",
+      "tradeoff",
+      "debugging"
+    ]
+  },
+  {
+    "id": "rsi-introspection-self-modeling",
+    "name": "内省、自我模型与能力校准",
+    "area": "agent-engineering",
+    "topic": "recursive-self-improvement",
+    "priority": "P2",
+    "summary": "内省研究关注模型能否预测自身行为、识别知识边界或定位内部错误，但语言模型生成的自我解释不等于读取了真实内部状态。需要区分行为层预测、可验证的自我知识和内部机制解释，并通过外部实验验证内省主张",
+    "required": [
+      "自我解释可能是事后生成的合理化文本，不等于真实内部访问",
+      "能力校准关注模型能否识别何时知道或不知道",
+      "自我预测应与实际行为和其他预测者对照",
+      "结构化推理有时能帮助定位错误步骤，但不保证正确",
+      "内部表示层面的内省需要专门实验和可重复测量",
+      "自我模型更新仍需防止过度自信和错误自我认知"
+    ],
+    "misconceptions": [
+      "自我解释等于准确读取神经状态",
+      "模型自评总比外部评估可靠",
+      "识别部分输出就证明普遍自我意识"
+    ],
+    "angles": [
+      "fundamental",
+      "mechanism",
+      "comparison",
+      "scenario",
+      "design",
+      "debugging",
+      "tradeoff",
+      "system-design"
+    ]
+  }
+]
