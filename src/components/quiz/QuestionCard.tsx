@@ -1,6 +1,6 @@
-import { Alert, Card, Radio, Checkbox, Input, Tag, Space, Badge, Typography, Button, List } from 'antd';
+import { Alert, Card, Radio, Checkbox, Input, Tag, Space, Badge, Typography, Button, List, Modal } from 'antd';
 import { Suspense, lazy, useState, useEffect } from 'react';
-import { SafetyCertificateOutlined } from '@ant-design/icons';
+import { SafetyCertificateOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import type { AnswerValue } from '../../types';
 import type { FormatId } from '../../schemas/common';
 import type { Question } from '../../schemas/question';
@@ -53,6 +53,7 @@ interface Props {
 export default function QuestionCard({ index, question, format, value, onChange, challengerEnabled = false, challengerProvider, readOnly = false }: Props) {
   const [challenge, setChallenge] = useState<QuestionChallenge | null>(null);
   const [challenging, setChallenging] = useState(false);
+  const [tipsOpen, setTipsOpen] = useState(false);
   const cf = question.formats.choice;
   const of = question.formats.open;
   // 展示时随机打乱选项顺序（抗位置记忆）：仅重排显示顺序，value 仍写回原始索引，
@@ -113,6 +114,30 @@ export default function QuestionCard({ index, question, format, value, onChange,
       <div style={{ marginBottom: 18 }}>
         <RichText text={stem} strong />
       </div>
+
+      {question.tips && (
+        <div style={{ marginBottom: 16 }}>
+          <Button
+            size="small"
+            type="text"
+            icon={<QuestionCircleOutlined />}
+            onClick={() => setTipsOpen(true)}
+          >
+            Tips
+          </Button>
+          <Modal
+            title="面试官补充说明"
+            open={tipsOpen}
+            onCancel={() => setTipsOpen(false)}
+            footer={<Button type="primary" onClick={() => setTipsOpen(false)}>知道了</Button>}
+            destroyOnHidden
+          >
+            <Typography.Paragraph style={{ marginBottom: 0 }}>
+              {question.tips}
+            </Typography.Paragraph>
+          </Modal>
+        </div>
+      )}
 
       {challengerEnabled && !readOnly && (
         <div style={{ marginBottom: 18 }}>
