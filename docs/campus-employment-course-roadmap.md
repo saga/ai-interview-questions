@@ -85,4 +85,4 @@
 
 2025–2026 面试记录、官方招聘资料和来源边界见：[2025–2026 校招面试调研](./campus-employment-interview-research-2025-2026.md)。
 
-题量、难度、主题覆盖和标签规则见：[650 题覆盖说明](./campus-employment-question-coverage-500.md)；[本次新增 150 道初/中级题](../src/data/questions/campus-employment-150-foundation-intermediate.json)。
+题量、难度、主题覆盖和标签规则见：[650 题覆盖说明](./campus-employment-question-coverage-650.md)；[本次新增 150 道初/中级题](../src/data/questions/campus-employment-150-foundation-intermediate.json)。
