@@ -84,6 +84,9 @@ export default function App() {
   const goPage = (p: Page) =>
     attemptNavigate({ target: p, phase, navigate: (to) => navigate(to === '/learn' ? '/learn' : `${to}?track=${runtimeTrackId}`), warn: (m) => message.warning(m) });
   const [copilotOpen, setCopilotOpen] = useState(false);
+  // Copilot 属于当前课程上下文；未显式选择 track 时 runtimeTrackId 已回退到 AI，
+  // 因此不能再用 selectedTrackId（URL 参数是否存在）决定是否显示入口和侧栏。
+  const showCopilot = page !== 'learn';
   /**
    * Agent 面试页「让 Copilot 详细解释」的桥接载荷。
    * 两个 runtime（Agent 面试 / Copilot 侧栏）在 App 层交汇：Agent 页产出结构化上下文，
@@ -347,7 +350,7 @@ export default function App() {
               {isMobile ? undefined : configReady ? 'AI ✓' : 'AI 未配置'}
             </Button>
           )}
-          {selectedTrackId && <Button
+          {showCopilot && <Button
             type={copilotOpen ? 'primary' : 'default'}
             size="small"
             icon={<CommentOutlined />}
@@ -391,7 +394,7 @@ export default function App() {
           <LearnerBound profile={profile}>{(displayedProfile) => renderContent(displayedProfile)}</LearnerBound>
         )}
       </Layout.Content>
-        {selectedTrackId && <CopilotSidebar
+        {showCopilot && <CopilotSidebar
           key={runtimeTrackId}
           open={copilotOpen}
           onClose={() => setCopilotOpen(false)}
