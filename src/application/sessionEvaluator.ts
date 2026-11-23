@@ -22,16 +22,17 @@ export function isAnswerEmpty(answer: AnswerValue | undefined): boolean {
 }
 
 /**
- * 计算本次会话可用的题型集合：空 formats 代表不限，开放题还受 AI 与全局开关约束。
- * 返回非空集合；只选了不可用的 open 时退化为 choice。
+ * 计算本次会话可用的题型集合：普通题库的开放形态受 AI 与全局生成开关约束；
+ * 课程专用的预置开放题（如校招行为题）不属于 LLM 动态生成，不应被该开关过滤。
  */
 export function effectiveFormats(
   formats: FormatId[] | undefined,
   useAI: boolean,
   generateOpenQuestions?: boolean,
+  allowPreauthoredOpen = false,
 ): FormatId[] {
   const base: FormatId[] = formats && formats.length > 0 ? formats : ['choice', 'open'];
-  const allowOpen = Boolean(generateOpenQuestions) && useAI;
+  const allowOpen = allowPreauthoredOpen || (Boolean(generateOpenQuestions) && useAI);
   const filtered = base.filter((format) => format !== 'open' || allowOpen);
   return filtered.length > 0 ? filtered : ['choice'];
 }
