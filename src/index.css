@@ -159,10 +159,27 @@ body,
 .app-layout {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-  /* 100dvh 跟随移动端浏览器地址栏显隐；不支持的浏览器忽略此行，回落到 100vh。
-     写成内联样式会触发 TS1117（对象字面量重名属性），故放这里。 */
-  min-height: 100dvh;
+  /* 整个应用固定在 viewport 内；长题目只滚动主内容区，不再撑高 body 和 Copilot。 */
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.app-layout > .app-header,
+.app-layout > .ant-menu-horizontal {
+  flex: 0 0 auto;
+}
+
+/* 主内容与 Copilot 是 viewport 高度内的并排区域。滚动只发生在 app-content，
+   因此向下浏览多页题目时，右侧 Copilot 始终留在视口中。 */
+.app-main-row {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+  align-items: stretch;
+  overflow: hidden;
 }
 
 .app-header {
@@ -170,7 +187,20 @@ body,
 }
 
 .app-content {
+  height: 100%;
+  min-height: 0;
+  max-height: 100%;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
   padding: 24px;
+}
+
+.copilot-shell {
+  height: 100%;
+  max-height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  overscroll-behavior: contain;
 }
 
 @media (max-width: 768px) {

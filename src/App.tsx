@@ -374,7 +374,7 @@ export default function App() {
         style={{ justifyContent: 'center', borderBottom: '1px solid #f0f0f0' }}
       />
 
-      <div style={{ display: 'flex', flex: 1, minHeight: 0, alignItems: 'stretch' }}>
+      <div className="app-main-row">
         <Layout.Content
           className="app-content"
           style={{
@@ -383,7 +383,7 @@ export default function App() {
             width: '100%',
             flex: 1,
             minWidth: 0,
-            overflowY: 'auto',
+            minHeight: 0,
           }}
         >
         {loadingProfile ? (
