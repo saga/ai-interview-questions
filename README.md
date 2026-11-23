@@ -39,7 +39,10 @@ uv run --project analysis --extra analysis python analysis/question_analysis.py 
 报告中的 `pandas.topicCounts` 对应 `df.groupby("topic").size()`，`pandas.topicAngleCounts` 对应 `df.groupby(["topic", "angle"]).size()`。TF-IDF/KMeans、embedding 聚类和难度分类是质量信号，不是题目正确性的证明；`--semantic` 会用仓库内 ARM64 INT8 ONNX 模型，通过 ONNX Runtime 的同一次 embedding 编码同时发现语义重复题和语义题簇。`optimum-onnx` 负责 Sentence Transformers 的 ONNX backend 接入，运行设备为 CPU；M5 的 CoreML provider 需单独 benchmark，不默认宣称使用 Neural Engine。默认模型路径为 `analysis/models/paraphrase-multilingual-MiniLM-L12-v2`，加载使用 `local_files_only=True`，模型缺失会直接报错，不会访问 Hugging Face。模型权重通过 Git LFS 管理，模型卡为 Apache-2.0 并随模型文件保留。Python 只负责离线分析，题目运行时契约仍由 TypeScript/Zod 校验。
 
 ## 文档
-- [中国大学生本科研究生校招面试技巧培训路线](docs/campus-employment-course-roadmap.md)：面向计算机/软件工程应届生的 15 个知识主题与 500 道情境式行为面试选择题（375 道单选、125 道多选），包含选项长度与答案位置质量校验。\n- [2025–2026 校招面试调研](docs/campus-employment-interview-research-2025-2026.md)：候选人面经、官方招聘材料和练习扩展题的来源边界。\n- [校招面试 500 题覆盖矩阵](docs/campus-employment-question-coverage-500.md)：题量、难度和 15 个知识主题的覆盖分布。\n- [RSI 学习路线与研究资料](docs/rsi-learning-path.md)：基于 [lobehub/awesome-rsi](https://github.com/lobehub/awesome-rsi) 梳理模型级、Harness 级、自动化 AI 研发、多智能体、具身演化、评测与安全。
+- [中国大学生本科研究生校招面试技巧培训路线](docs/campus-employment-course-roadmap.md)：面向计算机/软件工程应届生的 15 个知识主题与 500 道情境式行为面试选择题（375 道单选、125 道多选），包含选项长度与答案位置质量校验。
+- [2025–2026 校招面试调研](docs/campus-employment-interview-research-2025-2026.md)：候选人面经、官方招聘材料和练习扩展题的来源边界。
+- [校招面试 500 题覆盖矩阵](docs/campus-employment-question-coverage-500.md)：题量、难度和 15 个知识主题的覆盖分布。
+- [RSI 学习路线与研究资料](docs/rsi-learning-path.md)：基于 [lobehub/awesome-rsi](https://github.com/lobehub/awesome-rsi) 梳理模型级、Harness 级、自动化 AI 研发、多智能体、具身演化、评测与安全。
 - [RSI 200 道题覆盖矩阵](docs/rsi-question-coverage-200.md)：16 个知识点、120 道初级和 80 道中级开放题，含题目 ID 与研究来源映射。
 
 - `docs/ARCHITECTURE.md`：架构、目录职责、技术栈注意点
