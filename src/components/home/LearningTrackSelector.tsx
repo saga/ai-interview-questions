@@ -1,5 +1,5 @@
 import { Button, Card, Col, Row, Space, Tag, Typography } from 'antd';
-import { ArrowRightOutlined, BookOutlined, DatabaseOutlined, RobotOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
+import { ArrowRightOutlined, BookOutlined, DatabaseOutlined, RobotOutlined, SafetyCertificateOutlined, TeamOutlined } from '@ant-design/icons';
 import { LEARNING_TRACKS, type LearningTrackId } from '../../data/learningTracks';
 import { questionBank } from '../../data/questionBank';
 import { knowledgeNodes } from '../../data/knowledgeMap';
@@ -24,7 +24,9 @@ export default function LearningTrackSelector({ onSelect }: Props) {
             ? DatabaseOutlined
             : track.id === 'security-architecture'
               ? SafetyCertificateOutlined
-              : RobotOutlined;
+              : track.id === 'campus-employment'
+                ? TeamOutlined
+                : RobotOutlined;
           return (
             <Col xs={24} md={12} xl={8} key={track.id}>
               <Card style={{ height: '100%' }} title={
