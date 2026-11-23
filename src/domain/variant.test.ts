@@ -25,10 +25,11 @@ const cq: Question = {
   formats: {
     choice: {
       type: 'single',
+      // 基础夹具本身也必须满足抗长度暗示门槛，否则所有变体行为测试都会被长度门禁提前拦截。
       options: [
-        'L2 正则化通过对权重施加平方惩罚来平滑收缩权重',
-        '增大 batch size 可以提升训练吞吐',
-        '使用梯度裁剪来稳定训练',
+        'L2 正则化通过平方惩罚收缩模型权重',
+        '增大 batch size 主要提升单次训练吞吐',
+        '梯度裁剪通过限制梯度范数帮助训练稳定',
       ],
       answer: [0],
     },
@@ -59,9 +60,9 @@ function variant(partial: Partial<GeneratedVariant> = {}): GeneratedVariant {
   return {
     question: 'L2 正则化通过对权重施加平方惩罚来平滑收缩权重，与 weight decay 在标准 SGD 下等价',
     options: [
-      'L2 范数惩罚对权重做平方惩罚以平滑收缩',
-      '提升吞吐量的方法是增大 batch size',
-      '梯度裁剪用于稳定训练过程',
+      'L2 范数惩罚通过平方约束使模型权重收缩',
+      '提高训练吞吐可以考虑增大 batch size',
+      '限制梯度范数可以帮助训练过程保持稳定',
     ],
     ...partial,
   };
@@ -184,7 +185,11 @@ describe('validateVariant（选项语义漂移防护）', () => {
     formats: {
       choice: {
         type: 'single',
-        options: ['使用 KV Cache', '增大 batch size', '使用梯度裁剪'],
+        options: [
+          'KV Cache 通过复用历史 Key Value 减少重复计算',
+          '扩大 batch size 通过提高单次吞吐改善推理效率',
+          '梯度裁剪通过限制梯度范数控制参数更新幅度',
+        ],
         answer: [0],
       },
     },
@@ -195,7 +200,11 @@ describe('validateVariant（选项语义漂移防护）', () => {
       driftCq,
       variant({
         question: '为什么 KV Cache 能降低 prefill 成本？',
-        options: ['完全不同的技术方案', '增大 batch size', '使用梯度裁剪'],
+        options: [
+          '改用无关的另一套技术方案解决推理开销',
+          '扩大 batch size 通过提高单次吞吐改善推理效率',
+          '梯度裁剪通过限制梯度范数控制参数更新幅度',
+        ],
       }),
     );
     expect(check.ok).toBe(false);
@@ -208,7 +217,11 @@ describe('validateVariant（选项语义漂移防护）', () => {
       driftCq,
       variant({
         question: '为什么 KV Cache 能降低 prefill 成本？',
-        options: ['采用 KV Cache', '增大 batch size', '使用梯度裁剪'],
+        options: [
+          '复用已计算的 Key Value 缓存结果减少重复前向计算',
+          '扩大 batch size 通过提高单次吞吐改善推理效率',
+          '梯度裁剪通过限制梯度范数控制参数更新幅度',
+        ],
       }),
     );
     expect(check.ok).toBe(true);
