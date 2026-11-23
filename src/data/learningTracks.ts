@@ -4,6 +4,34 @@ import type { QuestionAngle } from '../schemas/common';
  * 顶层学习体系注册表。AI、Snowflake、Security Architecture 是并列课程，不是同一个 taxonomy 下的能力域。
  * 新增独立课程时在此登记 courseId / 展示信息 / 主题目录，并给课程自己的节点和题目写 courseId。
  */
+
+export const CAMPUS_EMPLOYMENT_COURSE_TOPICS = [
+  { id: 'career-motivation-position-fit', label: '求职动机与岗位认知', description: '岗位选择、企业理解、工作内容、个人匹配和职业预期。' },
+  { id: 'self-introduction-positioning', label: '自我介绍与个人定位', description: '学校专业、求职方向、代表经历、个人贡献和岗位关联的清晰表达。' },
+  { id: 'resume-project-storytelling', label: '简历、项目与个人贡献表达', description: '将课程设计、毕业设计、竞赛、科研和实习讲成可信的工程经历。' },
+  { id: 'teamwork-collaboration', label: '团队协作与角色承担', description: '任务分工、责任边界、信息同步、互相补位和团队结果。' },
+  { id: 'communication-conflict', label: '沟通冲突与跨职能协同', description: '不同意见、向上沟通、负面反馈和跨团队依赖的处理。' },
+  { id: 'ownership-reliable-delivery', label: '责任心、执行力与可靠交付', description: '任务承诺、风险暴露、质量验证、失误处理和工作交接。' },
+  { id: 'problem-solving-initiative', label: '问题解决、主动性与不确定性', description: '需求澄清、问题拆解、假设验证、主动推进和适时求助。' },
+  { id: 'learning-adaptability-ai', label: '学习能力、适应变化与 AI 工具', description: '自主学习、陌生代码库适应、AI 辅助开发和输出核验。' },
+  { id: 'time-prioritization-pressure', label: '时间管理、优先级与压力应对', description: '多任务排序、截止日期、工作量评估和压力下的质量控制。' },
+  { id: 'self-awareness-feedback', label: '自我认知、复盘与反馈', description: '优缺点、挫折、反馈接纳、个人复盘和成长计划。' },
+  { id: 'business-user-value', label: '业务意识、用户价值与产品思维', description: '用户需求、业务目标、产品价值和工程取舍。' },
+  { id: 'professional-ethics-engineering', label: '职业素养、诚信与工程伦理', description: '隐私、安全、开源许可、学术诚信和工程责任。' },
+  { id: 'interview-communication', label: '面试表达、追问与反问', description: '结构化回答、澄清问题、不会作答、压力互动和有效反问。' },
+  { id: 'career-planning-offer', label: '职业规划、工作城市与 Offer 决策', description: '就业与读研选择、城市、薪酬、发展路径和 Offer 比较。' },
+  { id: 'undergrad-grad-transition', label: '本科生、研究生经历与科研实习转化', description: '课程项目、毕业设计、实验室、科研论文、竞赛和实习经历转化。' },
+] as const;
+
+export const CAMPUS_EMPLOYMENT_TOPIC_LABELS: Record<string, string> = Object.fromEntries(
+  CAMPUS_EMPLOYMENT_COURSE_TOPICS.map(({ id, label }) => [id, label]),
+);
+
+export const CAMPUS_EMPLOYMENT_ANGLE_WHITELIST = [
+  'scenario', 'fundamental', 'comparison', 'design',
+  'tradeoff', 'diagnosis', 'mechanism', 'synthesis',
+] as const;
+
 export const LEARNING_TRACKS = [
   {
     id: 'ai',
@@ -30,6 +58,15 @@ export const LEARNING_TRACKS = [
     actionLabel: '进入安全架构学习',
     topicCount: 11,
     learningPathUrl: 'https://github.com/saga/ai-interview-questions/blob/main/docs/security-architecture-course-roadmap.md',
+  },
+  {
+    id: 'campus-employment',
+    title: '中国大学生本科研究生校招面试技巧培训',
+    shortTitle: '校招面试',
+    description: '面向计算机与软件工程应届生，以真实项目表达、沟通协作、责任交付、学习适应、求职动机和行为面试为主；本科生优先，研究生科研经历补充。',
+    actionLabel: '进入校招面试技巧学习',
+    topicCount: 11,
+    learningPathUrl: 'https://github.com/saga/ai-interview-questions/blob/main/docs/campus-employment-course-roadmap.md',
   },
 ] as const;
 
