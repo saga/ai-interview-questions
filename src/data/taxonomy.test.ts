@@ -82,14 +82,14 @@ describe('知识节点与 taxonomy 对齐', () => {
     const themeIds = new Set(CAMPUS_EMPLOYMENT_COURSE_TOPICS.map((topic) => topic.id));
     expect(nodes).toHaveLength(15);
     expect(nodes.every((node) => node.area === 'campus-employment' && themeIds.has(node.topic))).toBe(true);
-    expect(questions).toHaveLength(500);
+    expect(questions).toHaveLength(635);
     for (const node of nodes) {
       const nodeQuestions = questions.filter((question) => question.topic === node.id);
       expect(nodeQuestions.length, `校招知识节点缺少题目：${node.id}`).toBeGreaterThanOrEqual(33);
       expect(nodeQuestions.every((question) => question.knowledgeId === node.id)).toBe(true);
     }
     expect(questions.every((question) => question.formats.choice && !question.formats.open)).toBe(true);
-    expect(questions.filter((question) => question.formats.choice?.type === 'single')).toHaveLength(375);
+    expect(questions.filter((question) => question.formats.choice?.type === 'single')).toHaveLength(510);
     expect(questions.filter((question) => question.formats.choice?.type === 'multiple')).toHaveLength(125);
   });
 
