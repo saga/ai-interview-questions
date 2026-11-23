@@ -14,6 +14,7 @@ import {
   SNOWFLAKE_ANGLE_WHITELIST,
   SNOWFLAKE_TOPIC_LABELS,
 } from './learningTracks';
+import { CAMPUS_EMPLOYMENT_ANGLE_WHITELIST } from './learningTracks';
 
 export interface TaxonomyTopic {
   id: string;
@@ -314,7 +315,8 @@ export const DOMAIN_LABELS: Record<KnowledgeArea, string> = { ...TAXONOMY.reduce
     return acc;
   },
   {} as Record<KnowledgeArea, string>,
-), 'data-platform': 'Snowflake 独立课程', 'security-architecture': 'Security Architecture 独立课程' };
+), 'data-platform': 'Snowflake 独立课程', 'security-architecture': 'Security Architecture 独立课程'
+  'campus-employment': '中国大学生本科研究生校招面试技巧培训', };
 
 /** topic id → 中文标签。 */
 export const TOPIC_LABELS: Record<string, string> = (() => {
