@@ -202,9 +202,13 @@ export function shouldUpgradeToInterview(session: ConversationSession, intent?: 
 
 export const CONVERSATION_SESSION_KEY = 'ai-interview-conversation-session-v1';
 
-export function loadConversationSession(): ConversationSession | null {
+function conversationSessionStorageKey(trackId: string): string {
+  return trackId === 'ai' ? CONVERSATION_SESSION_KEY : `${CONVERSATION_SESSION_KEY}:${trackId}`;
+}
+
+export function loadConversationSession(trackId = 'ai'): ConversationSession | null {
   try {
-    const raw = localStorage.getItem(CONVERSATION_SESSION_KEY);
+    const raw = localStorage.getItem(conversationSessionStorageKey(trackId));
     if (!raw) return null;
     const parsed = conversationSessionSchema.safeParse(JSON.parse(raw));
     // 损坏 / 老版本数据：校验失败直接丢弃（不再用类型断言把脏数据塞进运行时，plan0831_5 §P2）。
@@ -226,20 +230,20 @@ export function loadConversationSession(): ConversationSession | null {
   }
 }
 
-export function saveConversationSession(session: ConversationSession): void {
+export function saveConversationSession(session: ConversationSession, trackId = 'ai'): void {
   try {
     // agentSession 是运行时对象（含 log 数组），不写入 localStorage（plan0831_5 §P1-2）。
     const { agentSession: _drop, ...persisted } = session;
     void _drop;
-    localStorage.setItem(CONVERSATION_SESSION_KEY, JSON.stringify(persisted));
+    localStorage.setItem(conversationSessionStorageKey(trackId), JSON.stringify(persisted));
   } catch {
     // best effort
   }
 }
 
-export function clearConversationSession(): void {
+export function clearConversationSession(trackId = 'ai'): void {
   try {
-    localStorage.removeItem(CONVERSATION_SESSION_KEY);
+    localStorage.removeItem(conversationSessionStorageKey(trackId));
   } catch {
     // ignore
   }

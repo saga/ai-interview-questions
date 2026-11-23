@@ -90,6 +90,7 @@ describe('sessionEvaluator', () => {
     expect(effectiveFormats([], true, true)).toEqual(['choice', 'open']);
     expect(effectiveFormats(['open'], false, true)).toEqual(['choice']);
     expect(effectiveFormats(['choice', 'open'], true, false)).toEqual(['choice']);
+    expect(effectiveFormats(['open'], true, true)).toEqual(['open']);
   });
 });
 

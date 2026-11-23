@@ -23,8 +23,8 @@ const ADAPTIVE_OPEN_PROBABILITY = 0.3;
 
 /**
  * 本次会话实际允许的呈现形态（ADR-031）：
- * - config.generateOpenQuestions 关闭（含 config 未传）→ 剔除 open；
- * - def.useAI 关闭 → 剔除 open（开放题无法评分，避免「出题但不打分」的不一致）；
+ * - 普通题库的 open 形态受 config.generateOpenQuestions 与 def.useAI 双重门控；
+ * - 校招课程题库全部为预置选择题，不依赖 LLM 生成或开放题评分；
  * 返回值永远是具体的非空列表：定义未选形态视为不限（choice+open）；
  * 定义只选了 open 而不可用时退化为 choice，避免出现空会话。
  */

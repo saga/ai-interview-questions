@@ -18,11 +18,16 @@
 
 ## 顶层学习体系与课程隔离
 
-`src/data/learningTracks.ts` 注册三个并列体系：`ai`、`snowflake`、`security-architecture`。课程切换只影响当前使用的知识节点、题库与 Learner Profile 投影；课程题通过 `courseId` 明确归属，不将 Security Architecture 混入 AI 的六大能力域，也不将它误标成 Snowflake 的 `data-platform`。
+`src/data/learningTracks.ts` 注册四个并列体系：`ai`、`snowflake`、`security-architecture`、`campus-employment`。课程切换只影响当前使用的知识节点、题库与 Learner Profile 投影；课程题通过 `courseId` 明确归属，不将 Security Architecture 混入 AI 的六大能力域，也不将它误标成 Snowflake 的 `data-platform`。
 
-Security Architecture 使用独立的 `security-architecture` 分类元数据、主题白名单、知识节点 JSON 和题库 JSON。题目按 `topic = KnowledgeNode.id` 绑定评分要点，并通过 `source.materialId / relatedMaterials` 保留标准与实践来源。主课程入口展示各课程独立的主题数、节点数与题目数；旧会话推断从课程注册表读取，而不是硬编码两门课。
+Security Architecture 使用独立的 `security-architecture` 分类元数据、主题白名单、知识节点 JSON 和题库 JSON。题目按 `topic = KnowledgeNode.id` 绑定评分要点，并通过 `source.materialId / relatedMaterials` 保留标准与实践来源。主课程入口展示各课程独立的主题数、节点数与题目数；旧会话推断从课程注册表读取，而不是硬编码课程数量。
 
 课程范围是 Solution Architecture：风险与业务属性的追踪、安全质量需求、威胁模型与信任边界、身份/授权、Zero Trust、数据保护、云平台与 API 集成、供应链、安全运营/韧性以及金融服务方案设计。NIST CSF 用于风险结果的分类，NIST SP 800-160 用于系统安全工程，SP 800-207 用于 Zero Trust 参考架构；SABSA/Open Group 支撑业务驱动的架构追踪，ISO 27001 主要是 ISMS 要求、NIST 800-53 是控制目录，OWASP 与云厂商 Well-Architected 用于技术设计和验证。它们在课程中扮演不同角色，不被混合成一个“万能标准”。
+
+
+校招面试课程使用独立的 `campus-employment` 分类元数据、课程主题目录、知识节点和题库文件。课程主要面向计算机科学与软件工程本科应届生，研究生科研与实习经历作为扩展案例；覆盖岗位认知、自我介绍、项目贡献、团队协作、冲突沟通、责任交付、主动解决问题、学习与 AI 工具、压力管理、自我认知、业务价值、工程伦理、面试表达、Offer 决策和科研/本科经历转化。题目使用情境式单选/多选，不包含开放题，也不将其归入 AI 的六大 taxonomy；所有题目通过 `courseId` 和 `topic = KnowledgeNode.id` 绑定课程知识节点，并保留 2025–2026 面经或训练扩展的来源标签。课程路线、研究来源和 500 题覆盖分别见 `docs/campus-employment-course-roadmap.md`、`docs/campus-employment-interview-research-2025-2026.md` 与 `docs/campus-employment-question-coverage-500.md`。
+
+课程题型策略：普通 AI 面试题库的开放形态由 `generateOpenQuestions` 门控；校招课程 500 道题全部是预置情境式选择题（455 单选、45 多选），包含两种 `formats.choice.type`，不设置 `formats.open`，由本地确定性逻辑评分。每个知识主题各有 3 道多选题；单选答案恰有一个索引，多选答案有 3 个索引；判分要求所选索引集合与正确答案集合完全一致。校招课程不设置 open 形态例外，也不依赖 LLM 才能完成训练。
 
 ## 统一交互入口（Phase 1–5 已实施，ADR-061/062，plan0831_4 融合收敛）
 

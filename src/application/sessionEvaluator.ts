@@ -22,8 +22,8 @@ export function isAnswerEmpty(answer: AnswerValue | undefined): boolean {
 }
 
 /**
- * 计算本次会话可用的题型集合：空 formats 代表不限，开放题还受 AI 与全局开关约束。
- * 返回非空集合；只选了不可用的 open 时退化为 choice。
+ * 计算本次会话可用的题型集合。预置选择题始终可用；开放题只有在用户启用 AI 且显式打开
+ * generateOpenQuestions 时才进入题池，避免无评分能力时出现无法判分的训练题。
  */
 export function effectiveFormats(
   formats: FormatId[] | undefined,
