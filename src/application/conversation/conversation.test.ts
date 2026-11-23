@@ -112,7 +112,7 @@ describe('conversation transcript persistence by learning track', () => {
       setItem: (key: string, value: string) => { store.set(key, value); },
       removeItem: (key: string) => { store.delete(key); },
     };
-    vi.stubGlobal('localStorage', storage);
+    vi.stubGlobal('localStorage', storage as unknown as Storage);
 
     try {
       const aiSession = createConversationSession('ai-session');
