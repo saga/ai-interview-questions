@@ -76,21 +76,21 @@ describe('知识节点与 taxonomy 对齐', () => {
   });
 
 
-  it('校招面试知识节点与 500 道情境式选择题独立归属，并覆盖全部 15 个主题', () => {
+  it('校招面试知识节点与 650 道情境式选择题独立归属，并覆盖全部 15 个主题', () => {
     const nodes = knowledgeNodes.filter((node) => node.courseId === 'campus-employment');
     const questions = questionBank.questions.filter((question) => question.courseId === 'campus-employment');
     const themeIds = new Set(CAMPUS_EMPLOYMENT_COURSE_TOPICS.map((topic) => topic.id));
     expect(nodes).toHaveLength(15);
     expect(nodes.every((node) => node.area === 'campus-employment' && themeIds.has(node.topic))).toBe(true);
-    expect(questions).toHaveLength(500);
+    expect(questions).toHaveLength(650);
     for (const node of nodes) {
       const nodeQuestions = questions.filter((question) => question.topic === node.id);
-      expect(nodeQuestions.length, `校招知识节点缺少题目：${node.id}`).toBeGreaterThanOrEqual(33);
+      expect(nodeQuestions.length, `校招知识节点缺少题目：${node.id}`).toBeGreaterThanOrEqual(43);
       expect(nodeQuestions.every((question) => question.knowledgeId === node.id)).toBe(true);
     }
     expect(questions.every((question) => question.formats.choice && !question.formats.open)).toBe(true);
-    expect(questions.filter((question) => question.formats.choice?.type === 'single')).toHaveLength(375);
-    expect(questions.filter((question) => question.formats.choice?.type === 'multiple')).toHaveLength(125);
+    expect(questions.filter((question) => question.formats.choice?.type === 'single')).toHaveLength(420);
+    expect(questions.filter((question) => question.formats.choice?.type === 'multiple')).toHaveLength(230);
   });
 
   it('groupNodesByDomain 按域分组且覆盖全部节点（非 AI 课程节点作为独立分组保留）', () => {
