@@ -2,7 +2,14 @@ import { describe, expect, it, vi } from 'vitest';
 import { askQuestion } from './questionCapability';
 import { evaluateAnswer } from './evaluationCapability';
 import { routeUserMessage, detectCommand } from './commandDetector';
-import { initialConversationContext, questionContext } from './conversationSession';
+import {
+  initialConversationContext,
+  questionContext,
+  createConversationSession,
+  loadConversationSession,
+  saveConversationSession,
+  clearConversationSession,
+} from './conversationSession';
 import { emptyProfile } from '../../domain/learner';
 import type { QuestionBank } from '../../types';
 import type { Question } from '../../schemas/question';
@@ -96,3 +103,36 @@ describe('conversation command routing (ADR-064)', () => {
   });
 });
 
+
+describe('conversation transcript persistence by learning track', () => {
+  it('persists each course conversation independently and preserves the AI storage key', () => {
+    const store = new Map<string, string>();
+    const storage = {
+      getItem: (key: string) => store.get(key) ?? null,
+      setItem: (key: string, value: string) => { store.set(key, value); },
+      removeItem: (key: string) => { store.delete(key); },
+    };
+    vi.stubGlobal('localStorage', storage);
+
+    try {
+      const aiSession = createConversationSession('ai-session');
+      const snowflakeSession = createConversationSession('snowflake-session');
+      const campusSession = createConversationSession('campus-session');
+
+      saveConversationSession(aiSession);
+      saveConversationSession(snowflakeSession, 'snowflake');
+      saveConversationSession(campusSession, 'campus-employment');
+
+      expect(loadConversationSession()?.id).toBe('ai-session');
+      expect(loadConversationSession('snowflake')?.id).toBe('snowflake-session');
+      expect(loadConversationSession('campus-employment')?.id).toBe('campus-session');
+
+      clearConversationSession('campus-employment');
+      expect(loadConversationSession('campus-employment')).toBeNull();
+      expect(loadConversationSession('snowflake')?.id).toBe('snowflake-session');
+      expect(loadConversationSession()?.id).toBe('ai-session');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+});
