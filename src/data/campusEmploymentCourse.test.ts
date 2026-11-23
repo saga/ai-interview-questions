@@ -56,7 +56,7 @@ describe('campus employment interview course', () => {
       const expected = index < 5 ? 9 : 8;
       expect(multiple.filter((q) => q.topic === node.id), `multiple-choice coverage for ${node.id}`).toHaveLength(expected);
     }
-    expect(multiple.length / allQuestions.length).toBeGreaterThanOrEqual(0.25);
+    expect(multiple.length / allQuestions.length).toBe(0.25);
     expect(allQuestions.every((q) => q.formats.choice?.options.length === 4)).toBe(true);
     expect(allQuestions.every((q) => q.question.length >= 80 && q.question.includes('面试官'))).toBe(true);
     expect(allQuestions.every((q) => q.tags.includes('scenario-based') && q.tags.some((tag) => tag.startsWith('case-')))).toBe(true);
@@ -70,12 +70,18 @@ describe('campus employment interview course', () => {
     const multipleDistractorPositions = [0, 0, 0, 0];
     let singleCorrectAtMaximum = 0;
     let singleCorrectUniquelyLongest = 0;
+    const optionSetSignatures = new Set<string>();
 
     for (const question of ordered) {
       const choice = question.formats.choice!;
       const lengths = choice.options.map((option) => [...option].length);
       expect(Math.max(...lengths) / Math.min(...lengths)).toBeLessThanOrEqual(1.8);
       expect(new Set(choice.options).size).toBe(4);
+      const optionSetSignature = choice.options
+        .map((option) => option.replace(/\\s/g, '').replace(/[，。；;：:、！？“”‘’]/g, ''))
+        .join('|');
+      expect(optionSetSignatures.has(optionSetSignature), `reused option set: ${question.id}`).toBe(false);
+      optionSetSignatures.add(optionSetSignature);
 
       const correctLengths = choice.answer.map((index) => lengths[index]);
       const distractorLengths = lengths.filter((_, index) => !choice.answer.includes(index));
@@ -103,8 +109,8 @@ describe('campus employment interview course', () => {
     expect(singlePositions).toEqual([94, 94, 94, 93]);
     expect(multipleDistractorPositions).toEqual([32, 31, 31, 31]);
     // Correct answers should not systematically be the longest option.
-    expect(singleCorrectAtMaximum).toBeLessThanOrEqual(150);
-    expect(singleCorrectUniquelyLongest).toBeLessThanOrEqual(115);
+    expect(singleCorrectAtMaximum).toBeLessThanOrEqual(110);
+    expect(singleCorrectUniquelyLongest).toBeLessThanOrEqual(75);
   });
 
   it('has traceable 2025-2026 interview patterns and clearly marked practice extensions', () => {
