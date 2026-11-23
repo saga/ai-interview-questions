@@ -75,7 +75,7 @@ describe('campus employment interview course', () => {
     for (const question of ordered) {
       const choice = question.formats.choice!;
       const lengths = choice.options.map((option) => [...option].length);
-      expect(Math.max(...lengths) / Math.min(...lengths)).toBeLessThanOrEqual(1.8);
+      expect(Math.max(...lengths) / Math.min(...lengths)).toBeLessThanOrEqual(1.7);
       expect(new Set(choice.options).size).toBe(4);
       const optionSetSignature = choice.options
         .map((option) => option.replace(/\s/g, '').replace(/[，。；;：:、！？“”‘’]/g, ''))
@@ -88,9 +88,14 @@ describe('campus employment interview course', () => {
       const distractorLengths = lengths.filter((_, index) => !choice.answer.includes(index));
       const correctAverage = correctLengths.reduce((sum, value) => sum + value, 0) / correctLengths.length;
       const distractorAverage = distractorLengths.reduce((sum, value) => sum + value, 0) / distractorLengths.length;
+      // 12 字符是历史存量的兼容上限；新题/修改题在导入和 CI 中严格限制为 8 字符。
       expect(Math.abs(correctAverage - distractorAverage)).toBeLessThanOrEqual(12);
+      // 校招题库本轮已清理正确项平均长度比干扰项高出 8 字符以上的项目。
+      expect(correctAverage - distractorAverage).toBeLessThanOrEqual(8);
 
       if (choice.type === 'single') {
+        const longestDistractor = Math.max(...distractorLengths);
+        expect(correctLengths[0] - longestDistractor).toBeLessThanOrEqual(4);
         singlePositions[choice.answer[0]] += 1;
         const correctLength = lengths[choice.answer[0]];
         const maximumLength = Math.max(...lengths);
@@ -109,7 +114,7 @@ describe('campus employment interview course', () => {
 
     expect(singlePositions).toEqual([94, 94, 94, 93]);
     expect(multipleDistractorPositions).toEqual([32, 31, 31, 31]);
-    // Correct answers should not systematically be the longest option.
+    // Aggregate visibility remains; per-question lead/gap checks above are the stronger controls.
     expect(singleCorrectAtMaximum).toBeLessThanOrEqual(110);
     expect(singleCorrectUniquelyLongest).toBeLessThanOrEqual(75);
   });

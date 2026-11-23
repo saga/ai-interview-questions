@@ -26,8 +26,28 @@ jobs:
         run: npm run validate:questions
       - name: Lint option-length bias
         run: npm run lint:bias
-      - name: Lint option-length ratio (gate on changed files only)
-        run: npm run lint:length -- --changed
+      - name: Resolve question-change base commit
+        id: question-base
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PUSH_BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+            base="$PR_BASE_SHA"
+          else
+            base="$PUSH_BEFORE_SHA"
+          fi
+          if [[ -z "$base" || "$base" =~ ^0+$ ]]; then
+            base="$(git rev-parse HEAD^)"
+          fi
+          git cat-file -e "${base}^{commit}"
+          echo "sha=$base" >> "$GITHUB_OUTPUT"
+      - name: Lint answer-length cues (new and modified questions)
+        env:
+          QUESTION_BASE_SHA: ${{ steps.question-base.outputs.sha }}
+        run: npm run lint:length -- --changed --base "$QUESTION_BASE_SHA"
       - name: Audit question bank
         run: npm run question:audit
       - name: Question identity gate (incremental, PR/base only)

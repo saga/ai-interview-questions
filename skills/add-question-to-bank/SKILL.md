@@ -100,7 +100,7 @@ description: "写新题并落库。用户要求新增面试题、起草题目或
    若已 ≥ 3 题，新题必须带来新的认知任务、场景、典型 misconception 或难度层次，而不是仅改写措辞；
    否则优先改写已有题或改补为 0 的格子。**审查存量题该不该改写，转 check-question-bank-quality**
    （本 skill 只管 authoring + 写入前门禁）。
-3. **选项同决策层级且不得仅因"更完整"制造正确答案**（`spec §5` / `§7`）。
+3. **选项同决策层级且不得仅因"更完整"制造正确答案**（`spec §5` / `§7`）：max/min ≤1.7、正确/干扰均长差绝对值 ≤8、单选正确项领先 ≤4；失衡时重写整组选项，禁止给干扰项补无关文字。
 
 ## 修改与验证
 
@@ -118,6 +118,7 @@ description: "写新题并落库。用户要求新增面试题、起草题目或
    - `npx vitest run src/domain/knowledge/retrieve.test.ts src/application/conversation/knowledgeCapability.test.ts`
      数据改动会直接影响检索：这两组用例守住投影、混合评分、graph 扩展与四种答案安全模式。
    - `npm run lint:bias`
+   - `npm run lint:length -- --changed`（检查新增/修改题目对象；新题草稿仍须先通过 `question:add --check`）
    - `npm run question:quality` —— 内容质量只读审计（软信号，非门禁）。新题若命中，
      先判断是不是真问题：命中的是**词汇/统计嫌疑**，不是语义判定。
    - **目标格子计数 +1**：重跑"添加前"第 3 步的计数命令，确认目标 (topic, angle) 确实 +1。

@@ -467,11 +467,9 @@ Option 长度以：
 
 必须：
 
-`maxLength / minLength < 1.8`
+`maxLength / minLength ≤ 1.7`
 
-不要停留在 1.80 附近。
-
-最终题目应主动拉平长度。
+不要停留在 1.70 附近。Part 2 编写最终 options 时，还必须满足正确项/干扰项均长差与单选正确项领先限制（见 Part 2 §18）。
 
 ==================================================
 19. Distractor
@@ -993,7 +991,7 @@ misconception 必须描述：
 * multiple 是否至少两个独立正确 proposition；
 * single 是否天然唯一；
 * canonical single 是否 <= 1/3；
-* option length 是否可以控制 <1.8。
+* option length 是否可以控制 ≤1.7。
 
 ### Variant
 

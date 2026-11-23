@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { parseQuestionArray, type Question } from '../src/schemas/question.ts';
 import type { KnowledgeNode } from '../src/schemas/knowledge.ts';
 import { questionAngleSchema } from '../src/schemas/common.ts';
-import { detectOptionLengthRatio } from '../src/domain/bias.ts';
+import { detectAnswerLengthBalance, detectOptionLengthRatio } from '../src/domain/bias.ts';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const questionsDir = resolve(root, 'src/data/questions');
@@ -113,12 +113,17 @@ for (const question of incoming) {
     if (choice.options.some((option) => /^(参见解析|见解析|略|待补充|todo|tbd)$/iu.test(option.trim()))) {
       errors.push(`${question.id}: 选项包含占位文本`);
     }
-    // 长度泄题门禁（AGENTS.md §4.2）：最长/最短选项比 > 1.8 会被应试者当"正确项更长"破绽利用。
-    const ratioReport = detectOptionLengthRatio(choice.options);
+    // 选项形式与答案长度双门禁（spec §7）：失衡时重写整组选项，不以无意义补字凑长度。
+    const ratioReport = detectOptionLengthRatio(choice.options, 1.7);
     if (ratioReport.biased) {
       errors.push(
-        `${question.id}: 选项长度失衡（最长 ${ratioReport.maxLen} / 最短 ${ratioReport.minLen} = ${ratioReport.ratio.toFixed(1)}× > 1.8），` +
-          `存在长度泄题风险，请让各选项篇幅接近后再导入`,
+        `${question.id}: 选项最长/最短长度比 ${ratioReport.ratio.toFixed(2)}× > 1.7（${ratioReport.maxLen}/${ratioReport.minLen}），请重写整组选项`,
+      );
+    }
+    const answerLengthReport = detectAnswerLengthBalance(choice.options, choice.answer, choice.type);
+    if (answerLengthReport.biased) {
+      errors.push(
+        `${question.id}: 答案长度暗示（${answerLengthReport.detail}），请调整正确项和干扰项的认知粒度与句式；禁止给干扰项填充无关字句`,
       );
     }
     if (choice.type === 'single') singleCount++;

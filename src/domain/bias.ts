@@ -66,10 +66,60 @@ export function detectOptionLengthBias(options: string[], answer: number[]): Opt
   return { ...base, biased: false, severity: 'none', detail: '选项长度均衡' };
 }
 
+export interface AnswerLengthBalanceReport {
+  lengths: number[];
+  meanCorrect: number;
+  meanDistractor: number;
+  /** 正数表示正确项平均更长，负数表示干扰项平均更长。 */
+  averageGap: number;
+  maxCorrect: number;
+  maxDistractor: number;
+  /** 单选正确项比最长干扰项长多少字符。 */
+  singleCorrectLead: number;
+  biased: boolean;
+  detail: string;
+}
+
+/**
+ * 检查单题是否能靠答案长度猜中。
+ * 默认要求：正确项/干扰项平均长度差不超过 8 字符；
+ * 单选正确项不得比最长干扰项长超过 4 字符。
+ */
+export function detectAnswerLengthBalance(
+  options: string[],
+  answer: number[],
+  choiceType: 'single' | 'multiple',
+  maxAverageGap = 8,
+  maxSingleCorrectLead = 4,
+): AnswerLengthBalanceReport {
+  const lengths = options.map((option) => String(option).trim().length);
+  const answerIndexes = new Set(answer.filter((index) => Number.isInteger(index) && index >= 0 && index < lengths.length));
+  const correctLengths = lengths.filter((_, index) => answerIndexes.has(index));
+  const distractorLengths = lengths.filter((_, index) => !answerIndexes.has(index));
+  const mean = (values: number[]) => values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : 0;
+  const meanCorrect = mean(correctLengths);
+  const meanDistractor = mean(distractorLengths);
+  const averageGap = meanCorrect - meanDistractor;
+  const maxCorrect = correctLengths.length ? Math.max(...correctLengths) : 0;
+  const maxDistractor = distractorLengths.length ? Math.max(...distractorLengths) : 0;
+  const singleCorrectLead = maxCorrect - maxDistractor;
+  // 答案/干扰项结构错误由 Question schema 单独阻断；此函数只报告长度信号。
+  if (!correctLengths.length || !distractorLengths.length) {
+    return { lengths, meanCorrect, meanDistractor, averageGap, maxCorrect, maxDistractor, singleCorrectLead, biased: false, detail: '缺少可比较项，跳过长度比较' };
+  }
+  const reasons: string[] = [];
+  if (Math.abs(averageGap) > maxAverageGap) {
+    reasons.push('正确项均长 ' + meanCorrect.toFixed(1) + '，干扰项均长 ' + meanDistractor.toFixed(1) + '，相差 ' + Math.abs(averageGap).toFixed(1) + ' 字符（上限 ' + maxAverageGap + '）');
+  }
+  if (choiceType === 'single' && singleCorrectLead > maxSingleCorrectLead) {
+    reasons.push('单选正确项比最长干扰项长 ' + singleCorrectLead + ' 字符（上限 ' + maxSingleCorrectLead + '）');
+  }
+  return { lengths, meanCorrect, meanDistractor, averageGap, maxCorrect, maxDistractor, singleCorrectLead, biased: reasons.length > 0, detail: reasons.length ? reasons.join('；') : '正确项与干扰项的长度差在门槛内' };
+}
 export interface OptionLengthRatioReport {
   /** 最长选项长度 / 最短选项长度 */
   ratio: number;
-  /** ratio > threshold（默认 1.8）即视为存在长度泄题 */
+  /** ratio > threshold（默认 1.7）即视为存在长度泄题 */
   biased: boolean;
   maxLen: number;
   minLen: number;
@@ -78,11 +128,11 @@ export interface OptionLengthRatioReport {
 }
 
 /**
- * 纯长度比检测：最长选项 / 最短选项 > threshold（默认 1.8）即告警。
+ * 纯长度比检测：最长选项 / 最短选项 > threshold（默认 1.7）即告警。
  * 与 detectOptionLengthBias 的区别：它只看「组合泄题」（最长项是否 = 正确项且最短=干扰项），
  * 本函数只看长度比本身，是最直接的抗暗示（anti-cueing）信号，用于 CI 门禁（AGENTS.md §4.2）。
  */
-export function detectOptionLengthRatio(options: string[], threshold = 1.8): OptionLengthRatioReport {
+export function detectOptionLengthRatio(options: string[], threshold = 1.7): OptionLengthRatioReport {
   const lengths = options.map((o) => String(o).trim().length);
   if (lengths.length < 2) {
     return { ratio: 1, biased: false, maxLen: lengths[0] ?? 0, minLen: lengths[0] ?? 0, maxIdx: 0, minIdx: 0 };

@@ -11,7 +11,7 @@ import type { Question } from '../schemas/question';
 import type { VariantKind } from '../schemas/variant';
 import { requiredPointsFor } from './knowledge/nodes';
 import { shuffleChoiceOptions, normalizeAnswer, normalizeOptionText } from './options';
-import { detectOptionLengthBias } from './bias';
+import { detectAnswerLengthBalance, detectOptionLengthRatio } from './bias';
 import { cjkDice, cjkTokenize } from './textSimilarity';
 import {
   isAssessmentIdentical,
@@ -247,14 +247,19 @@ export function validateVariant(
     if (hasDuplicateOptions(options)) {
       return { ok: false, code: VARIANT_REJECT_REASON.DUPLICATE_OPTION, reason: '选项存在重复' };
     }
-    // 抗暗示硬失败（不再重新请求 LLM）：长度泄题。
-    // 作用于规范化后的选项，且只对选择题执行——open 形态没有选项，语义上不适用。
-    const bias = detectOptionLengthBias(options, cf.answer);
-    if (bias.biased) {
+    // 抗暗示硬失败：长度比例 + 正确项/干扰项均长 + 单选最大领先。
+    // 作用于规范化后的选项；open 形态没有选项，不适用。
+    const lengthRatio = detectOptionLengthRatio(options, 1.7);
+    const answerLength = detectAnswerLengthBalance(options, cf.answer, cf.type);
+    if (lengthRatio.biased || answerLength.biased) {
+      const reasons = [
+        lengthRatio.biased ? '最长/最短比 ' + lengthRatio.ratio.toFixed(2) + '× > 1.7' : null,
+        answerLength.biased ? answerLength.detail : null,
+      ].filter(Boolean);
       return {
         ok: false,
         code: VARIANT_REJECT_REASON.OPTION_LENGTH_BIAS,
-        reason: `变体选项存在明显长度泄题：${bias.detail}`,
+        reason: '变体选项存在长度泄题/答案长度暗示：' + reasons.join('；'),
       };
     }
     // 选项语义漂移粗粒度防护（P0）：LLM 仅被允许「逐项同义改写」选项，

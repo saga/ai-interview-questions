@@ -60,8 +60,10 @@ description: "补齐题库覆盖缺口。用户要求分析题库缺口、生成
 - **题干自包含、事实可追溯** → `spec §3` / `spec §4`
 - **`misconceptions` 必须填**：它是 hint 模式下唯一能说清"用户错在哪"的证据。
 
-起草时就把四个选项写成相近长度与句式，不要等 lint 报警再返工
-（`npm run lint:bias` 的 strong 阈值是 1.8×）。
+起草时就把四个选项写成相近长度、句式和信息密度，不要等 lint 报警再返工。
+新题和修改题须满足 max/min ≤1.7、正确项/干扰项均长差绝对值 ≤8、单选正确项领先 ≤4；
+失衡时重写整组选项，禁止给干扰项补无关文字。导入前运行 `question:add --check`，
+本地修改后运行 `npm run lint:length -- --changed`。
 
 ## expectedConcepts 的用法
 

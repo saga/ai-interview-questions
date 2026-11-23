@@ -154,6 +154,19 @@ describe('validateVariant（抗暗示：长度泄题）', () => {
     expect(check.reason).toMatch(/长度泄题/);
   });
 
+  it('正确项平均长度明显偏长时拒绝，即使长度比检查未触发', () => {
+    const check = validateVariant(
+      cq,
+      variant({
+        question: 'L2 正则化为什么能平滑收缩权重？',
+        options: ['A'.repeat(50), 'B'.repeat(40), 'C'.repeat(40)],
+      }),
+    );
+    expect(check.ok).toBe(false);
+    expect(check.code).toBe(VARIANT_REJECT_REASON.OPTION_LENGTH_BIAS);
+    expect(check.reason).toMatch(/相差|长度比/);
+  });
+
   it('开放题不执行长度泄题检查（只对 choice 有意义）', () => {
     expect(validateVariant(oq, variant({ options: undefined }), 'open').ok).toBe(true);
   });

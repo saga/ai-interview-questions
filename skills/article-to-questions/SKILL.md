@@ -11,12 +11,12 @@ description: "把一篇技术文章转成题库题目。用户提供文章链接
 
 1. 获取文章全文（用户粘贴的正文，或用网页抓取工具取正文；遵守 AGENTS.md 第 5 条：不要高频/反复抓取同一页面，抓一次后离线处理）。
 2. 确认题目生成的来源：
-   - 如果用户已经把 `docs/添加题库prompt.md` 粘到其他在线大模型生成过题目草稿，直接使用该草稿，跳到第 3 步做转换和校验；不要重新生成一遍。
-   - 如果用户还没有生成草稿，且要求当前 agent 直接出题，则按 `docs/添加题库prompt.md` 的完整规则自行生成（覆盖角度用 `src/schemas/common.ts` 的 `questionAngleSchema` 枚举：definition/fundamental/mechanism/comparison/calculation/tradeoff/scenario/debugging/system-design/design）。
+   - 如果用户已经使用 `docs/prompt_part1.md` 生成 Blueprint、再用 `docs/prompt_part2.md` 生成题目草稿，直接使用草稿，跳到第 3 步做转换和校验；不要重新生成一遍。
+   - 如果用户还没有生成草稿，且要求当前 agent 直接出题，则先按 `docs/prompt_part1.md` 生成 Blueprint，再按 `docs/prompt_part2.md` 生成最终 Question JSON（覆盖角度用 `src/schemas/common.ts` 的 `questionAngleSchema` 枚举：definition/fundamental/mechanism/comparison/calculation/tradeoff/scenario/debugging/system-design/design）。
    - **内容质量标准在 `docs/question-content-spec.md`**（`spec §1`–`§9`：Concept Scope / Answer Determinism /
      Self-contained / Evidence Boundary / Option Design / Wrong Options / Option Balance / Variant / 题型分布）。
      各出题 skill 共同引用它；如需调整质量标准改那里。
-     `docs/添加题库prompt.md` 是**生成 Prompt**（把规范翻译成 LLM 指令 + Canonical/Variant 流程），
+     `docs/prompt_part1.md` + `docs/prompt_part2.md` 是**生成 Prompt**（把规范翻译成 LLM 指令 + Canonical/Variant 流程），
      不是规范本身，不要把它当规范引用。
 3. **Candidate concept selection（独立一步，不要跳过）**：从文章里抽出候选 Concept，
    **先筛再出题**——文章里大量存在背景介绍、营销观点、产品 feature、作者个人建议、案例细节，
