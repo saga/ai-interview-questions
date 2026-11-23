@@ -27,6 +27,8 @@ Security Architecture 使用独立的 `security-architecture` 分类元数据、
 
 校招面试课程使用独立的 `campus-employment` 分类元数据、课程主题目录、知识节点和题库文件。课程主要面向计算机科学与软件工程本科应届生，研究生科研与实习经历作为扩展案例；覆盖岗位认知、自我介绍、项目贡献、团队协作、冲突沟通、责任交付、主动解决问题、学习与 AI 工具、压力管理、自我认知、业务价值、工程伦理、面试表达、Offer 决策和科研/本科经历转化。题目使用开放式行为评分，不将其归入 AI 的六大 taxonomy；所有题目通过 `courseId` 和 `topic = KnowledgeNode.id` 绑定课程知识节点，并保留 2025–2026 面经或训练扩展的来源标签。课程路线、研究来源和 500 题覆盖分别见 `docs/campus-employment-course-roadmap.md`、`docs/campus-employment-interview-research-2025-2026.md` 与 `docs/campus-employment-question-coverage-500.md`。
 
+课程题型策略：普通 AI 面试题库的开放形态由 `generateOpenQuestions` 门控；校招课程是已经入库的预置开放式行为题，不是运行时生成题。因此 `courseId=campus-employment` 组卷与自适应续题时保留 open 形态，且不依赖该开关。若没有评分 Provider，仍可作答但不计自动评分，不能把未评分记作零分。
+
 ## 统一交互入口（Phase 1–5 已实施，ADR-061/062，plan0831_4 融合收敛）
 
 Copilot Chat 作为统一入口：`Question Mode → QuestionCapability`，`Interview Mode → Adaptive/Agent Runtime`，共享 `Question/Evaluation/Learner/ConversationSession` 能力；`ConversationSession`（`context+messages+questions+answers+evaluations`）统一持久化（`localStorage CONVERSATION_SESSION_KEY`），`end_interview` 时一次性聚合为单 `SessionRecord` 落库，不再每题一 record。`handleSend` 经 `routeUserMessage` 三通道分流（ADR-064）：`command`（5 个确定性训练动作，无 LLM）→ `answer`（提交作答）→ `copilot`（解释/提示/比较/追问/知识问答，零副作用）；检索在 `copilot.ts` 内先于 LLM 完成（ADR-063），失败只降级为无依据问答。`buildCopilotSystemPrompt` 已抽至 `application/conversation/copilotPrompt.ts`（含 §8 六约束）。训练和 Agent 仍各有 Hook/runtime，但不再三套行为源。
