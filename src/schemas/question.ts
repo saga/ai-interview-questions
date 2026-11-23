@@ -124,6 +124,8 @@ export const questionSchema = z
     assessment: assessmentSchema.optional(),
     question: z.string().min(1),
     explanation: z.string().min(1),
+    /** 面试官补充说明：只澄清场景、角色、术语和约束，不包含答案或作答策略。 */
+    tips: z.string().trim().min(1).max(600).optional(),
     aiGenerated: z.boolean().optional(),
     // ── 课程题库前瞻字段（可选，不破坏面试题校验；提案要求 Source Evidence + 反证）──
     /** 归属课程 id（课程题库题才有；面试题恒缺省）。 */
