@@ -43,11 +43,16 @@ describe('campus employment interview course', () => {
     )).toBe(true);
   });
 
-  it('uses only contextual single-choice questions; no open-answer items are shipped', () => {
+  it('uses contextual single/multiple-choice questions only; no open-answer items are shipped', () => {
+    const single = allQuestions.filter((q) => q.formats.choice?.type === 'single');
+    const multiple = allQuestions.filter((q) => q.formats.choice?.type === 'multiple');
     expect(allQuestions.every((q) => Boolean(q.formats.choice) && !q.formats.open)).toBe(true);
-    expect(allQuestions.every((q) => q.formats.choice?.type === 'single')).toBe(true);
+    expect(single).toHaveLength(350);
+    expect(multiple).toHaveLength(150);
+    expect(single.every((q) => q.formats.choice?.answer.length === 1)).toBe(true);
+    expect(multiple.every((q) => q.formats.choice?.answer.length === 3)).toBe(true);
+    expect(multiple.every((q) => q.question.includes('多选'))).toBe(true);
     expect(allQuestions.every((q) => q.formats.choice?.options.length === 4)).toBe(true);
-    expect(allQuestions.every((q) => q.formats.choice?.answer.length === 1)).toBe(true);
     expect(allQuestions.every((q) => q.question.length >= 80 && q.question.includes('面试官'))).toBe(true);
     expect(allQuestions.every((q) => q.tags.includes('scenario-based') && q.tags.some((tag) => tag.startsWith('case-')))).toBe(true);
     expect(allQuestions.every((q) => questionSchema.safeParse(q).success)).toBe(true);
