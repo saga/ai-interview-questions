@@ -68,6 +68,8 @@ describe('campus employment interview course', () => {
     const ordered = [...allQuestions].sort((a, b) => a.id.localeCompare(b.id));
     const singlePositions = [0, 0, 0, 0];
     const multipleDistractorPositions = [0, 0, 0, 0];
+    let singleCorrectAtMaximum = 0;
+    let singleCorrectUniquelyLongest = 0;
 
     for (const question of ordered) {
       const choice = question.formats.choice!;
@@ -83,6 +85,14 @@ describe('campus employment interview course', () => {
 
       if (choice.type === 'single') {
         singlePositions[choice.answer[0]] += 1;
+        const correctLength = lengths[choice.answer[0]];
+        const maximumLength = Math.max(...lengths);
+        if (correctLength === maximumLength) {
+          singleCorrectAtMaximum += 1;
+          if (lengths.filter((value) => value === maximumLength).length === 1) {
+            singleCorrectUniquelyLongest += 1;
+          }
+        }
       } else {
         for (let index = 0; index < 4; index += 1) {
           if (!choice.answer.includes(index)) multipleDistractorPositions[index] += 1;
@@ -92,6 +102,9 @@ describe('campus employment interview course', () => {
 
     expect(singlePositions).toEqual([94, 94, 94, 93]);
     expect(multipleDistractorPositions).toEqual([32, 31, 31, 31]);
+    // Correct answers should not systematically be the longest option.
+    expect(singleCorrectAtMaximum).toBeLessThanOrEqual(110);
+    expect(singleCorrectUniquelyLongest).toBeLessThanOrEqual(75);
   });
 
   it('has traceable 2025-2026 interview patterns and clearly marked practice extensions', () => {
