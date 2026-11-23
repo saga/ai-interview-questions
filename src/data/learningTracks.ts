@@ -1,7 +1,7 @@
 import type { QuestionAngle } from '../schemas/common';
 
 /**
- * 顶层学习体系注册表。AI、Snowflake、Security Architecture 是并列课程，不是同一个 taxonomy 下的能力域。
+ * 顶层学习体系注册表。AI、Snowflake、Security Architecture、Campus Employment 是并列课程，不是同一个 taxonomy 下的能力域。
  * 新增独立课程时在此登记 courseId / 展示信息 / 主题目录，并给课程自己的节点和题目写 courseId。
  */
 
