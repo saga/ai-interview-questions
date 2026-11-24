@@ -76,10 +76,10 @@ export function buildFallbackAgentRuntime(entries: ProviderEntry[]): {
   model: Model<any>;
   chain: string[];
 } {
-  const agentEntries = entries.filter((entry) => entry.id !== 'copilot-sdk');
+  const agentEntries = entries.filter((entry) => entry.id !== 'copilot-sdk' && entry.id !== 'codebuddy-sdk');
   const built = agentEntries.map((entry) => ({ entry, runtime: buildAgentRuntime(entry) }));
   if (built.length === 0) {
-    throw new Error('没有可用于 Agent 面试的流式工具调用引擎。GitHub Copilot SDK 可用于普通问答、评分和题目变体，但当前尚未适配 pi-agent-core 工具调用协议。');
+    throw new Error('没有可用于 Agent 面试的流式工具调用引擎。GitHub Copilot SDK 和 CodeBuddy Agent SDK 可用于普通问答、评分和题目变体，但当前尚未适配 pi-agent-core 工具调用协议。');
   }
   const chain = built.map((b) => b.entry.id);
   const streamFn = chainStreamFns(built.map((b) => ({ id: b.entry.id, streamFn: b.runtime.streamFn })));
@@ -88,5 +88,5 @@ export function buildFallbackAgentRuntime(entries: ProviderEntry[]): {
 
 /** 配置中所有启用且字段合法的 Agent 候选引擎（按配置顺序 = 降级顺序）。 */
 export function validAgentEntries(config: { providers?: ProviderEntry[] }): ProviderEntry[] {
-  return (config.providers ?? []).filter((p) => p.enabled && p.id !== 'copilot-sdk' && isEntryValid(p));
+  return (config.providers ?? []).filter((p) => p.enabled && p.id !== 'copilot-sdk' && p.id !== 'codebuddy-sdk' && isEntryValid(p));
 }
