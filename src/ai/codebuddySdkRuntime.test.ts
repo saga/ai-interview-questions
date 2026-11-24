@@ -20,7 +20,7 @@ function deferred<T>() {
 }
 
 describe('CodeBuddySdkRuntime', () => {
-  it('composes system and user prompts and uses safe one-shot defaults', async () => {
+  it('passes the system prompt through the SDK field and uses safe one-shot defaults', async () => {
     let received: CodeBuddyQueryInput | undefined;
     const runtime = new CodeBuddySdkRuntime((input) => {
       received = input;
