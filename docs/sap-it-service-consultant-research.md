@@ -47,9 +47,9 @@ SAP 官方 S/4HANA Cloud Public Edition 实施学习路径覆盖实施团队、�
 
 | 资料 | 对题库的启发 | 使用边界 |
 |---|---|---|
-| [JETRO: Communicating with Japanese in Business](https://www.jetro.go.jp/ext_images/mexico/mercadeo/communicationwith.pdf) | 事前协调、会议材料、委婉表达、沉默、反馈、会后确认和书面信息 | 资料发表于 1999 年，适合用作沟通案例启发，不应视为今天所有日本企业的统一规则。 |
+| [JETRO: Communicating with Japanese in Business](https://www.jetro.go.jp/ext_images/canada/pdfs/communicationwithjapanese.pdf) | 事前协调、会议材料、委婉表达、沉默、反馈、会后确认和书面信息 | 资料发表于 1999 年，适合用作沟通案例启发，不应视为今天所有日本企业的统一规则。 |
 | [EU-Japan Centre: From Understanding to Navigating Japanese Business Culture](https://www.eu-japan.eu/sites/default/files/report_from_understanding_to_navigating_japanese_business_culture.pdf) | 通过小型案例理解沟通、决策、信任和策略对齐；避免沿用刻板印象 | 2018 年研究强调具体组织和关系中的差异，不能把国籍作为个人行为预测。 |
-| [SAP Business One Implementation Methodology](https://help.sap.com/doc/download_multimedia_ebooks_businessone90_tb1200_01_01_story_html/9.0/en-US/story_content/external_files/implementation%20Tools%20-%20Implementation%20Methodology.pdf) | 客户期望、范围、计划、变更管理、风险、阶段里程碑和支持交接 | 该文档针对 SAP Business One AIP，引用的是实施管理基本实践，不将其误称为当前 S/4HANA 方法指南。 |
+| [SAP Learning: Utilizing the Implementation Project Methodology](https://learning.sap.com/courses/implementing-sap-business-one/utilizing-the-implementation-project-methodology) | 客户期望、项目角色、需求分析、阶段里程碑、培训和支持交接 | 课程针对 SAP Business One；仅借鉴通用项目交付实践，不将其当成 S/4HANA 指南。 |\n| [SAP Business One Implementation Methodology](https://help.sap.com/doc/download_multimedia_ebooks_businessone90_tb1200_01_01_story_html/9.0/en-US/story_content/external_files/implementation%20Tools%20-%20Implementation%20Methodology.pdf) | 客户期望、范围、计划、变更管理、风险、阶段里程碑和支持交接 | 该文档针对 SAP Business One AIP，引用的是实施管理基本实践，不将其误称为当前 S/4HANA 方法指南。 |
 | [Atlassian: ITIL 4](https://www.atlassian.com/itsm/itil) | 事件、服务请求、问题、变更、服务价值和跨团队协作 | 作为 ITSM 入门解释，具体流程和 SLA 以雇主及客户的服务约定为准。 |
 
 ### 题目设计原则
