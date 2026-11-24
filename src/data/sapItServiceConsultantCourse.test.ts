@@ -48,5 +48,8 @@ describe('SAP IT Service Consultant course', () => {
     expect(new Set(businessAi.map((question) => question.formats.choice?.answer?.[0])).size).toBe(4);
     expect(businessAi.every((question) => question.source?.materialId === 'sap-business-ai-official-documentation')).toBe(true);
     expect(questions.every((question) => question.formats.choice?.type === 'single')).toBe(true);
+    expect(questions.every((question) => !/(你是刚加入|作为实习生|Junior Consultant)/.test(question.question))).toBe(true);
+    expect(questions.every((question) => question.formats.choice?.options.every((option) => !/[。！？]，(?:并|便于|同时|方便)/.test(option)))).toBe(true);
+    expect(nodes.find((node) => node.id === 'sap-business-ai')?.required.join(' ')).toContain('Joule Studio');
   });
 });
