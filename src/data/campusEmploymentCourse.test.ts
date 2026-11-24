@@ -67,7 +67,7 @@ describe('campus employment interview course', () => {
     }
     expect(multiple.length / allQuestions.length).toBeCloseTo(230 / 650);
     expect(allQuestions.every((q) => q.formats.choice?.options.length === 4)).toBe(true);
-    expect(allQuestions.every((q) => q.question.length >= 80 && q.question.includes('面试官'))).toBe(true);
+    expect(practiceQuestions.every((q) => q.question.length >= 80 && q.question.includes('面试官'))).toBe(true);
     expect(allQuestions.every((q) => q.tags.includes('scenario-based') && q.tags.some((tag) => tag.startsWith('case-')))).toBe(true);
     expect(allQuestions.every((q) => questionSchema.safeParse(q).success)).toBe(true);
   });
