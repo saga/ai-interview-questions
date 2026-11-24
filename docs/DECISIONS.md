@@ -5,7 +5,8 @@
 - 覆盖 STAR、PREP、金字塔原理、MECE、5W2H、5 Whys、第一性原理、假设驱动分析、积极倾听、SMART、艾森豪威尔矩阵、反馈复盘、AI 素养、业务意识、工程伦理和 Offer 决策。
 - 数据文件：`src/data/questions/campus-employment-150-foundation-intermediate.json`。使用 `practice-extension` 和 `campus-employment-course-design` 来源标记，明确属于课程练习，不冒充企业真实面试原题。
 - 题库通过现有 JSON glob 自动加载，不新增课程、taxonomy 或独立运行时；同步更新两处课程测试、路线图、研究文档、README 和 785 题覆盖说明。
-- 新增批次已做结构、题型、知识节点、ID、来源、选项长度及答案位置自检。尚未在本次 GitHub 文件编辑环境中执行本地 Vitest/build。
+- 数据修正：既有 26 道企业案例的 `cognitiveTask` 使用了 schema 不支持的 `analyze`，按题意映射到合法枚举；另有 135 道企业案例未填 `knowledgeId`，现按已有 `topic` 补齐。题干、选项和答案不变。
+- 验证：最新 CI 的 typecheck、729 个单元测试、question schema 校验、选项长度偏差、答案长度线索和题库审计均通过。整体 workflow 最后仍因独立的 variants 发布门禁失败：该门禁报告 AI 变体池有 389 条 stale、8 组语义重复、31 条语言质量问题和 2 组路径重复；本次未修改变体文件，该问题不属于校招题目扩展。
 
 ## 校招题库选项质量补充（2026-11-23）
 - 当前 500 题为 375 道单选、125 道多选；多选题按 15 个主题分配为前 5 个主题各 9 道、其余 10 个主题各 8 道。
