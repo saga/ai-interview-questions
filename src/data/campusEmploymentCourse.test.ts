@@ -11,6 +11,7 @@ import { questionBank } from './questionBank';
 
 const allQuestions = [...baseQuestions, ...advancedQuestions, ...practiceQuestions];
 const courseQuestions = questionBank.questions.filter((q) => q.courseId === 'campus-employment');
+const companyQuestions = courseQuestions.filter((q) => q.id.startsWith('ce-company-'));
 
 describe('campus employment interview course', () => {
   it('registers as an independent learning track with 15 course themes', () => {
@@ -19,7 +20,9 @@ describe('campus employment interview course', () => {
     expect(CAMPUS_EMPLOYMENT_COURSE_TOPICS).toHaveLength(15);
     expect(LEARNING_TRACKS.map((item) => item.id)).toContain('campus-employment');
     expect(knowledgeForTrack(knowledgeNodes, 'campus-employment')).toHaveLength(15);
-    expect(questionBankForTrack(questionBank, 'campus-employment').questions).toHaveLength(650);
+    expect(questionBankForTrack(questionBank, 'campus-employment').questions).toHaveLength(785);
+    expect(courseQuestions).toHaveLength(785);
+    expect(companyQuestions).toHaveLength(135);
   });
 
   it('contains the 300-question foundation, 200-question 2025-2026 expansion, and 150-question practice expansion', () => {
@@ -39,6 +42,7 @@ describe('campus employment interview course', () => {
 
   it('uses globally unique IDs and links every question to a course knowledge node', () => {
     expect(new Set(allQuestions.map((q) => q.id)).size).toBe(650);
+    expect(new Set(courseQuestions.map((q) => q.id)).size).toBe(785);
     const nodeIds = new Set(knowledge.map((node) => node.id));
     expect(allQuestions.every((q) =>
       q.courseId === 'campus-employment' &&
@@ -56,7 +60,7 @@ describe('campus employment interview course', () => {
     expect(multiple).toHaveLength(230);
     expect(single.every((q) => q.formats.choice?.answer.length === 1)).toBe(true);
     expect(multiple.every((q) => q.formats.choice?.answer.length === 3)).toBe(true);
-    expect(multiple.every((q) => q.question.includes('多选'))).toBe(true);
+    expect(practiceQuestions.filter((q) => q.formats.choice?.type === 'multiple').every((q) => q.question.includes('多选'))).toBe(true);
     for (const [index, node] of knowledge.entries()) {
       const expected = index < 5 ? 16 : 15;
       expect(multiple.filter((q) => q.topic === node.id), `multiple-choice coverage for ${node.id}`).toHaveLength(expected);
