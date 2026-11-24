@@ -92,6 +92,7 @@ function readUsage(result: Record<string, unknown>): CodeBuddySdkTaskResult['usa
     outputTokens,
     cacheReadTokens,
     cacheCreationTokens,
+    // CodeBuddy reports cached input separately; include it in the total prompt-token count.
     totalTokens: inputTokens + outputTokens + cacheReadTokens + cacheCreationTokens,
     ...(totalCostUsd !== undefined ? { totalCostUsd } : {}),
     ...(durationMs !== undefined ? { durationMs } : {}),
@@ -110,6 +111,9 @@ export class CodeBuddySdkRuntime {
   async run(input: CodeBuddySdkTaskInput): Promise<CodeBuddySdkTaskResult> {
     if (!input.prompt.trim()) throw new CodeBuddySdkTaskError('sdk-error', 'CodeBuddy prompt is empty.');
     if (input.signal?.aborted) throw new CodeBuddySdkTaskError('aborted', 'CodeBuddy request was aborted.');
+    if (input.timeoutMs !== undefined && (!Number.isFinite(input.timeoutMs) || input.timeoutMs <= 0)) {
+      throw new TypeError('timeoutMs must be a positive finite number');
+    }
 
     const startedAt = Date.now();
     const timeoutMs = input.timeoutMs ?? 120_000;
