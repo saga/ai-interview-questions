@@ -5,6 +5,39 @@ import type { QuestionAngle } from '../schemas/common';
  * 新增独立课程时在此登记 courseId / 展示信息 / 主题目录，并给课程自己的节点和题目写 courseId。
  */
 
+
+/** SAP IT Service Consultant 独立课程主题目录。 */
+export const SAP_IT_SERVICE_COURSE_TOPICS = [
+  { id: 'sap-consulting-foundations', label: 'IT 服务咨询与顾问基本功' },
+  { id: 'sap-discovery-requirements', label: '需求发现与业务分析' },
+  { id: 'sap-business-processes', label: '端到端企业业务流程' },
+  { id: 'sap-s4hana-overview', label: 'SAP S/4HANA 产品与架构' },
+  { id: 'sap-fit-to-standard', label: 'Fit-to-Standard 与流程适配' },
+  { id: 'sap-activate', label: 'SAP Activate 与实施方法' },
+  { id: 'sap-configuration', label: '配置、扩展与 Clean Core' },
+  { id: 'sap-fiori-ux', label: 'SAP Fiori 与用户体验' },
+  { id: 'sap-authorization', label: '身份、角色与授权设计' },
+  { id: 'sap-integration', label: 'SAP 集成与接口' },
+  { id: 'sap-data-migration', label: '数据迁移与主数据' },
+  { id: 'sap-testing', label: '测试策略与质量保障' },
+  { id: 'sap-cloud-alm', label: 'SAP Cloud ALM 与交付可观测性' },
+  { id: 'sap-itsm-operations', label: 'ITSM 与 SAP 应用运维' },
+  { id: 'sap-service-management', label: 'SAP Service Management 业务能力' },
+  { id: 'sap-btp', label: 'SAP Business Technology Platform' },
+  { id: 'sap-security-compliance', label: '安全、审计与合规' },
+  { id: 'sap-reporting-analytics', label: '报表、分析与业务指标' },
+  { id: 'sap-project-delivery', label: '项目治理与客户交付' },
+  { id: 'sap-troubleshooting', label: '故障诊断与服务恢复' }
+] as const;
+
+export const SAP_IT_SERVICE_TOPIC_LABELS: Record<string, string> = Object.fromEntries(
+  SAP_IT_SERVICE_COURSE_TOPICS.map(({ id, label }) => [id, label]),
+);
+
+export const SAP_IT_SERVICE_ANGLE_WHITELIST: Record<string, QuestionAngle[]> = Object.fromEntries(
+  SAP_IT_SERVICE_COURSE_TOPICS.map(({ id }) => [id, ['scenario', 'fundamental', 'tradeoff', 'design', 'diagnosis', 'synthesis']]),
+);
+
 export const CAMPUS_EMPLOYMENT_COURSE_TOPICS = [
   { id: 'career-motivation-position-fit', label: '求职动机与岗位认知', description: '岗位选择、企业理解、工作内容、个人匹配和职业预期。' },
   { id: 'self-introduction-positioning', label: '自我介绍与个人定位', description: '学校专业、求职方向、代表经历、个人贡献和岗位关联的清晰表达。' },
