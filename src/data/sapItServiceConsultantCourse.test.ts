@@ -38,7 +38,7 @@ describe('SAP IT Service Consultant course', () => {
     expect(juniorPractice.filter((question) => question.difficulty === 'easy')).toHaveLength(80);
     expect(juniorPractice.filter((question) => question.difficulty === 'medium')).toHaveLength(120);
     expect(juniorPractice.every((question) => question.source?.materialId === 'sap-apac-junior-consultant-practice-cases')).toBe(true);
-    const supplemental = questions.filter((question) => Number(question.id.slice(-3)) >= 201 && Number(question.id.slice(-3)) <= 400);
+    const supplemental = questions.filter((question) => Number(question.id.slice(-3)) >= 201 && Number(question.id.slice(-3)) <= 400 && Number(question.id.slice(-3)) <= 400);
     expect(supplemental).toHaveLength(200);
     expect(supplemental.every((question) => ['easy', 'medium'].includes(question.difficulty))).toBe(true);
     expect(questions.every((question) => question.formats.choice?.type === 'single')).toBe(true);
