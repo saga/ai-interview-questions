@@ -16,7 +16,7 @@
 
 # 关键决策记录（ADR）
 
-## ADR-094 · CodeBuddy Agent SDK one-shot 调用契约与取消边界
+## ADR-095 · CodeBuddy Agent SDK one-shot 调用契约与取消边界
 
 - 状态：已采纳 · 2026-11-24
 - 背景：CodeBuddy 通过 Vite 开发中间件提供本地 one-shot API。初版把 system prompt 拼入 user prompt，并通过宽泛类型转换传入 SDK 参数；取消主要依赖 Query interrupt 和 iterator.return，没有使用 SDK 提供的 abortController。这样既偏离 SDK 原生契约，也无法让 TypeScript 对参数变更提供有效保护。
