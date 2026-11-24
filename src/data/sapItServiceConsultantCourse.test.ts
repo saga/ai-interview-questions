@@ -14,10 +14,10 @@ describe('SAP IT Service Consultant course', () => {
   it('registers as an independent learning track', () => {
     const track = LEARNING_TRACKS.find((item) => item.id === courseId);
     expect(track?.topicCount).toBe(SAP_IT_SERVICE_COURSE_TOPICS.length + SAP_COURSERA_COURSE_TOPICS.length + SAP_JUNIOR_PRACTICE_TOPICS.length);
-    expect(SAP_IT_SERVICE_COURSE_TOPICS).toHaveLength(20);
+    expect(SAP_IT_SERVICE_COURSE_TOPICS).toHaveLength(21);
     expect(SAP_COURSERA_COURSE_TOPICS).toHaveLength(10);
-    expect(SAP_JUNIOR_PRACTICE_TOPICS).toHaveLength(11);
-    expect(new Set(SAP_IT_SERVICE_COURSE_TOPICS.map((topic) => topic.id)).size).toBe(20);
+    expect(SAP_JUNIOR_PRACTICE_TOPICS).toHaveLength(10);
+    expect(new Set(SAP_IT_SERVICE_COURSE_TOPICS.map((topic) => topic.id)).size).toBe(21);
     expect(knowledgeForTrack(knowledgeNodes, courseId)).toHaveLength(41);
     expect(questionBankForTrack(questionBank, courseId, knowledgeNodes).questions).toHaveLength(640);
   });
