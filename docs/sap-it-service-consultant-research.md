@@ -2,7 +2,7 @@
 
 研究日期：2026-11-24
 
-本课程面向企业 IT 服务、实施和应用支持顾问。它不以单一 SAP 认证考试为范围，而是从顾问日常工作反推知识结构：理解业务流程、发现需求、判断标准能力与差异、协调配置和集成、验证数据与业务结果，并支持上线后的服务运行。
+本课程面向企业 IT 服务、实施和应用支持顾问。当前课程包含 41 个主题、640 道初级和中级情境题；其中 40 道专门覆盖 SAP Business AI 产品与业务场景。它不以单一 SAP 认证考试为范围，而是从顾问日常工作反推知识结构：理解业务流程、发现需求、判断标准能力与差异、协调配置和集成、验证数据与业务结果，并支持上线后的服务运行。
 
 ## 课程范围依据
 
@@ -18,6 +18,25 @@ SAP 官方 S/4HANA Cloud Public Edition 实施学习路径覆盖实施团队、�
 | [SAP S/4HANA Cloud for Service](https://learning.sap.com/learning-journeys/implementing-sap-s-4hana-cloud-private-edition-for-service-1) | Service 业务能力及相关集成 |
 | [SAP Cloud ALM Implementation Feature Scope](https://help.sap.com/docs/cloud-alm/feature-scope-description/implementation) | 项目、系统景观、任务、流程和测试管理 |
 | [SAP Cloud ALM Expert Portal](https://support.sap.com/en/alm/sap-cloud-alm/implementation/sap-cloud-alm-implementation-expert-portal.html) | 当前实施实践和产品团队指导 |
+
+## SAP Business AI 研究与题目依据
+
+本次补充只覆盖 SAP 产品和业务流程中的 AI 能力，不扩展为通用 AI 理论题。题目依据 SAP 官方产品文档和学习课程，区分 Joule、Joule for Consultants、Joule Studio、SAP AI Core 与 Generative AI Hub，避免把产品名称和职责混为一谈。
+
+重点业务场景包括 Joule 在财务、采购、销售、供应链和资产管理中的查询与事务能力；SAP Joule Agents 在现金管理和争议处理中的应用；AI-Assisted Journal Upload 生成会计凭证建议；Joule Studio 构建连接 SAP 与第三方系统的定制 Agent。场景描述以官方文档明确支持的能力为准，具体租户仍须核对版本、区域、语言和许可。
+
+| 官方资料 | 纳入题库的内容 |
+|---|---|
+| [Joule Transactional Capabilities](https://help.sap.com/docs/joule/capabilities-guide/transactional-capabilities) | 财务、销售、采购、供应链和资产管理的业务对象操作 |
+| [Joule Studio](https://help.sap.com/docs/joule-studio/joule-studio/what-is-joule-studio) | 定制 Agent、应用和工作流 |
+| [Joule Studio Agents](https://help.sap.com/docs/joule-studio/joule-studio/agents) | Agent Gateway、SAP 系统访问、工具和业务授权 |
+| [Generative AI Hub](https://help.sap.com/docs/sap-ai-core/sap-ai-core-service-guide/generative-ai-hub-in-sap-ai-core-7db524ee75e74bf8b50c167951fe34a5) | SAP AI Core 中的模型访问和治理运行环境 |
+| [Orchestration](https://help.sap.com/docs/sap-ai-core/generative-ai/orchestration?version=CLOUD) | 统一模型接口、Grounding、Data Masking 和内容过滤 |
+| [AI-Assisted Journal Upload](https://help.sap.com/docs/PRODUCTS/f5d3e1005efd4e86acf9a65abf428082/022dcf092f894c46a2c3f5834467fc48.html?locale=en-US&version=2025.000) | 根据会计政策和交易数据生成凭证建议，并由财务人员检查、修改和验证 |
+| [SAP Learning: Joule in Action Across Business Functions](https://learning.sap.com/courses/getting-started-with-joule-for-business-users/joule-in-action-across-business-functions) | 财务应收、供应链库存、采购报价和业务助手案例 |
+| [SAP Learning: Joule Agents in Finance](https://learning.sap.com/courses/reviewing-the-use-of-sap-joule-agents-in-finance) | Cash Management Agent、Dispute Resolution Agent 和多步财务流程 |
+
+题目重点考察业务对象、数据时效、角色授权、审批、异常处理、结果核验和业务价值；不考模型训练、Transformer 原理或通用 Prompt 技巧。SAP 产品能力持续变化，题库不将预览、路线图或区域受限能力描述为普遍可用。
 
 ## 题目编写原则
 
@@ -79,4 +98,4 @@ SAP 官方 S/4HANA Cloud Public Edition 实施学习路径覆盖实施团队、�
 9. **变更管理、培训与 UAT**：理解系统上线不仅是技术部署，还涉及业务流程变化、用户准备、培训、UAT、反馈和采用情况。
 10. **实习生职业行为与团队协作**：面向无正式项目经验的毕业生和实习生，考察学习、求助、任务管理、保密、反馈、诚实表达和职业边界。
 
-本批新增题目共 200 道，使用独立知识节点，题目 ID 为 `sap-itc-601` 至 `sap-itc-800`。它们与原有 SAP 技术和实施题库合并后，课程共 40 个主题、600 道题。
+本批亚太题目共 200 道，使用独立知识节点，题目 ID 为 `sap-itc-601` 至 `sap-itc-800`。随后新增 40 道 SAP Business AI 初中级题，ID 为 `sap-itc-801` 至 `sap-itc-840`。当前课程共 41 个主题、640 道题。
