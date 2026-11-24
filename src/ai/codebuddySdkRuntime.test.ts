@@ -3,6 +3,7 @@ import {
   CodeBuddySdkRuntime,
   CodeBuddySdkTaskError,
   type CodeBuddyQueryHandle,
+  type CodeBuddyQueryInput,
 } from './codebuddySdkRuntime';
 
 function fakeQuery(messages: unknown[], interrupt?: () => unknown) {
@@ -20,7 +21,7 @@ function deferred<T>() {
 
 describe('CodeBuddySdkRuntime', () => {
   it('composes system and user prompts and uses safe one-shot defaults', async () => {
-    let received: { prompt: string; options: Record<string, unknown> } | undefined;
+    let received: CodeBuddyQueryInput | undefined;
     const runtime = new CodeBuddySdkRuntime((input) => {
       received = input;
       return fakeQuery([
@@ -32,7 +33,7 @@ describe('CodeBuddySdkRuntime', () => {
 
     const result = await runtime.run({ prompt: 'question', systemPrompt: 'rules', model: 'deepseek-v3' });
 
-    expect(received?.prompt).toBe('SYSTEM INSTRUCTIONS:\nrules\n\nUSER REQUEST:\nquestion');
+    expect(received?.prompt).toBe('question');
     expect(received?.options).toMatchObject({
       model: 'deepseek-v3',
       systemPrompt: 'rules',
@@ -44,8 +45,8 @@ describe('CodeBuddySdkRuntime', () => {
       thinking: { type: 'disabled' },
       effort: 'low',
     });
-    expect(received?.options.abortController).toBeInstanceOf(AbortController);
-    expect(await (received?.options.canUseTool as (name: string) => Promise<unknown>)('Read'))
+    expect(received?.options?.abortController).toBeInstanceOf(AbortController);
+    expect(await (received?.options?.canUseTool as (name: string) => Promise<unknown>)('Read'))
       .toMatchObject({ behavior: 'deny', interrupt: true });
     expect(result).toMatchObject({
       text: 'answer',
@@ -83,8 +84,9 @@ describe('CodeBuddySdkRuntime', () => {
     expect(interrupt).toHaveBeenCalledTimes(1);
   });
 
-  it('interrupts a running query when its deadline expires', async () => {
+  it('interrupts a running query when its deadline expires and aborts the SDK controller', async () => {
     const interrupt = vi.fn();
+    let sdkSignal: AbortController | undefined;
     let returnCalls = 0;
     const query: CodeBuddyQueryHandle = Object.assign({
       [Symbol.asyncIterator]() {
@@ -98,10 +100,14 @@ describe('CodeBuddySdkRuntime', () => {
       },
     }, { interrupt });
 
-    const runtime = new CodeBuddySdkRuntime(() => query);
+    const runtime = new CodeBuddySdkRuntime((input) => {
+      sdkSignal = input.options?.abortController;
+      return query;
+    });
     await expect(runtime.run({ prompt: 'task', systemPrompt: 'rules', timeoutMs: 10 }))
       .rejects.toMatchObject({ code: 'timeout' });
     expect(interrupt).toHaveBeenCalledTimes(1);
+    expect(sdkSignal?.signal.aborted).toBe(true);
     expect(returnCalls).toBeGreaterThan(0);
   });
 
