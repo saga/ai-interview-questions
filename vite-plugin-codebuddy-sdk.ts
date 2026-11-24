@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { Plugin } from 'vite';
-import { CodeBuddySdkRuntime } from './src/ai/codebuddySdkRuntime';
+import { CodeBuddySdkRuntime, CodeBuddySdkTaskError } from './src/ai/codebuddySdkRuntime';
 
 const BODY_LIMIT = 180 * 1024;
 const REQUEST_TIMEOUT_MS = 120_000;
@@ -112,7 +112,6 @@ export default function codebuddySdkPlugin(): Plugin {
         }
 
         let controller: AbortController | undefined;
-        let timeout: ReturnType<typeof setTimeout> | undefined;
         let clientDisconnected = false;
         try {
           assertLocalRequest(req);
@@ -134,7 +133,6 @@ export default function codebuddySdkPlugin(): Plugin {
           }
           const history = parseHistory(body.history);
           controller = new AbortController();
-          timeout = setTimeout(() => controller?.abort(), REQUEST_TIMEOUT_MS);
           const onRequestAborted = () => {
             clientDisconnected = true;
             controller?.abort();
@@ -159,17 +157,18 @@ export default function codebuddySdkPlugin(): Plugin {
               respond(res, 200, { content: result.text, model: model ?? 'auto' });
             }
           } finally {
-            clearTimeout(timeout);
             req.off('aborted', onRequestAborted);
             res.off('close', onResponseClose);
           }
         } catch (error) {
           if (res.destroyed || res.writableEnded || clientDisconnected) return;
-          const statusCode = error instanceof HttpError ? error.statusCode : 502;
+          const statusCode = error instanceof HttpError
+            ? error.statusCode
+            : error instanceof CodeBuddySdkTaskError && error.code === 'timeout'
+              ? 504
+              : 502;
           const message = error instanceof Error ? error.message : String(error);
           respond(res, statusCode, { error: message });
-        } finally {
-          if (timeout) clearTimeout(timeout);
         }
       });
     },
