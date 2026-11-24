@@ -67,7 +67,7 @@ export function getModel(models: ModelsClient, entry: ProviderEntry): Model<any>
     //   · 本地开发：vite.config.ts 的 Vite dev proxy → 现有 Express server/index.js
     //   · Cloudflare 生产：worker/index.ts（wrangler deploy 的 main 脚本）
     //   · GitHub Pages：无服务端，cloudflare provider 不可用（见 DEPLOYMENT.md）
-    // GitHub Copilot SDK 则走独立的 vite-plugin-copilot-sdk.ts，仅在 Vite 开发模式中提供。
+    // Copilot / CodeBuddy SDK 则走独立的 Vite dev API，仅在开发模式中提供；SDK 与 CLI 凭据始终留在 Node 端。
     // 必须保留「绝对 URL」：pi-ai 底层用 OpenAI SDK，会对 baseUrl 执行 new URL()，
     // 相对路径会抛 "Failed to construct 'URL': Invalid URL"，故前缀用 location.origin 拼成同源绝对地址。
     // 注意：不要直接引用 DOM 全局 `location`——本文件被 scripts/fix-bias.ts（Node 端构建，无 DOM lib）
