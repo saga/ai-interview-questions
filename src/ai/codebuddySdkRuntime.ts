@@ -5,14 +5,8 @@
  * no implicit settings/Skills/MCP, no ordinary tools, bounded query lifetime,
  * iterator cleanup, and interruption of handles that arrive after cancellation.
  */
-export interface CodeBuddyQueryHandle extends AsyncIterable<unknown> {
-  interrupt?: () => unknown;
-}
-
-export interface CodeBuddyQueryInput {
-  prompt: string;
-  options: Record<string, unknown>;
-}
+export type CodeBuddyQueryHandle = ReturnType<typeof import('@tencent-ai/agent-sdk').query>;
+export type CodeBuddyQueryInput = Parameters<typeof import('@tencent-ai/agent-sdk').query>[0];
 
 export type CodeBuddyQueryFactory = (
   input: CodeBuddyQueryInput,
@@ -102,7 +96,7 @@ function readUsage(result: Record<string, unknown>): CodeBuddySdkTaskResult['usa
 
 async function defaultQueryFactory(input: CodeBuddyQueryInput): Promise<CodeBuddyQueryHandle> {
   const sdk = await import('@tencent-ai/agent-sdk');
-  return sdk.query(input as Parameters<typeof sdk.query>[0]) as unknown as CodeBuddyQueryHandle;
+  return sdk.query(input);
 }
 
 export class CodeBuddySdkRuntime {
@@ -129,6 +123,7 @@ export class CodeBuddySdkRuntime {
     const interruption = new Promise<never>((_, reject) => { interruptionReject = reject; });
 
     const interrupt = () => {
+      abortController.abort();
       if (handle?.interrupt) {
         try { void Promise.resolve(handle.interrupt()).catch(() => undefined); } catch { /* best effort */ }
       }
@@ -154,23 +149,25 @@ export class CodeBuddySdkRuntime {
     const queryPromise = Promise.resolve().then(() => {
       if (interruptionKind) throw new CodeBuddySdkTaskError(interruptionKind, 'CodeBuddy request was interrupted before query initialization.');
       return this.queryFactory({
-      prompt,
-      options: {
-        ...(input.model?.trim() ? { model: input.model.trim() } : {}),
-        permissionMode: 'default',
-        settingSources: [],
-        persistSession: false,
-        thinking: { type: 'disabled' },
-        effort: 'low',
-        tools: [],
-        allowedTools: [],
-        maxTurns: 1,
-        canUseTool: async (toolName: string) => ({
-          behavior: 'deny' as const,
-          message: 'This one-shot task does not allow tool execution: ' + toolName,
-        }),
-      },
-    });
+        prompt,
+        options: {
+          ...(input.model?.trim() ? { model: input.model.trim() } : {}),
+          systemPrompt: input.systemPrompt.trim(),
+          permissionMode: 'default',
+          settingSources: [],
+          persistSession: false,
+          thinking: { type: 'disabled' },
+          effort: 'low',
+          allowedTools: [],
+          maxTurns: 1,
+          abortController,
+          canUseTool: async (toolName) => ({
+            behavior: 'deny',
+            message: 'This one-shot task does not allow tool execution: ' + toolName,
+            interrupt: true,
+          }),
+        },
+      });
     });
 
     // A query handle can resolve after the HTTP request has timed out. Interrupt it
@@ -184,6 +181,8 @@ export class CodeBuddySdkRuntime {
     let text = '';
     let sessionId: string | undefined;
     let usage: CodeBuddySdkTaskResult['usage'];
+    let resultText: string | undefined;
+    let resultSeen = false;
 
     try {
       handle = await Promise.race([queryPromise, interruption]);
@@ -198,6 +197,8 @@ export class CodeBuddySdkRuntime {
           sessionId = event.session_id;
         }
         if (event.type === 'result') {
+          resultSeen = true;
+          if (typeof event.result === 'string' && event.result.trim()) resultText = event.result;
           if (event.is_error === true || (Array.isArray(event.errors) && event.errors.length > 0)) {
             throw new Error('CodeBuddy execution failed: ' + String((event.errors as unknown[] | undefined)?.[0] ?? 'unknown error'));
           }
@@ -209,8 +210,10 @@ export class CodeBuddySdkRuntime {
         for (const chunk of readText(event)) text += (text ? '\n' : '') + chunk;
       }
 
-      if (!text.trim()) throw new Error('CodeBuddy Agent SDK returned no text. Check the local CLI login and model access.');
-      return { text: text.trim(), durationMs: Date.now() - startedAt, ...(sessionId ? { sessionId } : {}), ...(usage ? { usage } : {}) };
+      if (!resultSeen) throw new Error('CodeBuddy Agent SDK stream ended without a result event.');
+      const finalText = text.trim() || resultText?.trim() || '';
+      if (!finalText) throw new Error('CodeBuddy Agent SDK returned no text. Check the local CLI login and model access.');
+      return { text: finalText, durationMs: Date.now() - startedAt, ...(sessionId ? { sessionId } : {}), ...(usage ? { usage } : {}) };
     } catch (error) {
       if (error instanceof CodeBuddySdkTaskError) throw error;
       requestInterruption('aborted');
