@@ -26,7 +26,7 @@ import { challengeQuestion, type QuestionChallenge } from './questionChallenger'
  *  - 其余云端（deepseek/openrouter/google）：必须有 apiKey 与 model。 */
 export function isEntryValid(e: ProviderEntry): boolean {
   if (!e || !e.id) return false;
-  if (e.id === 'chrome' || e.id === 'copilot-sdk') return true;
+  if (e.id === 'chrome' || e.id === 'copilot-sdk' || e.id === 'codebuddy-sdk') return true;
   if (e.id === 'local') return Boolean(e.model && e.model.trim().length > 0);
   if (e.id === 'cloudflare-workers-ai') {
     return Boolean(
@@ -74,7 +74,11 @@ export class PiAIProvider implements LLMProvider {
     private readonly entry: ProviderEntry,
     private readonly onUsage?: (usage: LLMUsage) => void,
   ) {
-    this.name = entry.id === 'copilot-sdk' ? 'GitHub Copilot SDK' : `pi-ai(${entry.id})`;
+    this.name = entry.id === 'copilot-sdk'
+      ? 'GitHub Copilot SDK'
+      : entry.id === 'codebuddy-sdk'
+        ? 'CodeBuddy Agent SDK'
+        : `pi-ai(${entry.id})`;
   }
 
   async generateVariant(q: Question, format?: FormatId): Promise<GeneratedVariant> {
