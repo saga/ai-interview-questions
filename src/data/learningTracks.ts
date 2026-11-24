@@ -27,7 +27,8 @@ export const SAP_IT_SERVICE_COURSE_TOPICS = [
   { id: 'sap-security-compliance', label: '安全、审计与合规' },
   { id: 'sap-reporting-analytics', label: '报表、分析与业务指标' },
   { id: 'sap-project-delivery', label: '项目治理与客户交付' },
-  { id: 'sap-troubleshooting', label: '故障诊断与服务恢复' }
+  { id: 'sap-troubleshooting', label: '故障诊断与服务恢复' },
+  { id: 'sap-business-ai', label: 'SAP Business AI、Joule 与企业业务应用', description: 'SAP Joule、Joule for Consultants、Joule Studio、SAP AI Core 和 Generative AI Hub；覆盖财务、采购、销售、供应链等真实业务场景，以及授权、审批、数据治理和结果核验。' }
 ] as const;
 
 
@@ -56,8 +57,7 @@ export const SAP_JUNIOR_PRACTICE_TOPICS = [
   { id: 'sap-delivery-coordination', label: '任务管理、依赖与交接', description: '理解项目任务、责任分配、依赖、版本、交接和变更控制；让工作可见、可追踪，避免口头任务和责任真空。' },
   { id: 'sap-service-incident', label: '客户支持、Incident 与服务体验', description: '从用户报告中识别事件影响、优先级和服务目标；及时更新客户、保护数据、正确升级，并跟踪恢复与验证。' },
   { id: 'sap-change-adoption', label: '变更管理、培训与 UAT', description: '理解系统上线不仅是技术部署，还涉及业务流程变化、用户准备、培训、UAT、反馈和采用情况。' },
-  { id: 'sap-junior-professional', label: '实习生职业行为与团队协作', description: '面向无正式项目经验的毕业生和实习生，考察学习、求助、任务管理、保密、反馈、诚实表达和职业边界。' },
-  { id: 'sap-business-ai', label: 'SAP Business AI、Joule 与企业业务应用', description: 'SAP Joule、Joule for Consultants、Joule Studio、SAP AI Core 和 Generative AI Hub；覆盖财务、采购、销售、供应链等真实业务场景，以及授权、审批、数据治理和结果核验。' }
+  { id: 'sap-junior-professional', label: '实习生职业行为与团队协作', description: '面向无正式项目经验的毕业生和实习生，考察学习、求助、任务管理、保密、反馈、诚实表达和职业边界。' }
 ] as const;
 
 export const SAP_IT_SERVICE_TOPIC_LABELS: Record<string, string> = Object.fromEntries(
