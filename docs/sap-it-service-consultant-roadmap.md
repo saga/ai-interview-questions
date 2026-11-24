@@ -31,7 +31,7 @@ SAP 技术主题也遵循同一边界：先理解概念用途、基本流程、�
 | 7. Run 阶段 | Cloud ALM、ITSM、事件/问题/变更、服务管理 | 恢复服务、定位根因、监控业务流程并持续改进 | Runbook、SLA、Problem record |
 | 8. 综合实践 | 客户案例和方案评审 | 从需求到运行支持完成一个可追溯交付闭环 | Solution outline、风险与决策日志 |
 
-## 40 个知识主题（含 Coursera 课程对齐补充）
+## 41 个知识主题（含 Coursera 课程对齐与 SAP Business AI 补充）
 
 ### 1. IT 服务咨询与顾问基本功
 
@@ -113,6 +113,24 @@ Embedded Analytics、CDS Views、指标定义、数据语义。重点：从业�
 
 日志、队列、接口监控、性能、数据异常、根因分析。重点：先界定影响范围和业务优先级，再收集证据；区分症状、触发条件和根因；安全止损并验证恢复；通过问题管理和变更流程防止复发。
 
+### 21. SAP Business AI、Joule 与企业业务应用
+
+SAP Business AI 不是单一聊天机器人。需要区分 Joule（嵌入式业务助手）、Joule for Consultants（SAP 知识与实施指导）、Joule Studio（定制 Agent、应用和工作流开发）、SAP AI Core 与 Generative AI Hub（模型接入、运行和编排）。重点理解导航、信息查询和事务操作的区别，以及 Agent 如何通过受治理的连接访问 SAP 业务对象。
+
+实战场景包括：查询销售订单和采购订单状态、更新采购订单交货日期、分析逾期应收、现金管理、争议处理、生成会计凭证建议、识别库存短缺和供应商交付异常。不要把产品演示中的能力视为所有版本都已提供；必须核对 S/4HANA Public/Private Edition、版本、区域、语言、Entitlement 和用户授权。
+
+实施时应检查数据范围和时效、业务对象关联、组织级授权、审批链、重复执行、异常恢复、审计记录和人工复核。Grounding 需要维护可信知识源、版本和检索质量；生成的财务或采购建议不能替代正式业务校验和审批。
+
+### SAP AI 能力边界
+
+| 产品/能力 | 主要用途 | 不应混淆的边界 |
+|---|---|---|
+| Joule | SAP 应用中的自然语言导航、信息查询和部分事务操作 | 具体能力取决于产品、版本、区域和授权 |
+| Joule for Consultants | 基于 SAP 策展知识辅助实施与技术咨询 | 不是项目审批人；建议需按目标系统验证 |
+| Joule Studio | 创建定制 Agent、应用和工作流 | 需要明确工具范围、连接和 SAP 业务授权 |
+| SAP AI Core / Generative AI Hub | 模型访问、运行管理和生成式 AI 编排 | 不等于 S/4HANA 业务流程引擎 |
+| Orchestration / Grounding / Data Masking | 统一模型接口、接入领域数据、敏感数据处理 | Grounding 不自动保证正确，仍需数据治理和评估 |
+
 ## 需要掌握的 SAP 产品与概念
 
 - **SAP S/4HANA**：理解 ERP 核心、业务对象、主数据和端到端业务流程。Public Edition 与 Private Edition 的配置、扩展和运维边界不同，学习时必须标明所讨论的版本。
@@ -156,7 +174,18 @@ Embedded Analytics、CDS Views、指标定义、数据语义。重点：从业�
 
 ## 题库结构
 
-当前包含 600 道题，覆盖 40 个主题，其中 200 道为面向毕业生实习生的亚太客户沟通与项目协作情境题；该批题目仅分 easy、medium，重点考查顾问判断、业务分析、实施权衡和问题处理。题目是学习与面试训练材料，不是 SAP 官方认证考试题，也不代表所有 SAP 产品版本具有相同功能。全课程统一遵守毕业生实习生能力边界：不以真实项目履历、客户管理经验或独立交付经验作为答题前提。
+当前包含 640 道题，覆盖 41 个主题，其中 200 道为面向毕业生实习生的亚太客户沟通与项目协作情境题，另新增 40 道 SAP Business AI 初中级情境题；该批题目仅分 easy、medium，重点考查顾问判断、业务分析、实施权衡和问题处理。题目是学习与面试训练材料，不是 SAP 官方认证考试题，也不代表所有 SAP 产品版本具有相同功能。全课程统一遵守毕业生实习生能力边界：不以真实项目履历、客户管理经验或独立交付经验作为答题前提。
+
+## SAP Business AI 官方学习与参考资料
+
+- [SAP Joule Capabilities](https://help.sap.com/docs/joule/capabilities-guide/transactional-capabilities)：Joule 在资产管理、财务、销售、采购和供应链中的事务能力。
+- [SAP Joule Studio](https://help.sap.com/docs/joule-studio/joule-studio/what-is-joule-studio)：定制 Agent、应用和工作流的开发环境。
+- [SAP Joule Studio Agents](https://help.sap.com/docs/joule-studio/joule-studio/agents)：Agent 技能、Agent Gateway、SAP 系统连接和授权边界。
+- [SAP AI Core Generative AI Hub](https://help.sap.com/docs/sap-ai-core/sap-ai-core-service-guide/generative-ai-hub-in-sap-ai-core-7db524ee75e74bf8b50c167951fe34a5)：模型接入与治理运行环境。
+- [SAP AI Core Orchestration](https://help.sap.com/docs/sap-ai-core/generative-ai/orchestration?version=CLOUD)：模型统一接口、Grounding、Data Masking 和内容过滤。
+- [SAP AI-Assisted Journal Upload](https://help.sap.com/docs/PRODUCTS/f5d3e1005efd4e86acf9a65abf428082/022dcf092f894c46a2c3f5834467fc48.html?locale=en-US&version=2025.000)：财务凭证建议生成与人工复核流程。
+- [SAP Learning: Joule in Action Across Business Functions](https://learning.sap.com/courses/getting-started-with-joule-for-business-users/joule-in-action-across-business-functions)：跨财务、供应链等业务职能的使用案例。
+- [SAP Learning: Reviewing the Use of SAP Joule Agents in Finance](https://learning.sap.com/courses/reviewing-the-use-of-sap-joule-agents-in-finance)：Cash Management 与 Dispute Resolution Agent 案例。
 
 ## 官方学习与参考资料
 
