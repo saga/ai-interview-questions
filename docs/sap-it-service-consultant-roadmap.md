@@ -21,7 +21,7 @@
 | 7. Run 阶段 | Cloud ALM、ITSM、事件/问题/变更、服务管理 | 恢复服务、定位根因、监控业务流程并持续改进 | Runbook、SLA、Problem record |
 | 8. 综合实践 | 客户案例和方案评审 | 从需求到运行支持完成一个可追溯交付闭环 | Solution outline、风险与决策日志 |
 
-## 20 个知识主题
+## 30 个知识主题（含 Coursera 课程对齐补充）
 
 ### 1. IT 服务咨询与顾问基本功
 
@@ -159,3 +159,76 @@ Embedded Analytics、CDS Views、指标定义、数据语义。重点：从业�
 ## 完成标准
 
 学员能够在一个给定客户案例中说明：客户要解决什么问题、标准 SAP 流程如何覆盖、差异为何存在、方案为何这样选择、数据和接口如何处理、如何验证、上线风险如何控制，以及 Run 阶段由谁负责。能清楚解释边界和未知项，比堆砌模块名更重要。
+
+
+## Coursera SAP Technology Consultant Professional Certificate 对齐
+
+参考 [SAP Technology Consultant Professional Certificate](https://www.coursera.org/professional-certificates/sap-technology-consultant)。该项目由 SAP 提供，包含七门课程，面向希望进入 SAP 领域的初学者，强调咨询技能、企业系统环境、客户发现、方案设计、实施测试、综合项目模拟和职业发展。
+
+| Coursera 课程 | 本题库对应主题 | 练习产出 |
+|---|---|---|
+| SAP Professional Fundamentals | SAP 顾问职业基础与协作 | 角色协作图、客户沟通计划 |
+| Understanding the Enterprise Systems Environment | 企业系统环境与技术基础 | 系统上下文图、部署模型比较 |
+| SAP Customer Engagement and Discovery | 客户参与、发现与价值分析 | 访谈纪要、Stakeholder map、Customer Journey Roadmap |
+| Designing an SAP Solution | SAP 方案设计、演示与提案 | Gap Analysis、Demo、Technical Design Outline |
+| Implementing an SAP Solution | SAP 方案实施与部署；测试计划、测试脚本与质量保障 | 环境与部署计划、测试包、缺陷记录 |
+| SAP Technology Consultant Hands-on Project | 综合实施项目与交付物实践 | 端到端项目档案和方案汇报 |
+| Becoming an SAP Professional | SAP 职业发展与求职准备 | 岗位目标、学习与认证计划、简历和面试案例 |
+
+### 新增的 10 个知识主题
+
+#### 21. SAP 顾问职业基础与协作
+
+SAP 生态、技术顾问与功能顾问职责、客户沟通、系统思维、关系管理，以及 Waterfall、Agile、DevOps 和 Cloud 交付方式。 区分技术顾问、功能顾问、项目经理、开发人员和客户业务负责人的职责。；理解 SAP 生态中客户、SAP、实施伙伴和产品团队的协作关系。；掌握客户沟通、积极倾听、承诺管理、冲突处理和升级机制。；比较 Waterfall、Agile、DevOps 和 Cloud 交付方式的适用场景。
+
+#### 22. 企业系统环境与技术基础
+
+企业架构、基础设施、计算/网络/存储、On-Premises、Cloud、Hybrid、Multi-Cloud，以及 SAP 平台、ABAP、Java、API、Fiori 和 RAP。 从业务、应用、数据、技术和安全视角描述企业系统环境。；理解 Compute、Network、Storage 与应用运行环境的基本关系。；比较 On-Premises、Cloud、Hybrid 和 Multi-Cloud 的责任与运维差异。；理解 SAP S/4HANA、Fiori、API、ABAP、Java 和 RAP 的基本定位。
+
+#### 23. 客户参与、发现与价值分析
+
+Stakeholder 识别、客户访谈、Discovery Workshop、现状流程和数据分析、Fit-to-Standard 准备、Customer Journey Roadmap 和价值沟通。 识别客户战略、业务目标、流程、技术环境、数据和关键约束。；设计访谈问题、Discovery Workshop 和 Stakeholder map。；准备 Fit-to-Standard 会议、标准流程演示和差异记录。；形成 Customer Journey Roadmap、价值说明和客户 sign-off。
+
+#### 24. SAP 方案设计、演示与提案
+
+需求到系统和数据需求映射、Gap Analysis、BTP 能力评估、SAP Best Practices、Demo、Pitch、Re-design 和 Technical Design Outline。 将业务需求映射到应用、数据、集成、安全和运行要求。；比较 SAP 标准能力、BTP 能力与客户现有环境的差距。；使用预置内容和真实业务场景构建 Demo。；编写包含范围、组件、接口、数据、约束和假设的 Technical Design Outline。
+
+#### 25. SAP 方案实施与部署
+
+环境准备、基线配置、SAP Best Practices、测试数据清洗与匿名化、部署、监控、上线签署和跨团队协作。 区分开发、测试、质量和生产环境的用途与变更边界。；使用 SAP Best Practices 和基线配置作为实施起点。；准备测试数据，执行清洗、脱敏和匿名化。；协调配置、集成、部署、监控和上线签署。
+
+#### 26. 测试计划、测试脚本与质量保障
+
+Test Plan、Test Script、Unit、SIT、UAT、Regression、自动化、测试证据、缺陷记录和修复验证。 将需求转化为可执行的测试场景、步骤和预期结果。；区分 Unit、SIT、UAT、Regression 和自动化测试。；记录缺陷复现步骤、环境、数据、影响和修复建议。；通过重测、回归和验收证据判断质量状态。
+
+#### 27. 项目管理、敏捷协作与治理
+
+范围、计划、里程碑、Agile/Waterfall、RACI、风险、依赖、变更、沟通、决策记录和项目关闭。 建立项目目标、范围、里程碑、工作流和交付物基线。；理解 Agile Backlog、迭代评审和 Waterfall 阶段门。；明确 RACI、风险所有者、跨团队依赖和升级路径。；管理范围变更、状态沟通、决策记录和项目关闭。
+
+#### 28. 综合实施项目与交付物实践
+
+将客户分析、技术环境评估、需求发现、方案提案、设计展示、实施、QA 和项目复盘串成完整案例。 分析客户背景、转型驱动、关键角色和当前技术环境。；形成需求、范围、假设、差距、方案选项和客户确认。；准备 Solution Proposal、Technical Design Outline 和演示材料。；完成实施协作、测试、交付物评审和项目总结。
+
+#### 29. 上线后评估、项目关闭与持续改进
+
+Post-Implementation Review、业务收益评估、Lessons Learned、运维交接、项目关闭和 Post-Production Roadmap。 评估业务目标、方案质量、测试结果和上线表现。；记录 Lessons Learned、遗留事项、风险和责任人。；完成运维交接、知识转移和支持模型确认。；制定 Post-Production Roadmap 和持续改进优先级。
+
+#### 30. SAP 职业发展与求职准备
+
+行业和产品领域、岗位认知、SAP Learning Journey、认证路径、简历、面试和个人职业发展计划。 理解行业、SAP 产品组合和不同顾问岗位的工作内容。；根据目标岗位选择 SAP Learning Journey 和认证路径。；把课程项目和实践产出转化为可信的简历经历。；制定包含实践、反馈和能力验收的职业发展计划。
+
+### 七门课程的学习顺序
+
+1. SAP Professional Fundamentals：理解顾问角色、客户关系、交付方式和职业要求。
+2. Understanding the Enterprise Systems Environment：建立企业 IT、云、SAP 平台和应用开发模型的基础认知。
+3. SAP Customer Engagement and Discovery：练习客户分析、访谈、需求发现、Fit-to-Standard 和价值沟通。
+4. Designing an SAP Solution：完成差距分析、技术方案、演示和设计说明。
+5. Implementing an SAP Solution：理解环境、配置、测试数据、实施、监控和上线。
+6. SAP Technology Consultant Hands-on Project：把前五门课的能力串成端到端客户项目。
+7. Becoming an SAP Professional：根据目标岗位制定学习、认证和求职计划。
+
+建议先完成前五阶段的知识学习，再做综合项目；职业规划贯穿整个过程。
+
+## 题库更新
+
+当前 SAP 课程共 **400 道原创情境选择题**：原有 200 道覆盖 SAP 业务、应用和服务运维；新增 200 道对齐 Coursera 七门课程，覆盖上述十个补充主题。新增题目只使用 easy 和 medium 两档，每个新增主题 20 道，其中 8 道 easy、12 道 medium。题目不是 Coursera 作业或 SAP 官方认证考试题的复制。
