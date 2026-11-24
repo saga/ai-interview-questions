@@ -36,7 +36,7 @@ describe('CodeBuddySdkRuntime', () => {
     expect(received?.prompt).toBe('question');
     expect(received?.options).toMatchObject({
       model: 'deepseek-v3',
-      systemPrompt: 'rules',
+      systemPrompt: { append: 'rules' },
       permissionMode: 'default',
       settingSources: [],
       persistSession: false,
