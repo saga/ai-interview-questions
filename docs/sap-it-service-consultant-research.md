@@ -22,3 +22,20 @@ SAP 官方 S/4HANA Cloud Public Edition 实施学习路径覆盖实施团队、�
 ## 题目编写原则
 
 题目是原创的情境化训练题，不复制 SAP 认证考试题。答案强调顾问应有的工作方式：先确认业务目标和事实，使用标准能力作为基线，明确差异、责任和风险，通过测试与证据验证结果。产品特定行为需结合目标版本的 SAP Help 和项目环境确认。
+
+
+## Coursera SAP Technology Consultant Professional Certificate
+
+课程结构参考：[SAP Technology Consultant Professional Certificate](https://www.coursera.org/professional-certificates/sap-technology-consultant)。该项目由 SAP 提供，包含七门课程，面向希望进入 SAP 领域的初学者，强调咨询技能、企业系统环境、客户发现、方案设计、实施测试、综合项目模拟和职业发展。
+
+| 课程 | 本题库覆盖内容 |
+|---|---|
+| SAP Professional Fundamentals | 顾问角色、SAP 生态、客户沟通、系统思维、Waterfall/Agile/DevOps |
+| Understanding the Enterprise Systems Environment | 企业架构、基础设施、云部署、SAP 平台、ABAP/Java/API/Fiori/RAP |
+| SAP Customer Engagement and Discovery | 客户分析、Stakeholder 访谈、Discovery Workshop、Fit-to-Standard、Customer Journey Roadmap |
+| Designing an SAP Solution | 需求映射、Gap Analysis、BTP 能力、Demo、Pitch、Re-design、Technical Design Outline |
+| Implementing an SAP Solution | 环境准备、基线配置、测试数据清洗和匿名化、测试、部署、监控和缺陷处理 |
+| SAP Technology Consultant Hands-on Project | 客户和技术环境分析、方案提案、设计展示、实施、QA 和交付物评估 |
+| Becoming an SAP Professional | 行业和岗位方向、SAP Learning Journey、认证、简历、面试和职业计划 |
+
+新增题目与知识节点是基于公开课程目标重新编写的训练材料，不复制 Coursera 测验、作业或 SAP 认证考试题。课程页面可能随时间调整；产品功能和版本细节应以 SAP 官方产品文档为准。
