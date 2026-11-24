@@ -14,7 +14,7 @@ import {
 } from './taxonomy.ts';
 import { knowledgeNodes } from './knowledgeMap';
 import { questionBank } from './questionBank';
-import { CAMPUS_EMPLOYMENT_COURSE_TOPICS, SECURITY_ARCHITECTURE_COURSE_TOPICS, SAP_IT_SERVICE_COURSE_TOPICS, SAP_COURSERA_COURSE_TOPICS } from './learningTracks';
+import { CAMPUS_EMPLOYMENT_COURSE_TOPICS, SECURITY_ARCHITECTURE_COURSE_TOPICS, SAP_IT_SERVICE_COURSE_TOPICS, SAP_COURSERA_COURSE_TOPICS, SAP_JUNIOR_PRACTICE_TOPICS } from './learningTracks';
 
 describe('taxonomy 骨架', () => {
   it('AI 学习体系恰为 6 个能力域，且标签齐全', () => {
@@ -95,13 +95,13 @@ describe('知识节点与 taxonomy 对齐', () => {
     expect(questions.filter((question) => question.formats.choice?.type === 'multiple')).toHaveLength(230);
   });
 
-  it('SAP IT Service Consultant 知识节点与 200 道题独立归属，并覆盖全部 20 个主题', () => {
+  it('SAP IT Service Consultant 知识节点与 600 道题独立归属，并覆盖全部 40 个主题', () => {
     const nodes = knowledgeNodes.filter((node) => node.courseId === 'sap-it-service-consultant');
     const questions = questionBank.questions.filter((question) => question.courseId === 'sap-it-service-consultant');
-    const themeIds = new Set([...SAP_IT_SERVICE_COURSE_TOPICS, ...SAP_COURSERA_COURSE_TOPICS].map((topic) => topic.id));
-    expect(nodes).toHaveLength(30);
+    const themeIds = new Set([...SAP_IT_SERVICE_COURSE_TOPICS, ...SAP_COURSERA_COURSE_TOPICS, ...SAP_JUNIOR_PRACTICE_TOPICS].map((topic) => topic.id));
+    expect(nodes).toHaveLength(40);
     expect(nodes.every((node) => node.area === 'sap-consulting' && themeIds.has(node.topic))).toBe(true);
-    expect(questions).toHaveLength(400);
+    expect(questions).toHaveLength(600);
     for (const node of nodes) {
       const nodeQuestions = questions.filter((question) => question.topic === node.id);
       expect(nodeQuestions.length).toBeGreaterThanOrEqual(10);
