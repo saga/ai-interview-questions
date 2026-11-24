@@ -1,3 +1,11 @@
+## 2026-11-24 · CodeBuddy SDK 调用契约与生命周期收口
+- 将 system prompt 改为 SDK 原生 options.systemPrompt，用户输入保持独立；Query 参数类型直接从 SDK query() 推导，避免宽泛类型转换掩盖接口错误。
+- 使用 SDK 原生 abortController，超时/客户端断开时同时请求 abort、Query interrupt 和 iterator.return；迟到的 Query Handle 仍会被立即中断。
+- 只接受成功的终态 result；补充 result.result 文本回退，缺失终态、执行错误和空响应均明确失败。
+- 移除未定义的 tools 参数，保留 SDK 支持的 allowedTools: []、拒绝型 canUseTool、systemPrompt、thinking 和 effort。
+- 明确运行要求：Node.js 22.13+、CodeBuddy CLI 2.125.1+（非持久化 Session 的最低版本）；补充 ADR-094 与部署说明。
+- 新增 Runtime 测试覆盖 system prompt、工具权限、Usage、终态校验、异常结果、超时和取消。实际 CI 结果以本次提交触发的 workflow 为准；本地真实 CLI 登录/模型调用仍需单独验证。
+
 ## 2026-11-24 · 合并校招题库扩展至 785 题
 - 合并入站分支新增的 150 道初/中级校招题（`campus-employment-150-foundation-intermediate.json`），与本地 135 道公司面经题叠加，校招课程总量为 785 题（555 单选、230 多选）。
 - 冲突的题数断言按真实题库口径统一：课程测试 785、taxonomy 测试 785/555/230；覆盖矩阵文档重命名为 785 版并补公司面经批次行。
