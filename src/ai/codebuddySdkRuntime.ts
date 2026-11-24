@@ -212,7 +212,7 @@ export class CodeBuddySdkRuntime {
       clearTimeout(timer);
       input.signal?.removeEventListener('abort', onAbort);
       if (interruptionKind && iterator?.return) {
-        try { await iterator.return(); } catch { /* best effort */ }
+        try { void Promise.resolve(iterator.return()).catch(() => undefined); } catch { /* best effort */ }
       }
     }
   }
