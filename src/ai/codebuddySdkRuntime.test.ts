@@ -49,6 +49,14 @@ describe('CodeBuddySdkRuntime', () => {
     });
   });
 
+  it('rejects invalid task deadlines before starting the SDK', async () => {
+    const factory = vi.fn(() => fakeQuery([]));
+    const runtime = new CodeBuddySdkRuntime(factory);
+    await expect(runtime.run({ prompt: 'task', systemPrompt: 'rules', timeoutMs: 0 }))
+      .rejects.toThrow('timeoutMs must be a positive finite number');
+    expect(factory).not.toHaveBeenCalled();
+  });
+
   it('does not start a query when already aborted', async () => {
     const controller = new AbortController();
     controller.abort();
