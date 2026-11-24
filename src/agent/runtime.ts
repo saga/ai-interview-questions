@@ -16,8 +16,9 @@ import type { ProviderEntry } from '../schemas/ai-config';
  * 但仍透传给 streamSimple 以保持与底层 provider 路由一致。
  */
 export function buildAgentRuntime(entry: ProviderEntry): { streamFn: StreamFn; model: Model<any> } {
-  if (entry.id === 'copilot-sdk') {
-    throw new Error('GitHub Copilot SDK 当前用于普通问答、评分和题目变体；尚未接入 pi-agent-core 的流式工具调用协议。请为 Agent 面试启用另一个支持工具调用的引擎。');
+  if (entry.id === 'copilot-sdk' || entry.id === 'codebuddy-sdk') {
+    const providerName = entry.id === 'copilot-sdk' ? 'GitHub Copilot SDK' : 'CodeBuddy Agent SDK';
+    throw new Error(`${providerName} 当前用于普通问答、评分和题目变体；尚未接入 pi-agent-core 的流式工具调用协议。请为 Agent 面试启用另一个支持工具调用的引擎。`);
   }
   // Chrome 内置 AI 没有原生 function calling，走专用的 prompt-based 工具调用运行时；
   // 其余引擎（云端 / 本地 OpenAI 兼容）由 pi-ai 的 streamSimple 提供流式 + 原生工具调用。
