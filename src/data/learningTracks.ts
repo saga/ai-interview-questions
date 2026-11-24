@@ -45,12 +45,26 @@ export const SAP_COURSERA_COURSE_TOPICS = [
   { id: 'sap-career-readiness', label: 'SAP 职业发展与求职准备' }
 ] as const;
 
+/** 面向初级顾问的真实客户沟通与交付行为主题。 */
+export const SAP_JUNIOR_PRACTICE_TOPICS = [
+  { id: 'sap-client-communication', label: '客户沟通与期望管理', description: '面向初级顾问的客户沟通：确认目的、受众、期限和责任；用简洁、准确、可跟踪的方式更新进展；不擅自承诺、不隐瞒不确定性。' },
+  { id: 'sap-japan-apac-communication', label: '日本及亚太客户沟通', description: '在日本及亚太多文化团队中开展沟通：会议前准备、语言确认、沉默和模糊表达的澄清、尊重对方决策流程，同时避免文化刻板印象。' },
+  { id: 'sap-stakeholder-decision', label: 'Stakeholder 协调与决策流程', description: '识别业务负责人、流程所有者、IT、采购、安全和审批人；理解共识建立、正式批准和决策记录之间的区别。' },
+  { id: 'sap-meeting-workshop', label: '会议、Workshop 与会议纪要', description: '准备并参与客户会议、需求 Workshop、演示和评审；管理议程、时间、问题、行动项和会后确认。' },
+  { id: 'sap-reporting-escalation', label: '工作汇报、风险报告与升级', description: '培养及时、准确的工作汇报习惯；用事实、影响、行动和请求说明问题；理解日本企业常见的 Ho-Ren-So（报告、联络、商量）作为一种沟通实践，而非僵化规则。' },
+  { id: 'sap-requirement-clarification', label: '需求澄清与跨语言理解', description: '从口头描述、邮件和会议记录中澄清需求；处理缩写、翻译、含糊表达和相互矛盾的信息；把需求转成可验证场景。' },
+  { id: 'sap-delivery-coordination', label: '任务管理、依赖与交接', description: '理解项目任务、责任分配、依赖、版本、交接和变更控制；让工作可见、可追踪，避免口头任务和责任真空。' },
+  { id: 'sap-service-incident', label: '客户支持、Incident 与服务体验', description: '从用户报告中识别事件影响、优先级和服务目标；及时更新客户、保护数据、正确升级，并跟踪恢复与验证。' },
+  { id: 'sap-change-adoption', label: '变更管理、培训与 UAT', description: '理解系统上线不仅是技术部署，还涉及业务流程变化、用户准备、培训、UAT、反馈和采用情况。' },
+  { id: 'sap-junior-professional', label: '实习生职业行为与团队协作', description: '面向无正式项目经验的毕业生和实习生，考察学习、求助、任务管理、保密、反馈、诚实表达和职业边界。' }
+] as const;
+
 export const SAP_IT_SERVICE_TOPIC_LABELS: Record<string, string> = Object.fromEntries(
-  [...SAP_IT_SERVICE_COURSE_TOPICS, ...SAP_COURSERA_COURSE_TOPICS].map(({ id, label }) => [id, label]),
+  [...SAP_IT_SERVICE_COURSE_TOPICS, ...SAP_COURSERA_COURSE_TOPICS, ...SAP_JUNIOR_PRACTICE_TOPICS].map(({ id, label }) => [id, label]),
 );
 
 export const SAP_IT_SERVICE_ANGLE_WHITELIST: Record<string, QuestionAngle[]> = Object.fromEntries(
-  [...SAP_IT_SERVICE_COURSE_TOPICS, ...SAP_COURSERA_COURSE_TOPICS].map(({ id }) => [id, ['scenario', 'fundamental', 'comparison', 'tradeoff', 'design', 'diagnosis', 'synthesis', 'implementation']]),
+  [...SAP_IT_SERVICE_COURSE_TOPICS, ...SAP_COURSERA_COURSE_TOPICS, ...SAP_JUNIOR_PRACTICE_TOPICS].map(({ id }) => [id, ['scenario', 'fundamental', 'comparison', 'tradeoff', 'design', 'diagnosis', 'synthesis', 'implementation']]),
 );
 
 export const CAMPUS_EMPLOYMENT_COURSE_TOPICS = [
@@ -113,7 +127,7 @@ export const LEARNING_TRACKS = [
     shortTitle: 'SAP',
     description: '面向 SAP IT 服务与实施顾问：业务流程、需求发现、S/4HANA、Fit-to-Standard、集成、数据迁移、测试、Cloud ALM 和应用运维。',
     actionLabel: '进入 SAP 顾问学习',
-    topicCount: 30,
+    topicCount: 40,
     learningPathUrl: 'https://github.com/saga/ai-interview-questions/blob/main/docs/sap-it-service-consultant-roadmap.md',
   },
   {
