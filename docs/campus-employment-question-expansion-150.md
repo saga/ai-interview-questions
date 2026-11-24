@@ -47,4 +47,4 @@
 
 每题均关联现有校招知识节点，提供难度、考察角度、认知任务、来源说明、常见误解、答案和解析。所有题目使用 `practice-extension` 标签和课程设计来源标识，明确它们是教学练习，不冒充企业真实面试原题。
 
-数据文件通过现有 `src/data/questionBank.ts` 的 JSON glob 自动加载，不需要新增 taxonomy、课程知识节点或独立页面。题库覆盖和统计见[650 题覆盖说明](./campus-employment-question-coverage-785.md)。
+数据文件通过现有 `src/data/questionBank.ts` 的 JSON glob 自动加载，不需要新增 taxonomy、课程知识节点或独立页面。题库覆盖和统计见[785 题覆盖说明](./campus-employment-question-coverage-785.md)。
