@@ -153,7 +153,7 @@ export class CodeBuddySdkRuntime {
         prompt,
         options: {
           ...(input.model?.trim() ? { model: input.model.trim() } : {}),
-          systemPrompt: input.systemPrompt.trim(),
+          systemPrompt: { append: input.systemPrompt.trim() },
           permissionMode: 'default',
           settingSources: [],
           persistSession: false,
