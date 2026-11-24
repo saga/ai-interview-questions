@@ -84,6 +84,14 @@ const CAPABILITY_TABLE: Record<ProviderEntry['id'], LLMCapabilities> = {
     contextCaching: false,
     multiRound: true,
   },
+  // CodeBuddy SDK is routed through the local Vite dev API; parsing remains application-owned.
+  'codebuddy-sdk': {
+    jsonMode: false,
+    toolCalls: false,
+    thinking: false,
+    contextCaching: false,
+    multiRound: true,
+  },
 };
 
 /** 保守默认（覆盖未知引擎 id）：只声明多轮，其余能力关，由 prompt+parser 兜底。 */
