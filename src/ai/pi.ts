@@ -4,9 +4,7 @@
 import { createModels } from '@earendil-works/pi-ai';
 import type { Context, CredentialStore, Model, UserMessage } from '@earendil-works/pi-ai';
 import { deepseekProvider } from '@earendil-works/pi-ai/providers/deepseek';
-import { openrouterProvider } from '@earendil-works/pi-ai/providers/openrouter';
 import { googleProvider } from '@earendil-works/pi-ai/providers/google';
-import { cloudflareWorkersAIProvider } from '@earendil-works/pi-ai/providers/cloudflare-workers-ai';
 import { buildLocalProvider } from './local.ts';
 import type { ProviderEntry } from '../schemas/ai-config';
 import type { LLMUsage } from '../types';
@@ -16,19 +14,12 @@ import type { Usage } from '@earendil-works/pi-ai';
 
 /** 内存 CredentialStore：把用户填写的 API Key 提供给对应 provider（浏览器最稳妥的注入方式）。
  *  空 key 返回 undefined，交给 provider 自身的 auth.resolve 兜底（如 local 的占位符）。
- *  Cloudflare 额外经 credential.env 注入 Account ID（其 auth 协议要求 key + accountId 双字段）。 */
+ */
 function createCredentialStore(entry: ProviderEntry): CredentialStore {
   const apiKey = entry.apiKey.trim();
   return {
     read: async (pid) => {
       if (pid !== entry.id || !apiKey) return undefined;
-      if (entry.id === 'cloudflare-workers-ai') {
-        return {
-          type: 'api_key',
-          key: apiKey,
-          env: { CLOUDFLARE_ACCOUNT_ID: (entry.accountId ?? '').trim() },
-        };
-      }
       return { type: 'api_key', key: apiKey };
     },
     list: async () => [],
@@ -43,47 +34,20 @@ export type ModelsClient = ReturnType<typeof createModels>;
 export function buildModels(config: ProviderEntry): ModelsClient {
   const models = createModels({ credentials: createCredentialStore(config) });
   if (config.id === 'deepseek') models.setProvider(deepseekProvider());
-  else if (config.id === 'openrouter') models.setProvider(openrouterProvider());
   else if (config.id === 'google') models.setProvider(googleProvider());
-  else if (config.id === 'cloudflare-workers-ai') models.setProvider(cloudflareWorkersAIProvider());
   else models.setProvider(buildLocalProvider(config));
   return models;
 }
 
-/** 按 provider + 模型 id 取模型；找不到返回 undefined。
- *  仅 cloudflare-workers-ai：浏览器无法直连 api.cloudflare.com（该域名不返回 CORS 头），
- *  故强制走同源代理 /api/ai/client/v4/accounts/{accountId}/ai/v1
- *  （生产由 worker/index.ts 代理，本地开发由 vite.config.ts 的 dev proxy 直接转发），从而规避跨域。
- *  该 provider 未启用时不会被调用，故不会产生任何代理流量。
- *  其它 provider（deepseek / openrouter / google / local）一律走各自模型目录里的默认 baseUrl。 */
+/** 按 provider + 模型 id 取模型；找不到返回 undefined。 */
 export function getModel(models: ModelsClient, entry: ProviderEntry): Model<any> | undefined {
-  const model = models.getModel(entry.id, entry.model);
-  if (!model) return undefined;
-  if (entry.id === 'cloudflare-workers-ai') {
-    // pi-ai 已为 cloudflare 内置完整 baseUrl（含 {CLOUDFLARE_ACCOUNT_ID} 占位符，
-    // 运行时由 credential store 的 env 注入真实 accountId，路径结构也由 pi-ai 负责拼接），
-    // 我们**不要**自己拼路径。只需把跨域的源 https://api.cloudflare.com 换成「同源代理前缀」。
-    // 代理前缀 /api/ai 由对应运行环境剥离后转发到 api.cloudflare.com：
-    //   · 本地开发：vite.config.ts 的 Vite dev proxy → 现有 Express server/index.js
-    //   · Cloudflare 生产：worker/index.ts（wrangler deploy 的 main 脚本）
-    //   · GitHub Pages：无服务端，cloudflare provider 不可用（见 DEPLOYMENT.md）
-    // Copilot / CodeBuddy SDK 则走独立的 Vite dev API，仅在开发模式中提供；SDK 与 CLI 凭据始终留在 Node 端。
-    // 必须保留「绝对 URL」：pi-ai 底层用 OpenAI SDK，会对 baseUrl 执行 new URL()，
-    // 相对路径会抛 "Failed to construct 'URL': Invalid URL"，故前缀用 location.origin 拼成同源绝对地址。
-    // 注意：不要直接引用 DOM 全局 `location`——本文件被 scripts/fix-bias.ts（Node 端构建，无 DOM lib）
-    // 引用，直接写 location 会让 node 项目编译失败。改为从 globalThis 结构性读取，两种编译环境都通过。
-    const g = globalThis as unknown as { location?: { origin: string } };
-    const origin = g.location?.origin ?? '';
-    const proxyBase = model.baseUrl.replace('https://api.cloudflare.com', `${origin}/api/ai`);
-    return { ...model, baseUrl: proxyBase };
-  }
-  return model;
+  return models.getModel(entry.id, entry.model);
 }
 
-/** 一次性补全的可选参数。 */
+/** 一次性补全的可选参数。 *//** 一次性补全的可选参数。 */
 export interface CallLLMOptions {
   /** 要求模型输出严格 JSON。是否真正附加 `response_format={type:'json_object'}` 由 provider 能力决定
-   *  （见 capabilities.ts：仅声明 jsonMode 的引擎才启用，当前为 deepseek / openrouter）。
+   *  （见 capabilities.ts：仅声明 jsonMode 的引擎才启用，当前为 DeepSeek）。
    *  DeepSeek 文档要求 prompt 含 "json" 字样，VARIANT_SYSTEM / EVAL_SYSTEM / QUESTION_CHALLENGER_SYSTEM 均满足。
    *  收益：免去偶发非 JSON 输出被 extractJSON 抛错、进而触发整段重生成（浪费 token）。 */
   jsonMode?: boolean;
@@ -235,7 +199,7 @@ export async function callLLM(
   // 导致 applyAuth 拿到不到 accountId 而抛 "Provider is not configured"。
 
   // 能力协商（P2⑦）：是否启用原生 JSON 模式由 provider 能力决定，而非硬编码 `entry.id === 'deepseek'`。
-  // DeepSeek / OpenRouter 等声明 jsonMode 能力的引擎会收到 response_format=json_object，
+  // 声明 jsonMode 能力的引擎会收到 response_format=json_object，
   // 其余引擎走 prompt + parser 兜底（避免向非预期引擎发送不支持的参数）。
   // 透传机制：pi-ai 对 openai-completions 适配器执行 Object.assign(params, samplingParams)。
   const useJson = Boolean(opts?.jsonMode) && capabilitiesFor(entry).jsonMode;
