@@ -68,6 +68,15 @@ describe('loadConfig', () => {
     expect(loadConfig()).toEqual(DEFAULT_CONFIG);
   });
 
+  it('CodeBuddy SDK provider 配置可保存和恢复', () => {
+    store['ai-interview-trainer.config'] = JSON.stringify({
+      providers: [{ id: 'codebuddy-sdk', enabled: true, model: '', apiKey: '' }],
+    });
+    expect(loadConfig().providers).toEqual([
+      { id: 'codebuddy-sdk', enabled: true, model: '', apiKey: '', baseUrl: '' },
+    ]);
+  });
+
   it('历史遗留的已下线引擎（openai/anthropic）被丢弃，openrouter 恢复后正常保留', () => {
     store['ai-interview-trainer.config'] = JSON.stringify({
       providers: [
