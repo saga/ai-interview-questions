@@ -16,6 +16,7 @@ export const KNOWLEDGE_AREA_LABELS: Record<KnowledgeArea, string> = {
   'data-platform': 'Snowflake 独立课程',
   'security-architecture': 'Security Architecture 独立课程',
   'campus-employment': '中国大学生本科研究生校招面试技巧培训',
+  'sap-consulting': 'SAP IT Service Consultant 独立课程',
 };
 
 /** 按 id（= topic slug）查知识点。 */
