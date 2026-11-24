@@ -293,7 +293,7 @@ Post-Implementation Review、业务收益评估、Lessons Learned、运维交接
 
 ## 参考资料
 
-- [JETRO: Communicating with Japanese in Business](https://www.jetro.go.jp/ext_images/mexico/mercadeo/communicationwith.pdf) — 日本商务沟通中的决策、会议、反馈、信息共享和语言误解案例。
+- [JETRO: Communicating with Japanese in Business](https://www.jetro.go.jp/ext_images/canada/pdfs/communicationwithjapanese.pdf) — 日本商务沟通中的决策、会议、反馈、信息共享和语言误解案例。
 - [EU-Japan Centre: From Understanding to Navigating Japanese Business Culture](https://www.eu-japan.eu/sites/default/files/report_from_understanding_to_navigating_japanese_business_culture.pdf) — 强调避免刻板印象，讨论沟通、决策、信任和策略协作。
-- [SAP Business One Implementation Methodology](https://help.sap.com/doc/download_multimedia_ebooks_businessone90_tb1200_01_01_story_html/9.0/en-US/story_content/external_files/implementation%20Tools%20-%20Implementation%20Methodology.pdf) — 项目准备、客户期望、范围、风险、阶段里程碑和交接实践。该资料针对 SAP Business One 的 AIP 方法，作为项目管理实践参考，不代表所有 SAP 产品的当前实施方法。
+- [SAP Learning: Utilizing the Implementation Project Methodology](https://learning.sap.com/courses/implementing-sap-business-one/utilizing-the-implementation-project-methodology) — 当前 SAP Learning 课程说明客户期望、项目角色、需求分析、阶段里程碑、培训准备和支持交接。\n- [SAP Business One Implementation Methodology](https://help.sap.com/doc/download_multimedia_ebooks_businessone90_tb1200_01_01_story_html/9.0/en-US/story_content/external_files/implementation%20Tools%20-%20Implementation%20Methodology.pdf) — 项目准备、客户期望、范围、风险、阶段里程碑和交接实践。该资料针对 SAP Business One 的 AIP 方法，作为项目管理实践参考，不代表所有 SAP 产品的当前实施方法。
 - [Atlassian: ITIL 4 Guiding Principles and Practices](https://www.atlassian.com/itsm/itil) — 服务价值、人员与组织、合作伙伴、流程和持续改进。
