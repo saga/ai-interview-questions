@@ -28,6 +28,7 @@ export interface CodeBuddySdkTaskInput {
 
 export interface CodeBuddySdkTaskResult {
   text: string;
+  durationMs: number;
   sessionId?: string;
   usage?: {
     inputTokens: number;
@@ -166,6 +167,7 @@ export class CodeBuddySdkRuntime {
         }),
       },
     });
+    });
 
     // A query handle can resolve after the HTTP request has timed out. Interrupt it
     // immediately rather than allowing an unobserved local CLI task to continue.
@@ -204,7 +206,7 @@ export class CodeBuddySdkRuntime {
       }
 
       if (!text.trim()) throw new Error('CodeBuddy Agent SDK returned no text. Check the local CLI login and model access.');
-      return { text: text.trim(), ...(sessionId ? { sessionId } : {}), ...(usage ? { usage } : {}) };
+      return { text: text.trim(), durationMs: Date.now() - startedAt, ...(sessionId ? { sessionId } : {}), ...(usage ? { usage } : {}) };
     } catch (error) {
       if (error instanceof CodeBuddySdkTaskError) throw error;
       requestInterruption('aborted');
