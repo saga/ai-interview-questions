@@ -30,12 +30,27 @@ export const SAP_IT_SERVICE_COURSE_TOPICS = [
   { id: 'sap-troubleshooting', label: '故障诊断与服务恢复' }
 ] as const;
 
+
+/** Coursera SAP Technology Consultant Professional Certificate 对齐的补充主题。 */
+export const SAP_COURsera_COURSE_TOPICS = [
+  { id: 'sap-professional-practice', label: 'SAP 顾问职业基础与协作' },
+  { id: 'sap-enterprise-systems-environment', label: '企业系统环境与技术基础' },
+  { id: 'sap-customer-engagement-discovery', label: '客户参与、发现与价值分析' },
+  { id: 'sap-solution-design-pitch', label: 'SAP 方案设计、演示与提案' },
+  { id: 'sap-solution-implementation', label: 'SAP 方案实施与部署' },
+  { id: 'sap-test-planning-execution', label: '测试计划、测试脚本与质量保障' },
+  { id: 'sap-project-methods-governance', label: '项目管理、敏捷协作与治理' },
+  { id: 'sap-consultant-capstone', label: '综合实施项目与交付物实践' },
+  { id: 'sap-post-implementation-review', label: '上线后评估、项目关闭与持续改进' },
+  { id: 'sap-career-readiness', label: 'SAP 职业发展与求职准备' }
+] as const;
+
 export const SAP_IT_SERVICE_TOPIC_LABELS: Record<string, string> = Object.fromEntries(
-  SAP_IT_SERVICE_COURSE_TOPICS.map(({ id, label }) => [id, label]),
+  [...SAP_IT_SERVICE_COURSE_TOPICS, ...SAP_COURsera_COURSE_TOPICS].map(({ id, label }) => [id, label]),
 );
 
 export const SAP_IT_SERVICE_ANGLE_WHITELIST: Record<string, QuestionAngle[]> = Object.fromEntries(
-  SAP_IT_SERVICE_COURSE_TOPICS.map(({ id }) => [id, ['scenario', 'fundamental', 'tradeoff', 'design', 'diagnosis', 'synthesis']]),
+  [...SAP_IT_SERVICE_COURSE_TOPICS, ...SAP_COURsera_COURSE_TOPICS].map(({ id }) => [id, ['scenario', 'fundamental', 'comparison', 'tradeoff', 'design', 'diagnosis', 'synthesis', 'implementation']]),
 );
 
 export const CAMPUS_EMPLOYMENT_COURSE_TOPICS = [
@@ -93,14 +108,12 @@ export const LEARNING_TRACKS = [
     learningPathUrl: 'https://github.com/saga/ai-interview-questions/blob/main/docs/security-architecture-course-roadmap.md',
   },
   {
-
-  {
     id: 'sap-it-service-consultant',
     title: 'SAP IT Service Consultant',
     shortTitle: 'SAP',
     description: '面向 SAP IT 服务与实施顾问：业务流程、需求发现、S/4HANA、Fit-to-Standard、集成、数据迁移、测试、Cloud ALM 和应用运维。',
     actionLabel: '进入 SAP 顾问学习',
-    topicCount: 20,
+    topicCount: 30,
     learningPathUrl: 'https://github.com/saga/ai-interview-questions/blob/main/docs/sap-it-service-consultant-roadmap.md',
   },
   {
