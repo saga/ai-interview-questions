@@ -55,6 +55,33 @@ describe('CodeBuddySdkRuntime', () => {
     });
   });
 
+  it('uses the result payload when the SDK omits assistant text blocks', async () => {
+    const runtime = new CodeBuddySdkRuntime(() => fakeQuery([
+      { type: 'result', subtype: 'success', result: 'final answer', usage: { input_tokens: 5, output_tokens: 2, cache_read_input_tokens: 3 } },
+    ]));
+    await expect(runtime.run({ prompt: 'task', systemPrompt: 'rules' }))
+      .resolves.toMatchObject({
+        text: 'final answer',
+        usage: { inputTokens: 5, outputTokens: 2, cacheReadTokens: 3, totalTokens: 10 },
+      });
+  });
+
+  it('rejects streams that end without a terminal result event', async () => {
+    const runtime = new CodeBuddySdkRuntime(() => fakeQuery([
+      { type: 'assistant', message: { content: [{ type: 'text', text: 'partial answer' }] } },
+    ]));
+    await expect(runtime.run({ prompt: 'task', systemPrompt: 'rules' }))
+      .rejects.toMatchObject({ code: 'sdk-error' });
+  });
+
+  it('rejects SDK result events that report execution errors', async () => {
+    const runtime = new CodeBuddySdkRuntime(() => fakeQuery([
+      { type: 'result', subtype: 'error_during_execution', is_error: true, errors: ['model unavailable'] },
+    ]));
+    await expect(runtime.run({ prompt: 'task', systemPrompt: 'rules' }))
+      .rejects.toThrow('model unavailable');
+  });
+
   it('rejects invalid task deadlines before starting the SDK', async () => {
     const factory = vi.fn(() => fakeQuery([]));
     const runtime = new CodeBuddySdkRuntime(factory);
