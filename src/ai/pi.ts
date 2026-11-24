@@ -145,7 +145,16 @@ export async function callCopilotSDKCompletion(
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ model: model.trim() || 'auto', system, user, history }),
   });
-  const payload = await response.json().catch(() => null) as { content?: unknown; error?: unknown } | null;
+  const payload = await response.json().catch(() => null) as {
+    content?: unknown;
+    error?: unknown;
+    usage?: {
+      inputTokens?: unknown;
+      outputTokens?: unknown;
+      cacheReadTokens?: unknown;
+      cacheCreationTokens?: unknown;
+    };
+  } | null;
   if (!response.ok) {
     const detail = typeof payload?.error === 'string' ? payload.error : `HTTP ${response.status}`;
     throw new Error(`GitHub Copilot SDK 调用失败：${detail}`);
@@ -165,6 +174,7 @@ export async function callCodeBuddySDKCompletion(
   system: string,
   user: string,
   history: CodeBuddySDKMessage[] = [],
+  onUsage?: (usage: LLMUsage) => void,
 ): Promise<string> {
   const runtime = globalThis as unknown as { location?: { origin: string } };
   const origin = runtime.location?.origin;
@@ -183,6 +193,19 @@ export async function callCodeBuddySDKCompletion(
   if (typeof payload?.content !== 'string' || !payload.content.trim()) {
     throw new Error('CodeBuddy Agent SDK 未返回文本内容。');
   }
+  if (payload.usage && onUsage) {
+    const number = (value: unknown) => typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : 0;
+    const inputTokens = number(payload.usage.inputTokens);
+    const outputTokens = number(payload.usage.outputTokens);
+    const cacheHitTokens = number(payload.usage.cacheReadTokens);
+    const cacheCreationTokens = number(payload.usage.cacheCreationTokens);
+    onUsage({
+      inputTokens: inputTokens + cacheHitTokens + cacheCreationTokens,
+      outputTokens,
+      cacheHitTokens,
+      cacheMissTokens: inputTokens + cacheCreationTokens,
+    });
+  }
   return payload.content;
 }
 
@@ -197,7 +220,7 @@ export async function callLLM(
     return callCopilotSDKCompletion(entry.model || 'auto', system, user);
   }
   if (entry.id === 'codebuddy-sdk') {
-    return callCodeBuddySDKCompletion(entry.model, system, user);
+    return callCodeBuddySDKCompletion(entry.model, system, user, [], opts?.onUsage);
   }
   const models = buildModels(entry);
   const model = getModel(models, entry);
