@@ -1,5 +1,5 @@
 ## 2026-11-24 · CodeBuddy SDK 调用契约与生命周期收口
-- 将 system prompt 改为 SDK 原生 options.systemPrompt，用户输入保持独立；Query 参数类型直接从 SDK query() 推导，避免宽泛类型转换掩盖接口错误。
+- 将应用 system prompt 改为 SDK 原生 options.systemPrompt.append，保留 CodeBuddy 默认 system prompt，用户输入保持独立；Query 参数类型直接从 SDK query() 推导，避免宽泛类型转换掩盖接口错误。
 - 使用 SDK 原生 abortController，超时/客户端断开时同时请求 abort、Query interrupt 和 iterator.return；迟到的 Query Handle 仍会被立即中断。
 - 只接受成功的终态 result；补充 result.result 文本回退，缺失终态、执行错误和空响应均明确失败。
 - 移除未定义的 tools 参数，保留 SDK 支持的 allowedTools: []、拒绝型 canUseTool、systemPrompt、thinking 和 effort。
