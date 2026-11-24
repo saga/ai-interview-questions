@@ -525,9 +525,9 @@ export default function SettingsPanel({
                 addonBefore="模型"
                 value={provider.model}
                 onChange={(event) => updateProvider(index, { model: event.target.value })}
-                placeholder={provider.id === 'chrome' ? 'Chrome 内置模型，无需填写' : provider.id === 'copilot-sdk' ? 'auto（或输入模型 ID）' : '模型 ID'}
+                placeholder={provider.id === 'chrome' ? 'Chrome 内置模型，无需填写' : provider.id === 'copilot-sdk' ? 'auto（或输入模型 ID）' : provider.id === 'codebuddy-sdk' ? '留空使用 CodeBuddy CLI 默认模型' : '模型 ID'}
               />
-              {provider.id !== 'chrome' && provider.id !== 'copilot-sdk' && (
+              {provider.id !== 'chrome' && provider.id !== 'copilot-sdk' && provider.id !== 'codebuddy-sdk' && (
                 <Input.Password
                   addonBefore={provider.id === 'cloudflare-workers-ai' ? 'API Token' : 'API Key'}
                   value={provider.apiKey}
