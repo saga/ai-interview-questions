@@ -146,7 +146,9 @@ export class CodeBuddySdkRuntime {
     const onAbort = () => requestInterruption('aborted');
     input.signal?.addEventListener('abort', onAbort, { once: true });
 
-    const queryPromise = Promise.resolve().then(() => this.queryFactory({
+    const queryPromise = Promise.resolve().then(() => {
+      if (interruptionKind) throw new CodeBuddySdkTaskError(interruptionKind, 'CodeBuddy request was interrupted before query initialization.');
+      return this.queryFactory({
       prompt,
       options: {
         ...(input.model?.trim() ? { model: input.model.trim() } : {}),
@@ -163,7 +165,7 @@ export class CodeBuddySdkRuntime {
           message: 'This one-shot task does not allow tool execution: ' + toolName,
         }),
       },
-    }));
+    });
 
     // A query handle can resolve after the HTTP request has timed out. Interrupt it
     // immediately rather than allowing an unobserved local CLI task to continue.
