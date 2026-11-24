@@ -77,38 +77,17 @@ describe('loadConfig', () => {
     ]);
   });
 
-  it('历史遗留的已下线引擎（openai/anthropic）被丢弃，openrouter 恢复后正常保留', () => {
+  it('OpenRouter 与 Cloudflare Workers AI 历史配置会被丢弃', () => {
     store['ai-interview-trainer.config'] = JSON.stringify({
       providers: [
         { id: 'chrome', enabled: true },
-        { id: 'openai', enabled: true, model: 'gpt-4o', apiKey: 'sk-a' },
-        { id: 'anthropic', enabled: false, model: 'claude-3-5-sonnet', apiKey: 'sk-b' },
+        { id: 'openrouter', enabled: true, model: 'anthropic/claude-haiku-4.5', apiKey: 'sk-or' },
+        { id: 'cloudflare-workers-ai', enabled: true, model: '@cf/model', apiKey: 'token', accountId: 'account' },
       ],
     });
-    expect(loadConfig()).toEqual({
-      providers: [{ id: 'chrome', enabled: true, model: '', apiKey: '', baseUrl: '' }],
-      generateOpenQuestions: false,
-      questionChallengerEnabled: false,
-      runtimeVariantEnabled: false,
-      masteryThreshold: 75,
-      disabledCategories: [],
-      proficiency: DEFAULT_CONFIG.proficiency,
-    });
-
-    store['ai-interview-trainer.config'] = JSON.stringify({
-      providers: [{ id: 'openrouter', enabled: true, model: 'anthropic/claude-haiku-4.5', apiKey: 'sk-or-v1-x' }],
-    });
-    expect(loadConfig()).toEqual({
-      providers: [
-        { id: 'openrouter', enabled: true, model: 'anthropic/claude-haiku-4.5', apiKey: 'sk-or-v1-x', baseUrl: '' },
-      ],
-      generateOpenQuestions: false,
-      questionChallengerEnabled: false,
-      runtimeVariantEnabled: false,
-      masteryThreshold: 75,
-      disabledCategories: [],
-      proficiency: DEFAULT_CONFIG.proficiency,
-    });
+    expect(loadConfig().providers).toEqual([
+      { id: 'chrome', enabled: true, model: '', apiKey: '', baseUrl: '' },
+    ]);
   });
 
   it('新链式形态逐项清洗并去重（同引擎保留首个）', () => {
