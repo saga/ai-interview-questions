@@ -76,7 +76,7 @@ uv run --project analysis --extra analysis python analysis/question_analysis.py 
 
 进入「设置」页，直接在 JSON 编辑器里编辑引擎配置（示例见 `docs/config.example.json`）：`providers` 数组顺序即降级链优先级——调用时从上到下依次尝试，失败自动切换到下一个。可用引擎：`chrome`（浏览器内置 AI，免密钥）、`local`（本机 OpenAI 兼容服务如 Unsloth/vLLM/Ollama，免密钥）、`deepseek` / `openrouter` / `google`（Gemini，云端直连，需 API Key）、`cloudflare-workers-ai`（需 API Token + Account ID）以及 `copilot-sdk`（复用本机 Copilot CLI 登录态）和 `codebuddy-sdk`（复用本机 CodeBuddy CLI 登录态），均无需 API Key 且仅在 Vite 开发模式可用。推荐把免费的本地引擎放前面、云端强模型殿后兜底；保存时自动校验格式。普通云 Provider 密钥仅存本机 `localStorage`。Copilot / CodeBuddy SDK 均由 Vite 的 Node 进程调用，浏览器只访问限制为 localhost 的同源开发 API，不接触 CLI 登录凭据。首页右上角会显示 "AI ✓ / AI 未配置" 状态。
 
-> **local-first 隐私架构，但浏览器侧密钥并非安全机密**：普通云 Provider 的密钥受 XSS / 恶意浏览器扩展威胁，请勿使用高权限生产密钥。使用 `copilot-sdk` 前需本机安装并登录 GitHub Copilot CLI；SDK API 仅由 Vite 开发插件提供，生产静态构建不包含该接口。未配密钥也能用题库原题（开放题不评分）。
+> **local-first 隐私架构，但浏览器侧密钥并非安全机密**：普通云 Provider 的密钥受 XSS / 恶意浏览器扩展威胁，请勿使用高权限生产密钥。使用 `copilot-sdk` 或 `codebuddy-sdk` 前，需在本机安装对应 CLI 并完成登录；两个 SDK API 都由 Vite 开发插件提供，只允许 localhost 访问，生产静态构建不包含这些接口。未配置 AI 引擎也能使用题库原题（开放题不评分）。
 
 ## 扩展题库
 
