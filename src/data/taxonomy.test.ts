@@ -99,12 +99,12 @@ describe('知识节点与 taxonomy 对齐', () => {
     const nodes = knowledgeNodes.filter((node) => node.courseId === 'sap-it-service-consultant');
     const questions = questionBank.questions.filter((question) => question.courseId === 'sap-it-service-consultant');
     const themeIds = new Set(SAP_IT_SERVICE_COURSE_TOPICS.map((topic) => topic.id));
-    expect(nodes).toHaveLength(20);
+    expect(nodes).toHaveLength(30);
     expect(nodes.every((node) => node.area === 'sap-consulting' && themeIds.has(node.topic))).toBe(true);
-    expect(questions).toHaveLength(200);
+    expect(questions).toHaveLength(400);
     for (const node of nodes) {
       const nodeQuestions = questions.filter((question) => question.topic === node.id);
-      expect(nodeQuestions).toHaveLength(10);
+      expect(nodeQuestions.length).toBeGreaterThanOrEqual(10);
       expect(nodeQuestions.every((question) => question.knowledgeId === node.id && question.source?.materialId)).toBe(true);
     }
     expect(questions.every((question) => question.formats.choice && !question.formats.open)).toBe(true);
