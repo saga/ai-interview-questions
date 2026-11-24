@@ -60,6 +60,17 @@ export const LEARNING_TRACKS = [
     learningPathUrl: 'https://github.com/saga/ai-interview-questions/blob/main/docs/security-architecture-course-roadmap.md',
   },
   {
+
+  {
+    id: 'sap-it-service-consultant',
+    title: 'SAP IT Service Consultant',
+    shortTitle: 'SAP',
+    description: '面向 SAP IT 服务与实施顾问：业务流程、需求发现、S/4HANA、Fit-to-Standard、集成、数据迁移、测试、Cloud ALM 和应用运维。',
+    actionLabel: '进入 SAP 顾问学习',
+    topicCount: 20,
+    learningPathUrl: 'https://github.com/saga/ai-interview-questions/blob/main/docs/sap-it-service-consultant-roadmap.md',
+  },
+  {
     id: 'campus-employment',
     title: '中国大学生本科研究生校招面试技巧培训',
     shortTitle: '校招面试',
