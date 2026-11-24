@@ -3,7 +3,7 @@
 - 使用 SDK 原生 abortController，超时/客户端断开时同时请求 abort、Query interrupt 和 iterator.return；迟到的 Query Handle 仍会被立即中断。
 - 只接受成功的终态 result；补充 result.result 文本回退，缺失终态、执行错误和空响应均明确失败。
 - 移除未定义的 tools 参数，保留 SDK 支持的 allowedTools: []、拒绝型 canUseTool、systemPrompt、thinking 和 effort。
-- 明确运行要求：Node.js 22.13+、CodeBuddy CLI 2.125.1+（非持久化 Session 的最低版本）；补充 ADR-094 与部署说明。
+- 明确运行要求：Node.js 22.13+、CodeBuddy CLI 2.125.1+（非持久化 Session 的最低版本）；补充 ADR-095 与部署说明。
 - 新增 Runtime 测试覆盖 system prompt、工具权限、Usage、终态校验、异常结果、超时和取消。实际 CI 结果以本次提交触发的 workflow 为准；本地真实 CLI 登录/模型调用仍需单独验证。
 
 ## 2026-11-24 · 合并校招题库扩展至 785 题
