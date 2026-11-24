@@ -56,7 +56,8 @@ export const SAP_JUNIOR_PRACTICE_TOPICS = [
   { id: 'sap-delivery-coordination', label: '任务管理、依赖与交接', description: '理解项目任务、责任分配、依赖、版本、交接和变更控制；让工作可见、可追踪，避免口头任务和责任真空。' },
   { id: 'sap-service-incident', label: '客户支持、Incident 与服务体验', description: '从用户报告中识别事件影响、优先级和服务目标；及时更新客户、保护数据、正确升级，并跟踪恢复与验证。' },
   { id: 'sap-change-adoption', label: '变更管理、培训与 UAT', description: '理解系统上线不仅是技术部署，还涉及业务流程变化、用户准备、培训、UAT、反馈和采用情况。' },
-  { id: 'sap-junior-professional', label: '实习生职业行为与团队协作', description: '面向无正式项目经验的毕业生和实习生，考察学习、求助、任务管理、保密、反馈、诚实表达和职业边界。' }
+  { id: 'sap-junior-professional', label: '实习生职业行为与团队协作', description: '面向无正式项目经验的毕业生和实习生，考察学习、求助、任务管理、保密、反馈、诚实表达和职业边界。' },
+  { id: 'sap-business-ai', label: 'SAP Business AI、Joule 与企业业务应用', description: 'SAP Joule、Joule for Consultants、Joule Studio、SAP AI Core 和 Generative AI Hub；覆盖财务、采购、销售、供应链等真实业务场景，以及授权、审批、数据治理和结果核验。' }
 ] as const;
 
 export const SAP_IT_SERVICE_TOPIC_LABELS: Record<string, string> = Object.fromEntries(
@@ -127,7 +128,7 @@ export const LEARNING_TRACKS = [
     shortTitle: 'SAP',
     description: '面向大学毕业生和实习生的 SAP 入门课程。以基础概念、业务流程、信息收集、按流程执行、准确记录和及时求助为主；不要求没有工作经验的学习者独立设计方案、主持客户决策或承担交付责任。',
     actionLabel: '进入 SAP 顾问学习',
-    topicCount: 40,
+    topicCount: 41,
     learningPathUrl: 'https://github.com/saga/ai-interview-questions/blob/main/docs/sap-it-service-consultant-roadmap.md',
   },
   {
