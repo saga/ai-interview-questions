@@ -154,7 +154,11 @@ export default function codebuddySdkPlugin(): Plugin {
               signal: controller.signal,
             });
             if (!res.destroyed && !res.writableEnded) {
-              respond(res, 200, { content: result.text, model: model ?? 'auto' });
+              respond(res, 200, {
+                content: result.text,
+                model: model ?? 'cli-default',
+                ...(result.usage ? { usage: result.usage } : {}),
+              });
             }
           } finally {
             req.off('aborted', onRequestAborted);
