@@ -83,6 +83,12 @@ describe('isEntryValid（按引擎区分校验）', () => {
     expect(p?.name).toBe('GitHub Copilot SDK');
   });
 
+  it('CodeBuddy SDK 使用本机 CLI 登录态，不要求 apiKey 或 model', () => {
+    expect(isEntryValid(entry({ id: 'codebuddy-sdk', model: '', apiKey: '' }))).toBe(true);
+    const p = new PiAIProvider(entry({ id: 'codebuddy-sdk', model: '', apiKey: '' }));
+    expect(p.name).toBe('CodeBuddy Agent SDK');
+  });
+
   it('云端引擎必须有 apiKey 与 model', () => {
     expect(isEntryValid({ id: 'deepseek', enabled: true, model: 'deepseek-flash', apiKey: '' })).toBe(false);
     expect(isEntryValid({ id: 'deepseek', enabled: true, model: '', apiKey: 'sk-x' })).toBe(false);
