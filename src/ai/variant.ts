@@ -28,7 +28,7 @@ import { z } from 'zod';
 // （题干 + 选项文本改写），选项顺序与答案由程序在 applyVariant 中重排与重映射，
 // 本 prompt 不要求也不允许模型决定顺序 / 答案。ADR-080 把生成空间从「换皮 paraphrase」
 // 放宽到「同知识重写」，但槽位↔语义角色对应、答案恒取 canonical 两条硬边界不动。
-export const VARIANT_SYSTEM = `[PROMPT-VERSION v7]
+export const VARIANT_SYSTEM = `[PROMPT-VERSION v8]
 
 对已有面试题做同知识重写（same-knowledge rewrite）：测的是同一件事，但可以像一道真正重新写过的题。
 
@@ -46,6 +46,7 @@ export const VARIANT_SYSTEM = `[PROMPT-VERSION v7]
 8. 不挪动选项的语义角色：每个输出槽位必须保持原选项的语义角色，不得将两个选项的语义角色互换（顺序与答案由程序在后续步骤统一处理）。
 9. 不生成答案。
 10. 不生成解析。
+11. 不增加考生身份、资历或入职阶段的设定，例如“你是刚加入项目的毕业生实习生 / Junior Consultant”。课程受众由课程级规则统一定义，不在每道题中重复；只保留场景本身必需的业务角色。
 
 题干可以（且鼓励）：
 - 改变场景、角色、问题入口和约束表达，只要最终仍测量相同的核心知识与判断
@@ -196,7 +197,7 @@ export async function generateVariant(
 //
 // 只走离线管线（scripts/question-variants.ts --mode assessment，默认），绝不进 runtime。
 
-export const VARIANT_ASSESSMENT_SYSTEM = `[PROMPT-VERSION v1]
+export const VARIANT_ASSESSMENT_SYSTEM = `[PROMPT-VERSION v2]
 
 为已有面试题设计一道「同一知识点、不同推理路径」的变体。
 
@@ -226,6 +227,7 @@ export const VARIANT_ASSESSMENT_SYSTEM = `[PROMPT-VERSION v1]
 11. 选择题：每个选项做幅度明显的改写（换视角/句式/主语，而非仅同义替换），
     输出的第 N 个选项必须是输入第 N 个选项的改写。
 12. 开放题：只输出 question，不要 options 字段。
+13. 不增加考生身份、资历或入职阶段的设定，例如“你是刚加入项目的毕业生实习生 / Junior Consultant”。课程受众由课程级规则统一定义，不在每道题中重复；只保留场景本身必需的业务角色。
 
 只输出 JSON：
 {
