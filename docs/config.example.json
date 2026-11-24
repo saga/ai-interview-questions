@@ -51,6 +51,12 @@
         "enabled": false,
         "model": "auto",
         "apiKey": ""
+      },
+      {
+        "id": "codebuddy-sdk",
+        "enabled": false,
+        "model": "",
+        "apiKey": ""
       }
     ]
   },
@@ -128,10 +134,10 @@
   },
 
   "$字段说明": {
-    "providers[].id": "'chrome' | 'local' | 'deepseek' | 'openrouter' | 'google' | 'cloudflare-workers-ai' | 'copilot-sdk'（其余 id 在保存时被整体拒绝，读取时被丢弃）",
+    "providers[].id": "'chrome' | 'local' | 'deepseek' | 'openrouter' | 'google' | 'cloudflare-workers-ai' | 'copilot-sdk' | 'codebuddy-sdk'（其余 id 在保存时被整体拒绝，读取时被丢弃）",
     "providers[].enabled": "停用的引擎保留配置但不参与降级链；停用引擎允许配置不完整",
-    "providers[].model": "模型 ID；chrome 留空；local 填本地服务的模型 ID（见其 /v1/models）；deepseek 如 deepseek-flash；openrouter 填聚合平台的全名（如 anthropic/claude-haiku-4.5）；google 填 Gemini 模型（如 gemini-2.5-flash）；cloudflare 填 @cf/ 前缀模型（如 @cf/meta/llama-3.3-70b-instruct-fp8-fast）；copilot-sdk 可填 auto 或 SDK 支持的模型 ID",
-    "providers[].apiKey": "云端引擎必填（deepseek/openrouter/google 为 API Key，cloudflare 为 API Token）；local 可选（部分服务需要）；chrome 与 copilot-sdk 不适用（Copilot SDK 复用本机 Copilot CLI 登录态）",
+    "providers[].model": "模型 ID；chrome 留空；local 填本地服务的模型 ID（见其 /v1/models）；deepseek 如 deepseek-flash；openrouter 填聚合平台的全名（如 anthropic/claude-haiku-4.5）；google 填 Gemini 模型（如 gemini-2.5-flash）；cloudflare 填 @cf/ 前缀模型（如 @cf/meta/llama-3.3-70b-instruct-fp8-fast）；copilot-sdk 可填 auto 或 SDK 支持的模型 ID；codebuddy-sdk 留空时使用本机 CLI 默认模型",
+    "providers[].apiKey": "云端引擎必填（deepseek/openrouter/google 为 API Key，cloudflare 为 API Token）；local 可选（部分服务需要）；chrome、copilot-sdk 与 codebuddy-sdk 不适用（两个 SDK 均复用本机 CLI 登录态；CodeBuddy API Key 如使用则通过 Node 进程环境变量配置，不存浏览器配置）",
     "providers[].baseUrl": "仅 id=local 使用，OpenAI 兼容服务地址，默认 http://127.0.0.1:8888/v1（Unsloth Studio），也支持 vLLM / Ollama / llama.cpp 等",
     "providers[].accountId": "仅 id='cloudflare-workers-ai' 使用：Cloudflare Account ID（仪表盘右侧可查），API Token 之外必填；其他引擎不需要此字段",
     "generateOpenQuestions": "布尔值，默认 false：不生成开放题（纯开放题不入卷、双形态题一律出选择）；true 时按组卷配额（约 30%）生成开放题",
