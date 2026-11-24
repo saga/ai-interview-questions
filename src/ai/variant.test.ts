@@ -7,6 +7,8 @@ import {
   VARIANT_KIND_GUIDANCE,
   VARIANT_PROMPT_VERSION,
   VARIANT_SYSTEM,
+  VARIANT_ASSESSMENT_PROMPT_VERSION,
+  VARIANT_ASSESSMENT_SYSTEM,
   generateAssessmentVariant,
   generateVariant,
 } from './variant';
@@ -124,10 +126,10 @@ describe('generateVariant（轻量变体）', () => {
   });
 });
 
-describe('VARIANT_SYSTEM v7（ADR-080/081：Relax generation, not invariants）', () => {
+describe('VARIANT_SYSTEM v8（ADR-080/081：Relax generation, not invariants）', () => {
   it('版本号与解析值一致', () => {
-    expect(VARIANT_SYSTEM).toContain('[PROMPT-VERSION v7]');
-    expect(VARIANT_PROMPT_VERSION).toBe('v7');
+    expect(VARIANT_SYSTEM).toContain('[PROMPT-VERSION v8]');
+    expect(VARIANT_PROMPT_VERSION).toBe('v8');
   });
 
   it('数值约束保持不变（解题用数值/比例/阈值不得改写）', () => {
@@ -154,6 +156,13 @@ describe('VARIANT_SYSTEM v7（ADR-080/081：Relax generation, not invariants）'
     // ③ 背景术语不设数字配额，只禁引入新的解题依赖
     expect(VARIANT_SYSTEM).toContain('不得引入新的解题依赖知识');
     expect(VARIANT_SYSTEM).not.toContain('不超过 2 个');
+  });
+
+  it('题干不添加考生身份、资历或入职阶段前缀', () => {
+    expect(VARIANT_SYSTEM).toContain('不增加考生身份、资历或入职阶段的设定');
+    expect(VARIANT_SYSTEM).toContain('课程受众由课程级规则统一定义');
+    expect(VARIANT_ASSESSMENT_SYSTEM).toContain('不增加考生身份、资历或入职阶段的设定');
+    expect(VARIANT_ASSESSMENT_PROMPT_VERSION).toBe('v2');
   });
 
   it('JSON 输出契约不变', () => {
