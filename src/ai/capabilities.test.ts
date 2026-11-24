@@ -31,6 +31,13 @@ describe('capabilitiesFor（P2⑦ 能力协商）', () => {
     expect(c.toolCalls).toBe(false);
   });
 
+  it('CodeBuddy SDK 不声明 JSON 或工具调用能力', () => {
+    const c = capabilitiesFor(entry('codebuddy-sdk'));
+    expect(c.jsonMode).toBe(false);
+    expect(c.toolCalls).toBe(false);
+    expect(c.multiRound).toBe(true);
+  });
+
   it('未知引擎回退保守默认：仅 multiRound 为 true', () => {
     const c = capabilitiesFor(entry('does-not-exist' as ProviderEntry['id']));
     expect(c).toEqual<LLMCapabilities>({
