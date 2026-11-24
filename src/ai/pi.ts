@@ -121,6 +121,7 @@ export function piUsageToLLMUsage(u: Usage): LLMUsage {
 
 /** Message history sent to the local Copilot SDK dev endpoint. */
 export type CopilotSDKMessage = { role: 'user' | 'assistant'; content: string };
+export type CodeBuddySDKMessage = { role: 'user' | 'assistant'; content: string };
 
 /**
  * Invoke the local Copilot SDK endpoint provided by vite-plugin-copilot-sdk.ts.
@@ -155,6 +156,36 @@ export async function callCopilotSDKCompletion(
   return payload.content;
 }
 
+/**
+ * Invoke the local CodeBuddy Agent SDK endpoint. The SDK and local CLI credentials stay in Node.
+ * This endpoint exists only in Vite development mode.
+ */
+export async function callCodeBuddySDKCompletion(
+  model: string,
+  system: string,
+  user: string,
+  history: CodeBuddySDKMessage[] = [],
+): Promise<string> {
+  const runtime = globalThis as unknown as { location?: { origin: string } };
+  const origin = runtime.location?.origin;
+  if (!origin) throw new Error('CodeBuddy Agent SDK Provider 需要通过 `npm run dev` 启动 Vite。');
+
+  const response = await fetch(`${origin}/api/codebuddy-sdk/complete`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ model: model.trim(), system, user, history }),
+  });
+  const payload = await response.json().catch(() => null) as { content?: unknown; error?: unknown } | null;
+  if (!response.ok) {
+    const detail = typeof payload?.error === 'string' ? payload.error : `HTTP ${response.status}`;
+    throw new Error(`CodeBuddy Agent SDK 调用失败：${detail}`);
+  }
+  if (typeof payload?.content !== 'string' || !payload.content.trim()) {
+    throw new Error('CodeBuddy Agent SDK 未返回文本内容。');
+  }
+  return payload.content;
+}
+
 /** 调用 LLM 并返回纯文本（一次性补全，用于变体生成、开放题评分等 one-shot 场景）。 */
 export async function callLLM(
   entry: ProviderEntry,
@@ -164,6 +195,9 @@ export async function callLLM(
 ): Promise<string> {
   if (entry.id === 'copilot-sdk') {
     return callCopilotSDKCompletion(entry.model || 'auto', system, user);
+  }
+  if (entry.id === 'codebuddy-sdk') {
+    return callCodeBuddySDKCompletion(entry.model, system, user);
   }
   const models = buildModels(entry);
   const model = getModel(models, entry);
