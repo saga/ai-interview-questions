@@ -5,7 +5,10 @@
  * no implicit settings/Skills/MCP, no ordinary tools, bounded query lifetime,
  * iterator cleanup, and interruption of handles that arrive after cancellation.
  */
-export type CodeBuddyQueryHandle = ReturnType<typeof import('@tencent-ai/agent-sdk').query>;
+export interface CodeBuddyQueryHandle extends AsyncIterable<unknown> {
+  interrupt?: () => unknown;
+}
+
 export type CodeBuddyQueryInput = Parameters<typeof import('@tencent-ai/agent-sdk').query>[0];
 
 export type CodeBuddyQueryFactory = (
