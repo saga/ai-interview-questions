@@ -32,7 +32,7 @@ export const SAP_IT_SERVICE_COURSE_TOPICS = [
 
 
 /** Coursera SAP Technology Consultant Professional Certificate 对齐的补充主题。 */
-export const SAP_COURsera_COURSE_TOPICS = [
+export const SAP_COURSERA_COURSE_TOPICS = [
   { id: 'sap-professional-practice', label: 'SAP 顾问职业基础与协作' },
   { id: 'sap-enterprise-systems-environment', label: '企业系统环境与技术基础' },
   { id: 'sap-customer-engagement-discovery', label: '客户参与、发现与价值分析' },
@@ -46,11 +46,11 @@ export const SAP_COURsera_COURSE_TOPICS = [
 ] as const;
 
 export const SAP_IT_SERVICE_TOPIC_LABELS: Record<string, string> = Object.fromEntries(
-  [...SAP_IT_SERVICE_COURSE_TOPICS, ...SAP_COURsera_COURSE_TOPICS].map(({ id, label }) => [id, label]),
+  [...SAP_IT_SERVICE_COURSE_TOPICS, ...SAP_COURSERA_COURSE_TOPICS].map(({ id, label }) => [id, label]),
 );
 
 export const SAP_IT_SERVICE_ANGLE_WHITELIST: Record<string, QuestionAngle[]> = Object.fromEntries(
-  [...SAP_IT_SERVICE_COURSE_TOPICS, ...SAP_COURsera_COURSE_TOPICS].map(({ id }) => [id, ['scenario', 'fundamental', 'comparison', 'tradeoff', 'design', 'diagnosis', 'synthesis', 'implementation']]),
+  [...SAP_IT_SERVICE_COURSE_TOPICS, ...SAP_COURSERA_COURSE_TOPICS].map(({ id }) => [id, ['scenario', 'fundamental', 'comparison', 'tradeoff', 'design', 'diagnosis', 'synthesis', 'implementation']]),
 );
 
 export const CAMPUS_EMPLOYMENT_COURSE_TOPICS = [
