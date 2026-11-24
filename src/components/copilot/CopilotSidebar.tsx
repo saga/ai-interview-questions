@@ -13,7 +13,7 @@ import type { BubbleListProps } from '@ant-design/x';
 import { Button, Flex, Space, Typography, message as antMessage } from 'antd';
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useIsMobile } from '../../hooks/useIsMobile';
-import { buildModels, getModel, callCopilotSDKCompletion } from '../../ai/pi';
+import { buildModels, getModel, callCopilotSDKCompletion, callCodeBuddySDKCompletion } from '../../ai/pi';
 import type { QuestionBank } from '../../types';
 import type { LearningTrackId } from '../../data/learningTracks';
 import { askQuestion } from '../../application/conversation/questionCapability';
@@ -82,6 +82,9 @@ async function chatCopilot(
       if (entry.id === 'copilot-sdk') {
         // 同上：异步拒绝必须落进本轮 try/catch，才能继续尝试下一个引擎。
         return await callCopilotSDKCompletion(entry.model || 'auto', system, newContent, history);
+      }
+      if (entry.id === 'codebuddy-sdk') {
+        return await callCodeBuddySDKCompletion(entry.model, system, newContent, history);
       }
       const models = buildModels(entry);
       const model = getModel(models, entry);
