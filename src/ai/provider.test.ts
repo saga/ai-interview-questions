@@ -170,6 +170,12 @@ describe('createLLMProvider（工厂分派）', () => {
     expect(p?.name).toBe('chrome → pi-ai(deepseek)');
   });
 
+  it('CodeBuddy SDK 可以进入普通 one-shot provider 降级链', () => {
+    const p = createLLMProvider({ providers: [entry({ id: 'codebuddy-sdk', model: '', apiKey: '' })] });
+    expect(p).toBeInstanceOf(PiAIProvider);
+    expect(p?.name).toBe('CodeBuddy Agent SDK');
+  });
+
   it('无效配置返回 null（上层退化为原题/不评分）', () => {
     expect(createLLMProvider({ providers: [] })).toBeNull();
     expect(createLLMProvider(undefined)).toBeNull();
