@@ -22,7 +22,7 @@
 - 背景：CodeBuddy 通过 Vite 开发中间件提供本地 one-shot API。初版把 system prompt 拼入 user prompt，并通过宽泛类型转换传入 SDK 参数；取消主要依赖 Query interrupt 和 iterator.return，没有使用 SDK 提供的 abortController。这样既偏离 SDK 原生契约，也无法让 TypeScript 对参数变更提供有效保护。
 - 决策：
   1. CodeBuddyQueryInput 直接从 @tencent-ai/agent-sdk 的 query() 参数类型推导；Query Handle 只保留运行时实际依赖的 AsyncIterable 与 interrupt 接口，不再把 SDK 参数整体降级为 Record<string, unknown>。
-  2. 应用 system prompt 通过 SDK 的 options.systemPrompt 传入，用户问题单独作为 prompt；不再把两者拼成一段 user message。
+  2. 应用 system prompt 通过 SDK 的 options.systemPrompt.append 传入，保留 CodeBuddy 默认 system prompt；用户问题单独作为 prompt，不再把两者拼成一段 user message。
   3. one-shot 请求明确使用 allowedTools: []、拒绝型 canUseTool、permissionMode: default、settingSources: []、persistSession: false、maxTurns: 1。不开启 MCP、Skills、文件或 Shell 工具；不加载用户/项目设置，不写入持久化 transcript。
   4. 应用截止时间覆盖 Query 初始化与消息流消费。超时或 HTTP 客户端断开时，先 abort SDK 的 AbortController，再尽力调用 Query interrupt() 和 iterator.return()；Query Handle 若在取消后才返回，立即中断。不能把请求 Promise 已拒绝当成底层进程已停止。
   5. 只有收到 result 且执行成功，才接受本次调用；优先使用 assistant 文本，缺失时回退到 result.result。缺少终态事件、执行错误或空结果均作为失败交给 Provider 降级链。
