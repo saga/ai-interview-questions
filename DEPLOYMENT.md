@@ -57,9 +57,9 @@ GitHub Copilot SDK 通过 `vite-plugin-copilot-sdk.ts` 作为 Vite 开发中间�
 
 ### Tencent CodeBuddy Agent SDK（仅本地开发）
 
-CodeBuddy Agent SDK 通过 `vite-plugin-codebuddy-sdk.ts` 调用官方 `@tencent-ai/agent-sdk` 的 `query()` API，不经过 Express。启用 `codebuddy-sdk` 前，需要本机安装 CodeBuddy CLI 并完成登录；也可以按 CodeBuddy CLI 规范配置 API Key 和环境变量。模型字段可留空，使用 CLI 默认模型。CodeBuddy 本地运行时按 `common-agent-lib` 的运行环境要求使用 Node.js 22.13 或更高版本。SDK 运行在 Vite 的 Node 进程中，浏览器只访问限制为 localhost 的同源接口，不接触本机登录凭据。
+CodeBuddy Agent SDK 通过 `vite-plugin-codebuddy-sdk.ts` 调用官方 `@tencent-ai/agent-sdk` 的 `query()` API，不经过 Express。启用 `codebuddy-sdk` 前，需要本机安装 CodeBuddy CLI 并完成登录；也可以按 CodeBuddy CLI 规范配置 API Key 和环境变量。模型字段可留空，使用 CLI 默认模型。CodeBuddy 本地运行时要求 Node.js 22.13 或更高版本，且 `persistSession: false` 要求 CodeBuddy CLI 2.125.1 或更高版本。SDK 运行在 Vite 的 Node 进程中，浏览器只访问限制为 localhost 的同源接口，不接触本机登录凭据。
 
-两个本地 SDK 都只支持普通问答、评分和题目变体等 one-shot 调用；默认不加载项目设置、Skills 或 MCP，不开放文件、Shell 等工具，也不接入 Agent 面试的工具调用运行时。它们仅在 Vite 开发模式存在，静态构建和 Cloudflare Worker 不会暴露这些接口。
+两个本地 SDK 都只支持普通问答、评分和题目变体等 one-shot 调用；system prompt 通过 SDK 原生参数传递；默认不加载用户/项目设置、Skills 或 MCP，不开放文件、Shell 等工具，不持久化 Session。超时或客户端断开时会触发 SDK AbortController，并补充 Query interrupt 与迭代器清理；这不等于对所有 CLI/模型故障都能保证进程已停止。它们也不接入 Agent 面试的工具调用运行时。它们仅在 Vite 开发模式存在，静态构建和 Cloudflare Worker 不会暴露这些接口。
 
 ## 4. Cloudflare Workers 部署（推荐）
 
