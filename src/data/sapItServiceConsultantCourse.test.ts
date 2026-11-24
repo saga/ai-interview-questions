@@ -16,10 +16,10 @@ describe('SAP IT Service Consultant course', () => {
     expect(track?.topicCount).toBe(SAP_IT_SERVICE_COURSE_TOPICS.length + SAP_COURSERA_COURSE_TOPICS.length + SAP_JUNIOR_PRACTICE_TOPICS.length);
     expect(SAP_IT_SERVICE_COURSE_TOPICS).toHaveLength(20);
     expect(SAP_COURSERA_COURSE_TOPICS).toHaveLength(10);
-    expect(SAP_JUNIOR_PRACTICE_TOPICS).toHaveLength(10);
+    expect(SAP_JUNIOR_PRACTICE_TOPICS).toHaveLength(11);
     expect(new Set(SAP_IT_SERVICE_COURSE_TOPICS.map((topic) => topic.id)).size).toBe(20);
-    expect(knowledgeForTrack(knowledgeNodes, courseId)).toHaveLength(40);
-    expect(questionBankForTrack(questionBank, courseId, knowledgeNodes).questions).toHaveLength(600);
+    expect(knowledgeForTrack(knowledgeNodes, courseId)).toHaveLength(41);
+    expect(questionBankForTrack(questionBank, courseId, knowledgeNodes).questions).toHaveLength(640);
   });
 
   it('has valid source-linked knowledge nodes and questions for every topic', () => {
@@ -30,9 +30,9 @@ describe('SAP IT Service Consultant course', () => {
     for (const node of nodes) {
       const nodeQuestions = questions.filter((question) => question.topic === node.id);
       expect(nodeQuestions.length).toBeGreaterThanOrEqual(10);
-      expect(nodeQuestions.every((question) => question.knowledgeId === node.id && ['sap-official-learning-and-product-documentation', 'coursera-sap-technology-consultant-professional-certificate', 'sap-apac-junior-consultant-practice-cases'].includes(question.source?.materialId ?? ''))).toBe(true);
+      expect(nodeQuestions.every((question) => question.knowledgeId === node.id && ['sap-official-learning-and-product-documentation', 'coursera-sap-technology-consultant-professional-certificate', 'sap-apac-junior-consultant-practice-cases', 'sap-business-ai-official-documentation'].includes(question.source?.materialId ?? ''))).toBe(true);
     }
-    expect(new Set(questions.map((question) => question.id)).size).toBe(600);
+    expect(new Set(questions.map((question) => question.id)).size).toBe(640);
     const juniorPractice = questions.filter((question) => Number(question.id.slice(-3)) >= 601 && Number(question.id.slice(-3)) <= 800);
     expect(juniorPractice).toHaveLength(200);
     expect(juniorPractice.filter((question) => question.difficulty === 'easy')).toHaveLength(80);
@@ -41,6 +41,12 @@ describe('SAP IT Service Consultant course', () => {
     const supplemental = questions.filter((question) => Number(question.id.slice(-3)) >= 201 && Number(question.id.slice(-3)) <= 400 && Number(question.id.slice(-3)) <= 400);
     expect(supplemental).toHaveLength(200);
     expect(supplemental.every((question) => ['easy', 'medium'].includes(question.difficulty))).toBe(true);
+    const businessAi = questions.filter((question) => Number(question.id.slice(-3)) >= 801 && Number(question.id.slice(-3)) <= 840);
+    expect(businessAi).toHaveLength(40);
+    expect(businessAi.filter((question) => question.difficulty === 'easy')).toHaveLength(20);
+    expect(businessAi.filter((question) => question.difficulty === 'medium')).toHaveLength(20);
+    expect(new Set(businessAi.map((question) => question.formats.choice?.answer?.[0])).size).toBe(4);
+    expect(businessAi.every((question) => question.source?.materialId === 'sap-business-ai-official-documentation')).toBe(true);
     expect(questions.every((question) => question.formats.choice?.type === 'single')).toBe(true);
   });
 });
