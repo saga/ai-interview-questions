@@ -10,6 +10,7 @@ export const providerIdSchema = z.enum([
   'google',
   'cloudflare-workers-ai',
   'copilot-sdk',
+  'codebuddy-sdk',
 ]);
 
 export const formatIdSchema = z.enum(['choice', 'open']);
