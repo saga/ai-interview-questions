@@ -23,6 +23,7 @@ const PROVIDER_LABELS: Record<string, string> = {
   google: 'Google Gemini',
   'cloudflare-workers-ai': 'Cloudflare Workers AI',
   'copilot-sdk': 'GitHub Copilot SDK',
+  'codebuddy-sdk': 'Tencent CodeBuddy Agent SDK',
 };
 
 const AVAILABILITY_TEXT: Record<ChromeAvailability, { type: 'success' | 'warning' | 'error'; message: string }> = {
@@ -250,6 +251,9 @@ export default function SettingsPanel({
               </li>
               <li>
                 <code>copilot-sdk</code> —— 使用本机 Copilot CLI 登录态，无需 API Key；模型可填 <code>auto</code>。仅 Vite 开发模式提供此运行时。
+              </li>
+              <li>
+                <code>codebuddy-sdk</code> —— 使用本机 CodeBuddy CLI 登录态，无需 API Key；模型留空时使用 CLI 默认模型。仅 Vite 开发模式提供此运行时。
               </li>
             </ul>
             浏览器侧密钥并非安全机密，请勿使用高权限生产密钥。
