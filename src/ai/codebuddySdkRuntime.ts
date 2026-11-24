@@ -114,10 +114,8 @@ export class CodeBuddySdkRuntime {
 
     const startedAt = Date.now();
     const timeoutMs = input.timeoutMs ?? 120_000;
-    const prompt = [
-      input.systemPrompt.trim() ? 'SYSTEM INSTRUCTIONS:\n' + input.systemPrompt.trim() : '',
-      'USER REQUEST:\n' + input.prompt.trim(),
-    ].filter(Boolean).join('\n\n');
+    const prompt = input.prompt.trim();
+    const abortController = new AbortController();
 
     let handle: CodeBuddyQueryHandle | undefined;
     let iterator: AsyncIterator<unknown> | undefined;
