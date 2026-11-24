@@ -51,5 +51,18 @@ describe('SAP IT Service Consultant course', () => {
     expect(questions.every((question) => !/(你是刚加入|作为实习生|Junior Consultant)/.test(question.question))).toBe(true);
     expect(questions.every((question) => question.formats.choice?.options.every((option) => !/[。！？]，(?:并|便于|同时|方便)/.test(option)))).toBe(true);
     expect(nodes.find((node) => node.id === 'sap-business-ai')?.required.join(' ')).toContain('Joule Studio');
+    const juniorRoleNoise = /你是刚加入项目|毕业生实习生或 Junior Consultant|对初级顾问而言|把资深顾问或项目负责人的决策职责误当成实习生应独立承担的工作/;
+    expect(questions.every((question) => !juniorRoleNoise.test([
+      question.question,
+      question.explanation,
+      ...question.misconceptions,
+    ].join(' ')))).toBe(true);
+    expect(nodes.every((node) => !juniorRoleNoise.test([
+      node.summary,
+      ...node.required,
+      ...node.misconceptions,
+    ].join(' ')))).toBe(true);
+    const japanSilenceQuestion = juniorPractice.find((question) => question.id === 'sap-itc-636');
+    expect(japanSilenceQuestion?.question).toBe('日本客户会议中出现较长沉默，你准备继续讲完所有幻灯片。 下一步最合适的做法是什么？（单选题）');
   });
 });
