@@ -7,7 +7,6 @@ const providerEntrySchema = z.object({
   model: z.string().default(''),
   apiKey: z.string().default(''),
   baseUrl: z.string().optional(),
-  accountId: z.string().optional(),
 });
 
 const promptConfigSchema = z.object({
