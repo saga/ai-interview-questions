@@ -76,7 +76,7 @@ describe('知识节点与 taxonomy 对齐', () => {
   });
 
 
-  it('校招面试知识节点与 500 道情境式选择题独立归属，并覆盖全部 15 个主题', () => {
+  it('校招面试知识节点与 650 道情境式选择题独立归属，并覆盖全部 15 个主题', () => {
     const nodes = knowledgeNodes.filter((node) => node.courseId === 'campus-employment');
     const questions = questionBank.questions.filter((question) => question.courseId === 'campus-employment');
     const themeIds = new Set(CAMPUS_EMPLOYMENT_COURSE_TOPICS.map((topic) => topic.id));
@@ -85,7 +85,7 @@ describe('知识节点与 taxonomy 对齐', () => {
     expect(questions).toHaveLength(785);
     for (const node of nodes) {
       const nodeQuestions = questions.filter((question) => question.topic === node.id);
-      expect(nodeQuestions.length, `校招知识节点缺少题目：${node.id}`).toBeGreaterThanOrEqual(33);
+      expect(nodeQuestions.length, `校招知识节点缺少题目：${node.id}`).toBeGreaterThanOrEqual(43);
       expect(nodeQuestions.every((question) => question.knowledgeId === node.id)).toBe(true);
     }
     expect(questions.every((question) => question.formats.choice && !question.formats.open)).toBe(true);

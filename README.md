@@ -43,6 +43,7 @@ uv run --project analysis --extra analysis python analysis/question_analysis.py 
 - [2025–2026 校招面试调研](docs/campus-employment-interview-research-2025-2026.md)：候选人面经、官方招聘材料和练习扩展题的来源边界。
 - [校招面试 785 题覆盖矩阵](docs/campus-employment-question-coverage-785.md)：题量、难度和 15 个知识主题的覆盖分布。
 - [校招初/中级新增 150 题](src/data/questions/campus-employment-150-foundation-intermediate.json)：每个主题新增 10 题，覆盖 STAR、PREP、MECE、5W2H、5 Whys、假设验证、AI 素养、优先级和 Offer 决策等。
+- [校招 150 题扩展说明](docs/campus-employment-question-expansion-150.md)：说明难度分级、方法覆盖和题库集成方式。
 - [RSI 学习路线与研究资料](docs/rsi-learning-path.md)：基于 [lobehub/awesome-rsi](https://github.com/lobehub/awesome-rsi) 梳理模型级、Harness 级、自动化 AI 研发、多智能体、具身演化、评测与安全。
 - [RSI 200 道题覆盖矩阵](docs/rsi-question-coverage-200.md)：16 个知识点、120 道初级和 80 道中级开放题，含题目 ID 与研究来源映射。
 
