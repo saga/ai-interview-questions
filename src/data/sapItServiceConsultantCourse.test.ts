@@ -23,8 +23,8 @@ describe('SAP IT Service Consultant course', () => {
   });
 
   it('has valid source-linked knowledge nodes and questions for every topic', () => {
-    expect(nodes).toHaveLength(40);
-    expect(questions).toHaveLength(600);
+    expect(nodes).toHaveLength(41);
+    expect(questions).toHaveLength(640);
     expect(nodes.every((node) => knowledgeNodeSchema.safeParse(node).success && node.area === 'sap-consulting')).toBe(true);
     expect(questions.every((question) => questionSchema.safeParse(question).success)).toBe(true);
     for (const node of nodes) {
