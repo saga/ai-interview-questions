@@ -16,6 +16,20 @@
 
 # 关键决策记录（ADR）
 
+## ADR-094 · CodeBuddy Agent SDK one-shot 调用契约与取消边界
+
+- 状态：已采纳 · 2026-11-24
+- 背景：CodeBuddy 通过 Vite 开发中间件提供本地 one-shot API。初版把 system prompt 拼入 user prompt，并通过宽泛类型转换传入 SDK 参数；取消主要依赖 Query interrupt 和 iterator.return，没有使用 SDK 提供的 abortController。这样既偏离 SDK 原生契约，也无法让 TypeScript 对参数变更提供有效保护。
+- 决策：
+  1. CodeBuddyQueryInput 直接从 @tencent-ai/agent-sdk 的 query() 参数类型推导；Query Handle 只保留运行时实际依赖的 AsyncIterable 与 interrupt 接口，不再把 SDK 参数整体降级为 Record<string, unknown>。
+  2. 应用 system prompt 通过 SDK 的 options.systemPrompt 传入，用户问题单独作为 prompt；不再把两者拼成一段 user message。
+  3. one-shot 请求明确使用 allowedTools: []、拒绝型 canUseTool、permissionMode: default、settingSources: []、persistSession: false、maxTurns: 1。不开启 MCP、Skills、文件或 Shell 工具；不加载用户/项目设置，不写入持久化 transcript。
+  4. 应用截止时间覆盖 Query 初始化与消息流消费。超时或 HTTP 客户端断开时，先 abort SDK 的 AbortController，再尽力调用 Query interrupt() 和 iterator.return()；Query Handle 若在取消后才返回，立即中断。不能把请求 Promise 已拒绝当成底层进程已停止。
+  5. 只有收到 result 且执行成功，才接受本次调用；优先使用 assistant 文本，缺失时回退到 result.result。缺少终态事件、执行错误或空结果均作为失败交给 Provider 降级链。
+  6. CodeBuddy 仍仅作为普通问答、评分和题目变体的 one-shot Provider；不接入 pi-agent-core 工具循环，不新增常驻后端。
+- 运行要求：Node.js 22.13 或更高；persistSession: false 需要 CodeBuddy CLI 2.125.1 或更高。低于该 CLI 版本时应升级 CLI，而不是静默改为持久化会话。
+- 验证：Runtime 测试覆盖原生 system prompt、无工具配置、Usage、SDK 终态、异常结果、超时、调用方取消和迟到 Query Handle。CI 负责执行 TypeScript、Vitest 与生产构建；真实 CLI 登录态及模型调用仍需在已登录的本机验证。
+
 ## ADR-093 · Copilot SDK one-shot 开发端点的生命周期与请求截止时间
 
 - 状态：已采纳 · 2026-10-24
