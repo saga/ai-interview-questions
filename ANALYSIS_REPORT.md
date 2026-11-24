@@ -4,7 +4,7 @@
 **代码库版本**：v1.2.7 (Commit: `2cd2360` 及校招 500 题体系)  
 **审计范围**：系统架构、前端打包与运行时性能、多课程（Multi-Track）体系隔离、Agent/Copilot 统一决策管线、数据持久化、题库质量门禁与工程工具链。
 
-> **后续题库扩展记录（2026-11-24）**：本报告的审计基线截止于 2026-11-23，当时校招课程为 500 题。随后在 `campus-employment` 课程下新增 150 道初级/中级情境题，当前校招题库累计 785 道（255 初级、430 中级、100 困难；555 单选、230 多选）。本次扩展沿用原有 15 个知识主题，不改变课程 taxonomy；相关实时题量以课程题库和 [785 题覆盖说明](docs/campus-employment-question-coverage-785.md) 为准。以下架构分析仍按原审计时点记录，不应将其中的 500 题描述理解为当前数量。
+> **后续题库扩展记录（2026-11-24）**：本报告的审计基线截止于 2026-11-23，当时校招课程为 500 题。随后在 `campus-employment` 课程下新增 150 道初级/中级情境题，当前校招题库实际累计 785 道（255 初级、430 中级、100 困难；555 单选、230 多选），其中包括此前已在自动加载目录但未纳入统计的 135 道企业情境题。本次扩展沿用原有 15 个知识主题，不改变课程 taxonomy；相关实时题量以课程题库和 [785 题覆盖说明](docs/campus-employment-question-coverage-785.md) 为准。以下架构分析仍按原审计时点记录，不应将其中的 500 题描述理解为当前数量。
 
 ---
 
@@ -39,7 +39,7 @@
 | 编号 | 类别 | 严重级别 | 缺陷标题 | 核心影响与症状 |
 | :--- | :--- | :---: | :--- | :--- |
 | **D-01** | 性能 / 打包 | **P0 致命** | 全量 JSON 静态内联打包，初始化同步跑 4,429 次 Zod 校验 | 单 bundle 体积高达 **15.15 MB** (Gzip 3.37 MB)，主线程严重卡顿，移动端 FCP/TTI 恶化 |
-| **D-02** | 架构 / 业务 | **P1 高危** | Agent 面试与 Copilot 侧栏硬编码仅支持 AI，与多课程体系割裂 | 新增课程（校招 500 题、Snowflake 1000+ 题）无法使用核心的 Agent 面试、追问与 Copilot 功能 |
+| **D-02** | 架构 / 业务 | **P1 高危** | Agent 面试与 Copilot 侧栏硬编码仅支持 AI，与多课程体系割裂 | 新增课程（校招课程、Snowflake 1000+ 题）无法使用核心的 Agent 面试、追问与 Copilot 功能 |
 | **D-03** | 工程 / 工具 | **P1 高危** | Node 24 ESM 缺失扩展名导致 `question:coverage` 与 `blueprint` 崩溃 | `npm run question:coverage` 报 `ERR_MODULE_NOT_FOUND`，题库生产管线第一步瘫痪 |
 | **D-04** | 工具 / 审计 | **P2 中度** | Python 审计脚本正则过度清洗，误报 2 处伪 P1 `duplicate-option` | 小数点与斜杠被去重正则吞噬（`6.5%` vs `65%`），与 TS 校验脚本逻辑分叉 |
 | **D-05** | 架构 / 存储 | **P2 中度** | Dexie 中 `StoredLearner` 使用全局单例，跨课程依靠内存动态投影 | 画像聚合字段混合，进行中 Agent 草稿仅保留 AI 画像，多课程扩展受限 |
@@ -77,7 +77,7 @@ const modules = import.meta.glob('./questions/*.json', {
 正如 `questionBank.ts` 注释所述：
 > *“刻意保持简单——不建数据库/Repository/索引层；题库规模到达需要按需加载时，再引入动态 import + 构建期 question-index.json”*
 
-题库体量目前已达到 4,429 题与数百个变体池，继续使用 `eager: true` 已经突破了该简易架构的容量上限。特别是一个仅想复习“校招面试”（500题）的用户，也必须在首屏强行下载并解析几千道 Snowflake 和 AI 深度工程题。
+题库体量目前已达到 4,429 题与数百个变体池，继续使用 `eager: true` 已经突破了该简易架构的容量上限。特别是一个仅想复习“校招面试”课程的用户，也必须在首屏强行下载并解析几千道 Snowflake 和 AI 深度工程题。
 
 ---
 
@@ -119,7 +119,7 @@ const modules = import.meta.glob('./questions/*.json', {
 - `ai`：AI 工程与大模型
 - `snowflake`：Snowflake 数据平台（含 PostgreSQL 工程，共 1,000+ 题）
 - `security-architecture`：安全架构（数百题）
-- `campus-employment`：最新补齐的 2025-2026 校招行为与技术面试课程（500 题）
+- `campus-employment`：校招行为与技术面试课程（当前 785 题）
 
 **后三门独立课程完全被降级为“静态做题卡片”**，无法使用智能追问、对话面试、自适应 Agent 选题以及 Copilot 交互解析功能。Agent 运行时能力成为了 AI 专属的特化逻辑，未能与多课程架构达成领域模型上的统一。
 
@@ -284,7 +284,7 @@ flowchart TD
 1. **构建期生成课程题库清单（`question-index.json`）**：
    - 放弃 `import.meta.glob('./questions/*.json', { eager: true })`。
    - 在构建期或通过动态加载，将题库按 `courseId` 分拆为多个独立的 chunk（例如 `ai-questions.js`、`snowflake-questions.js`、`campus-questions.js`）。
-   - 用户在首页选择校招面试时，仅下载校招 500 题，其余题目零网络传输、零启动解析开销。
+   - 用户在首页选择校招面试时，仅下载校招课程题目，其余题目零网络传输、零启动解析开销。
 2. **Vite 代码分割（Manual Chunks）**：
    - 在 `vite.config.ts` 中配置 `build.rollupOptions.output.manualChunks`，将 `@ant-design/x`、`monaco-editor`、`@earendil-works/pi-ai` 独立拆包，并将 Monaco Language Worker 设为异步懒加载，将主 bundle 控制在 1 MB 以内。
 
