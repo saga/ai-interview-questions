@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { LEARNING_TRACKS, SAP_IT_SERVICE_COURSE_TOPICS, SAP_COURsera_COURSE_TOPICS } from './learningTracks';
+import { LEARNING_TRACKS, SAP_IT_SERVICE_COURSE_TOPICS, SAP_COURSERA_COURSE_TOPICS } from './learningTracks';
 import { knowledgeNodes } from './knowledgeMap';
 import { questionBank } from './questionBank';
 import { questionSchema } from '../schemas/question';
@@ -15,7 +15,7 @@ describe('SAP IT Service Consultant course', () => {
     const track = LEARNING_TRACKS.find((item) => item.id === courseId);
     expect(track?.topicCount).toBe(SAP_IT_SERVICE_COURSE_TOPICS.length);
     expect(SAP_IT_SERVICE_COURSE_TOPICS).toHaveLength(20);
-    expect(SAP_COURsera_COURSE_TOPICS).toHaveLength(10);
+    expect(SAP_COURSERA_COURSE_TOPICS).toHaveLength(10);
     expect(new Set(SAP_IT_SERVICE_COURSE_TOPICS.map((topic) => topic.id)).size).toBe(20);
     expect(knowledgeForTrack(knowledgeNodes, courseId)).toHaveLength(30);
     expect(questionBankForTrack(questionBank, courseId, knowledgeNodes).questions).toHaveLength(400);
@@ -23,13 +23,13 @@ describe('SAP IT Service Consultant course', () => {
 
   it('has valid source-linked knowledge nodes and questions for every topic', () => {
     expect(nodes).toHaveLength(30);
-    expect(questions).toHaveLength(200);
+    expect(questions).toHaveLength(400);
     expect(nodes.every((node) => knowledgeNodeSchema.safeParse(node).success && node.area === 'sap-consulting')).toBe(true);
     expect(questions.every((question) => questionSchema.safeParse(question).success)).toBe(true);
     for (const node of nodes) {
       const nodeQuestions = questions.filter((question) => question.topic === node.id);
-      expect(expect(nodeQuestions.length).toBeGreaterThanOrEqual(10);
-      expect(nodeQuestions.every((question) => question.knowledgeId === node.id && question.source?.materialId === 'sap-official-learning-and-product-documentation')).toBe(true);
+      expect(nodeQuestions.length).toBeGreaterThanOrEqual(10);
+      expect(nodeQuestions.every((question) => question.knowledgeId === node.id && ['sap-official-learning-and-product-documentation', 'coursera-sap-technology-consultant-professional-certificate'].includes(question.source?.materialId ?? ''))).toBe(true);
     }
     expect(new Set(questions.map((question) => question.id)).size).toBe(400);
     const supplemental = questions.filter((question) => Number(question.id.slice(-3)) >= 201);
