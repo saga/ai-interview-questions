@@ -21,18 +21,12 @@ import { challengeQuestion, type QuestionChallenge } from './questionChallenger'
 /** 单个引擎通道的校验按 id 区分：
  *  - chrome：浏览器内置模型，无需 apiKey/model；
  *  - local：OpenAI 兼容本地服务，需要 model id，apiKey 可选（baseUrl 空则用默认地址）；
- *  - cloudflare-workers-ai：API Token + Account ID + model 三者必填；
  *  - `copilot-sdk` / `codebuddy-sdk`：复用本机 CLI 登录态，不需要 API Key；
- *  - 其余云端（deepseek/openrouter/google）：必须有 apiKey 与 model。 */
+ *  - 云端（deepseek/google）：必须有 apiKey 与 model。 */
 export function isEntryValid(e: ProviderEntry): boolean {
   if (!e || !e.id) return false;
   if (e.id === 'chrome' || e.id === 'copilot-sdk' || e.id === 'codebuddy-sdk') return true;
   if (e.id === 'local') return Boolean(e.model && e.model.trim().length > 0);
-  if (e.id === 'cloudflare-workers-ai') {
-    return Boolean(
-      e.apiKey && e.apiKey.trim().length > 0 && e.model && e.accountId && e.accountId.trim().length > 0,
-    );
-  }
   return Boolean(e.apiKey && e.apiKey.trim().length > 0 && e.model);
 }
 
