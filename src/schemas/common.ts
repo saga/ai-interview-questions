@@ -6,9 +6,7 @@ export const providerIdSchema = z.enum([
   'chrome',
   'local',
   'deepseek',
-  'openrouter',
   'google',
-  'cloudflare-workers-ai',
   'copilot-sdk',
   'codebuddy-sdk',
 ]);
