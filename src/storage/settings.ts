@@ -7,7 +7,7 @@ import { SAMPLE_CONFIG } from '../config/sampleConfig';
 import { recordLog } from './db';
 
 const KEY = 'ai-interview-trainer.config';
-const PROVIDER_IDS: readonly ProviderId[] = ['chrome', 'local', 'deepseek', 'openrouter', 'google', 'cloudflare-workers-ai', 'copilot-sdk', 'codebuddy-sdk'];
+const PROVIDER_IDS: readonly ProviderId[] = ['chrome', 'local', 'deepseek', 'google', 'copilot-sdk', 'codebuddy-sdk'];
 
 // 默认配置 = 内置的干净样例（src/config/sample-config.json）：完整引擎清单，
 // chrome / local 启用、其余禁用。既是「恢复默认」按钮的回填值，也是 localStorage 为空 / 损坏时的兜底。
@@ -20,7 +20,6 @@ function safeConfigSnapshot(config: AIConfig) {
       enabled: provider.enabled,
       model: provider.model,
       hasApiKey: Boolean(provider.apiKey),
-      hasAccountId: Boolean(provider.accountId),
       hasBaseUrl: Boolean(provider.baseUrl),
     })),
     generateOpenQuestions: config.generateOpenQuestions,
@@ -36,8 +35,7 @@ function safeConfigSnapshot(config: AIConfig) {
   };
 }
 
-/** 逐字段清洗引擎配置；id 非法时返回 null（丢弃该通道）。
- *  accountId 仅 cloudflare 使用：非空才保留，避免其他引擎的配置出现空噪音字段。 */
+/** 逐字段清洗引擎配置；id 非法时返回 null（丢弃该通道）。 */
 export function sanitizeEntry(raw: unknown): ProviderEntry | null {
   if (!raw || typeof raw !== 'object') return null;
   const r = raw as Record<string, unknown>;
@@ -48,7 +46,6 @@ export function sanitizeEntry(raw: unknown): ProviderEntry | null {
     model: typeof r.model === 'string' ? r.model : '',
     apiKey: typeof r.apiKey === 'string' ? r.apiKey : '',
     baseUrl: typeof r.baseUrl === 'string' ? r.baseUrl : '',
-    ...(typeof r.accountId === 'string' && r.accountId.trim() ? { accountId: r.accountId } : {}),
   };
 }
 
