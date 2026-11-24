@@ -126,7 +126,7 @@ export const LEARNING_TRACKS = [
     id: 'sap-it-service-consultant',
     title: 'SAP IT Service Consultant',
     shortTitle: 'SAP',
-    description: '面向大学毕业生和实习生的 SAP 入门课程。以基础概念、业务流程、信息收集、按流程执行、准确记录和及时求助为主；不要求没有工作经验的学习者独立设计方案、主持客户决策或承担交付责任。',
+    description: '面向大学毕业生和实习生的 SAP 入门课程。题干直接描述工作场景，不重复标注考生身份；以基础概念、业务流程、信息收集、按流程执行、准确记录和及时求助为主，不要求没有工作经验的学习者独立设计方案、主持客户决策或承担交付责任。',
     actionLabel: '进入 SAP 顾问学习',
     topicCount: 41,
     learningPathUrl: 'https://github.com/saga/ai-interview-questions/blob/main/docs/sap-it-service-consultant-roadmap.md',
