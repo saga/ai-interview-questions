@@ -8,7 +8,7 @@ Vite + React 19 + TypeScript + Ant Design 单页应用（五个页面：训练 /
 
 - 首屏训练入口：**继续训练**（按薄弱项）/ **快速训练**（自动选题，10 分钟）/ 自定义训练（折叠的高级配置）
 - **Learner Memory**：本地记录每次训练的分数、弱项、掌握度与趋势，据此推荐下一次训练（薄弱主题优先出题）
-- 题库驱动（`src/data/questions/` 按 topic/批次拆分为 JSON 文件，`src/data/variants/` 存放离线变体；AI 课程保留六个能力域，Snowflake、Security Architecture 和校招面试均为独立课程体系），题目按课程采用相应形态：AI 题库支持选择/开放双形态，校招面试 650 题全部为情境式选择题（420 单选、230 多选），LLM 变体出题保持知识点不变
+- 题库驱动（`src/data/questions/` 按 topic/批次拆分为 JSON 文件，`src/data/variants/` 存放离线变体；AI 课程保留六个能力域，Snowflake、Security Architecture 和校招面试均为独立课程体系），题目按课程采用相应形态：AI 题库支持选择/开放双形态，校招面试 785 题全部为情境式选择题（420 单选、230 多选），LLM 变体出题保持知识点不变
 - 开放题 Agent 多维评分（正确性 / 完整性 / 架构 / 表达）+ 选择题确定性判分
 - 结果页对比上次得分、给出亮点/待加强与 AI 训练建议；进度页展示主题掌握度与趋势
 - 模拟面试（对话式追问训练）：进入 interview 模式后复用与独立面试页**同一套** `pi-agent-core` 运行时（`createInterviewAgent`）——统一选题 / 评分 / 收尾逻辑，不再维护独立的简化版 Agent 面试；未配置 AI 也能开始，选择题照常确定性判分
@@ -39,9 +39,9 @@ uv run --project analysis --extra analysis python analysis/question_analysis.py 
 报告中的 `pandas.topicCounts` 对应 `df.groupby("topic").size()`，`pandas.topicAngleCounts` 对应 `df.groupby(["topic", "angle"]).size()`。TF-IDF/KMeans、embedding 聚类和难度分类是质量信号，不是题目正确性的证明；`--semantic` 会用仓库内 ARM64 INT8 ONNX 模型，通过 ONNX Runtime 的同一次 embedding 编码同时发现语义重复题和语义题簇。`optimum-onnx` 负责 Sentence Transformers 的 ONNX backend 接入，运行设备为 CPU；M5 的 CoreML provider 需单独 benchmark，不默认宣称使用 Neural Engine。默认模型路径为 `analysis/models/paraphrase-multilingual-MiniLM-L12-v2`，加载使用 `local_files_only=True`，模型缺失会直接报错，不会访问 Hugging Face。模型权重通过 Git LFS 管理，模型卡为 Apache-2.0 并随模型文件保留。Python 只负责离线分析，题目运行时契约仍由 TypeScript/Zod 校验。
 
 ## 文档
-- [中国大学生本科研究生校招面试技巧培训路线](docs/campus-employment-course-roadmap.md)：面向计算机/软件工程应届生的 15 个知识主题与 650 道情境式校招面试选择题（420 道单选、230 道多选），包含选项长度与答案位置质量校验。
+- [中国大学生本科研究生校招面试技巧培训路线](docs/campus-employment-course-roadmap.md)：面向计算机/软件工程应届生的 15 个知识主题与 785 道情境式校招面试选择题（555 道单选、230 道多选），包含选项长度与答案位置质量校验。
 - [2025–2026 校招面试调研](docs/campus-employment-interview-research-2025-2026.md)：候选人面经、官方招聘材料和练习扩展题的来源边界。
-- [校招面试 650 题覆盖矩阵](docs/campus-employment-question-coverage-650.md)：题量、难度和 15 个知识主题的覆盖分布。
+- [校招面试 785 题覆盖矩阵](docs/campus-employment-question-coverage-785.md)：题量、难度和 15 个知识主题的覆盖分布。
 - [校招初/中级新增 150 题](src/data/questions/campus-employment-150-foundation-intermediate.json)：每个主题新增 10 题，覆盖 STAR、PREP、MECE、5W2H、5 Whys、假设验证、AI 素养、优先级和 Offer 决策等。
 - [校招 150 题扩展说明](docs/campus-employment-question-expansion-150.md)：说明难度分级、方法覆盖和题库集成方式。
 - [RSI 学习路线与研究资料](docs/rsi-learning-path.md)：基于 [lobehub/awesome-rsi](https://github.com/lobehub/awesome-rsi) 梳理模型级、Harness 级、自动化 AI 研发、多智能体、具身演化、评测与安全。
