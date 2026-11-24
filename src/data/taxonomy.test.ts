@@ -14,7 +14,7 @@ import {
 } from './taxonomy.ts';
 import { knowledgeNodes } from './knowledgeMap';
 import { questionBank } from './questionBank';
-import { CAMPUS_EMPLOYMENT_COURSE_TOPICS, SECURITY_ARCHITECTURE_COURSE_TOPICS } from './learningTracks';
+import { CAMPUS_EMPLOYMENT_COURSE_TOPICS, SECURITY_ARCHITECTURE_COURSE_TOPICS, SAP_IT_SERVICE_COURSE_TOPICS } from './learningTracks';
 
 describe('taxonomy 骨架', () => {
   it('AI 学习体系恰为 6 个能力域，且标签齐全', () => {
@@ -33,6 +33,8 @@ describe('taxonomy 骨架', () => {
     expect(TAXONOMY.some((domain) => domain.id === 'security-architecture')).toBe(false);
     expect(domainOfTopic('career-motivation-position-fit')).toBeUndefined();
     expect(TAXONOMY.some((domain) => domain.id === 'campus-employment')).toBe(false);
+    expect(domainOfTopic('sap-integration')).toBeUndefined();
+    expect(TAXONOMY.some((domain) => domain.id === 'sap-consulting')).toBe(false);
   });
 
   it('topic 在骨架内且标签不重名', () => {
@@ -91,6 +93,21 @@ describe('知识节点与 taxonomy 对齐', () => {
     expect(questions.every((question) => question.formats.choice && !question.formats.open)).toBe(true);
     expect(questions.filter((question) => question.formats.choice?.type === 'single')).toHaveLength(555);
     expect(questions.filter((question) => question.formats.choice?.type === 'multiple')).toHaveLength(230);
+  });
+
+  it('SAP IT Service Consultant 知识节点与 200 道题独立归属，并覆盖全部 20 个主题', () => {
+    const nodes = knowledgeNodes.filter((node) => node.courseId === 'sap-it-service-consultant');
+    const questions = questionBank.questions.filter((question) => question.courseId === 'sap-it-service-consultant');
+    const themeIds = new Set(SAP_IT_SERVICE_COURSE_TOPICS.map((topic) => topic.id));
+    expect(nodes).toHaveLength(20);
+    expect(nodes.every((node) => node.area === 'sap-consulting' && themeIds.has(node.topic))).toBe(true);
+    expect(questions).toHaveLength(200);
+    for (const node of nodes) {
+      const nodeQuestions = questions.filter((question) => question.topic === node.id);
+      expect(nodeQuestions).toHaveLength(10);
+      expect(nodeQuestions.every((question) => question.knowledgeId === node.id && question.source?.materialId)).toBe(true);
+    }
+    expect(questions.every((question) => question.formats.choice && !question.formats.open)).toBe(true);
   });
 
   it('groupNodesByDomain 按域分组且覆盖全部节点（非 AI 课程节点作为独立分组保留）', () => {
