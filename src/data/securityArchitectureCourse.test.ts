@@ -11,7 +11,7 @@ describe('Security Architecture course', () => {
   const questions = questionBank.questions.filter((question) => question.courseId === 'security-architecture');
 
   it('registers as a peer to AI and Snowflake with independent themes', () => {
-    expect(LEARNING_TRACKS.map((item) => item.id)).toEqual(['ai', 'snowflake', 'security-architecture', 'campus-employment']);
+    expect(LEARNING_TRACKS.map((item) => item.id)).toEqual(['ai', 'snowflake', 'security-architecture', 'sap-it-service-consultant', 'campus-employment']);
     expect(track?.topicCount).toBe(SECURITY_ARCHITECTURE_COURSE_TOPICS.length);
     expect(new Set(SECURITY_ARCHITECTURE_COURSE_TOPICS.map((topic) => topic.id)).size).toBe(SECURITY_ARCHITECTURE_COURSE_TOPICS.length);
     expect(knowledgeForTrack(knowledgeNodes, 'security-architecture')).toHaveLength(12);
