@@ -26,7 +26,7 @@ describe('CodeBuddySdkRuntime', () => {
       return fakeQuery([
         { type: 'system', subtype: 'init', session_id: 'local-session' },
         { type: 'assistant', message: { content: [{ type: 'text', text: 'answer' }] } },
-        { type: 'result', subtype: 'success', usage: { input_tokens: 12, output_tokens: 4 }, total_cost_usd: 0 },
+        { type: 'result', subtype: 'success', result: 'answer', usage: { input_tokens: 12, output_tokens: 4 }, total_cost_usd: 0 },
       ]);
     });
 
@@ -35,13 +35,18 @@ describe('CodeBuddySdkRuntime', () => {
     expect(received?.prompt).toBe('SYSTEM INSTRUCTIONS:\nrules\n\nUSER REQUEST:\nquestion');
     expect(received?.options).toMatchObject({
       model: 'deepseek-v3',
+      systemPrompt: 'rules',
       permissionMode: 'default',
       settingSources: [],
       persistSession: false,
-      tools: [],
       allowedTools: [],
       maxTurns: 1,
+      thinking: { type: 'disabled' },
+      effort: 'low',
     });
+    expect(received?.options.abortController).toBeInstanceOf(AbortController);
+    expect(await (received?.options.canUseTool as (name: string) => Promise<unknown>)('Read'))
+      .toMatchObject({ behavior: 'deny', interrupt: true });
     expect(result).toMatchObject({
       text: 'answer',
       sessionId: 'local-session',
