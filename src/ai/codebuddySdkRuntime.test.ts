@@ -46,8 +46,14 @@ describe('CodeBuddySdkRuntime', () => {
       effort: 'low',
     });
     expect(received?.options?.abortController).toBeInstanceOf(AbortController);
-    expect(await (received?.options?.canUseTool as (name: string) => Promise<unknown>)('Read'))
-      .toMatchObject({ behavior: 'deny', interrupt: true });
+    const canUseTool = received?.options?.canUseTool;
+    expect(canUseTool).toBeDefined();
+    if (canUseTool) {
+      await expect(canUseTool('Read', {}, {
+        signal: new AbortController().signal,
+        toolUseID: 'test-tool',
+      })).resolves.toMatchObject({ behavior: 'deny', interrupt: true });
+    }
     expect(result).toMatchObject({
       text: 'answer',
       sessionId: 'local-session',
