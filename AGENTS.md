@@ -68,8 +68,8 @@
 
 #### 验证（已自动化）
 
-- **新题导入**：`npm run questions:manage -- add -- --file draft.json --check` 已内置题型门禁（见 `scripts/add-question.ts`）。本批选择题 ≥ 3 道且单选占比 > 1/3 时直接报错退出并打印分布；少于 3 道自动豁免。被拦就改写为多选，不要绕过。
-- **全库可见性**：`npm run questions` 与 `npm run questions` 每次都会打印单选/多选分布，便于观察长期漂移。
+- **新题导入**：`npm run questions:manage -- add --file draft.json --check` 已内置题型门禁（见 `scripts/add-question.ts`）。本批选择题 ≥ 3 道且单选占比 > 1/3 时直接报错退出并打印分布；少于 3 道自动豁免。被拦就改写为多选，不要绕过。
+- **全库可见性**：`npm run check` 与 `npm run check` 每次都会打印单选/多选分布，便于观察长期漂移。
 - **全库门禁（可选）**：`python analysis/question_audit.py --gate-format-ratio` 在单选占比 > 1/3 时以退出码 1 失败。**默认关闭**——历史题库单选占比高，默认开启会让它永远红；等存量单选清理到 1/3 以下再打开。
 - **答案长度暗示门禁（硬门禁）**：新题/修改题必须满足最长/最短长度比 ≤1.7、正确项与干扰项均长差绝对值 ≤8 字符、单选正确项比最长干扰项长不超过 4 字符。导入由 `question:add --check` 拦截；CI 的 `lint:length -- --changed --base <sha>` 按题目对象内容差异检查新增和修改项，不只比较新增 ID。CI 必须提供有效 base commit；无法解析时直接失败，禁止以扫描 0 题通过。历史存量按批次整改，不放松新题门槛。
 
