@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process";
 
 const tasks = {
+  coverage: ["node", "scripts/question-coverage.ts"],
   add: ["node", "scripts/add-question.ts"],
   review: ["node", "scripts/review-question.ts"],
   blueprint: ["node", "scripts/question-blueprint.ts"],
