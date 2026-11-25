@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process";
 
 const tasks = {
+  "mutation-check": ["node", "scripts/mutation-check.mjs"],
   coverage: ["node", "scripts/question-coverage.ts"],
   blueprint: ["node", "scripts/question-blueprint.ts"],
   "question-audit": ["python", "analysis/question_audit.py"],
@@ -32,7 +33,7 @@ const tasks = {
 };
 
 const audits = [
-  "validate", "identity", "quality", "integrity",
+  "question-audit", "validate", "identity", "quality", "integrity",
   "lint-bias", "lint-length", "misconceptions", "coverage", "knowledge-coverage",
 ];
 
