@@ -18,20 +18,20 @@ description: "检查题库质量。用户要求审查题库、校验题目、找
 
 1. 读取 `AGENTS.md`、`README.md`、题目 schema 和相关校验脚本，确认当前数据契约。
 2. 运行基础检查：
-   - `npm run questions`
+   - `npm run check`
    - `npm run questions:manage -- lint-bias`
    - `npx vitest run src/data/bank.test.ts`
 3. 确认 `id` 唯一、题干无精确/规范化重复、`topic` 映射到知识节点、`angle` 合法、答案索引合法且不重复、choice 与 open 双形态答案一致、选项无占位/原题指代/不互斥内容。
 
 ### Level 2 — Heuristic（启发式分布与重复）
 
-4. 运行 `npm run questions:manage -- coverage` 与 `npm run questions`，统计题库规模、题型、难度、angle、topic × angle 密度、重复题和元数据覆盖率。
+4. 运行 `npm run questions:manage -- coverage` 与 `npm run check`，统计题库规模、题型、难度、angle、topic × angle 密度、重复题和元数据覆盖率。
 5. 用 `uv run --project analysis --extra analysis python analysis/question_analysis.py --semantic --json` 发现近重复候选与题簇过密信号（本地字符级 TF-IDF，完全离线）。
 6. 启发式告警（长度偏差、topic × angle 过密、难度 × angle 不一致）是 soft 信号，需结合完整题目人工复核，不要直接当作事实错误。
 
 ### Level 3 — Content quality（内容质量，由 challenger + 人工负责）
 
-7. 先跑 `npm run questions`（只读审计，非门禁）。它输出四类**词汇/统计嫌疑信号**，
+7. 先跑 `npm run check`（只读审计，非门禁）。它输出四类**词汇/统计嫌疑信号**，
    用来排人工复核的优先级；命中 ≠ 必须改写，不要据此新增硬门禁：
    - ① 正确项认知层级不一致 → 见 `spec §5`
    - ② 选项塞整段答案 → 见 `spec §5`
@@ -41,7 +41,7 @@ description: "检查题库质量。用户要求审查题库、校验题目、找
    **命中清单是候选集，不是结论。** 要回答「其中多少是真缺陷」必须抽检，且抽检要可复现：
 
    ```bash
-   npm run questions -- --sample 20 --seed 20260902 \
+   npm run check -- --sample 20 --seed 20260902 \
      --review-sheet temp/quality-review-<date>.md
    ```
 
@@ -122,9 +122,9 @@ description: "检查题库质量。用户要求审查题库、校验题目、找
 
 ## 自动化工具
 
-- `npm run questions`：内容质量只读审计，输出四类嫌疑信号，用于排人工复核优先级。**软信号，非门禁**。
+- `npm run check`：内容质量只读审计，输出四类嫌疑信号，用于排人工复核优先级。**软信号，非门禁**。
   加 `--sample N --seed S --review-sheet <file>` 做可复现的分层抽检并导出人工复核表（见 Level 3 步骤 7）。
-- `npm run questions`：运行无第三方依赖的 Python 离线审计，输出规模、分布、覆盖率和分级问题。
+- `npm run check`：运行无第三方依赖的 Python 离线审计，输出规模、分布、覆盖率和分级问题。
 - `python analysis/question_audit.py --json --output reports/question-audit.json`：生成机器可读报告；Python 报告是辅助分析，TypeScript/Zod 仍是数据契约唯一来源。
 - `uv run --project analysis --extra analysis python analysis/question_analysis.py --semantic --json`：用本地字符级 TF-IDF 向量发现近重复题和题簇；完全离线，是词汇近似信号而非神经语义嵌入。
 - 审计报告中的 P0 表示结构性阻塞，P1/P2 仍需结合完整题目人工复核，不要把启发式告警直接当作事实错误。
@@ -183,7 +183,7 @@ description: "检查题库质量。用户要求审查题库、校验题目、找
 > 10. `explanation` 必须说明核心原理和关键误区。
 
 ### 改写后
-重新跑 `npm run questions:manage -- review -- <id>` 与 `npm run questions`，确认无长度失衡、无同 cell 过密、答案唯一；若改动了 `topic` / `misconceptions` / `explanation`，再跑 Level 4 的检索就绪审计与知识检索用例。
+重新跑 `npm run questions:manage -- review -- <id>` 与 `npm run check`，确认无长度失衡、无同 cell 过密、答案唯一；若改动了 `topic` / `misconceptions` / `explanation`，再跑 Level 4 的检索就绪审计与知识检索用例。
 
 ## 修改后的验证
 
