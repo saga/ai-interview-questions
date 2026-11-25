@@ -66,6 +66,9 @@ export interface LearningMapGraphNode {
     status?: LearningMapStatus;
     topicId?: string;
     branchId?: string;
+    masteryPercent?: number;
+    masteredTopics?: number;
+    totalTopics?: number;
     detail: string;
   };
 }
@@ -257,7 +260,7 @@ export function buildLearningMapGraphData(report: LearningMapReport): LearningMa
   const edges: LearningMapGraphData['edges'] = [];
   for (const branch of report.branches) {
     const branchId = `branch:${branch.id}`;
-    const branchLabel = `${branch.label} · ${branch.masteredTopics}/${branch.totalTopics}`;
+    const branchLabel = `${branch.label} · ${branch.masteredTopics}/${branch.totalTopics}（${branch.masteryPercent}%）`;
     nodes.push({
       id: branchId,
       name: branchLabel,
@@ -265,7 +268,10 @@ export function buildLearningMapGraphData(report: LearningMapReport): LearningMa
         kind: 'branch',
         label: branchLabel,
         branchId: branch.id,
-        detail: `已接触 ${branch.attemptedTopics}/${branch.totalTopics} · 薄弱 ${branch.weakTopics} · 未开始 ${branch.unstartedTopics}`,
+        masteryPercent: branch.masteryPercent,
+        masteredTopics: branch.masteredTopics,
+        totalTopics: branch.totalTopics,
+        detail: `已掌握 ${branch.masteredTopics}/${branch.totalTopics}（${branch.masteryPercent}%）· 已接触 ${branch.attemptedTopics}/${branch.totalTopics} · 待加强 ${branch.weakTopics} · 未开始 ${branch.unstartedTopics}`,
       },
     });
     edges.push({ id: `${rootId}→${branchId}`, source: rootId, target: branchId });
