@@ -283,7 +283,7 @@ export function updateLearner(
   const byKnowledge = new Map<string, { result: QuestionResult; weight: number; score: number }[]>();
   for (const result of s.questionResults) {
     for (const target of result.knowledgeTargets ?? []) {
-      const node = knowledgeNodes.find((item) => item.id === target.knowledgeId && item.topic === result.topic);
+      const node = knowledgeNodes.find((item) => item.id === target.knowledgeId && (item.topic === result.topic || item.id === result.topic));
       if (!node) continue;
       const missing = (result.missingConcepts ?? []).some((value) => {
         const normalized = value.trim().toLowerCase();
@@ -436,9 +436,9 @@ export function conceptGapsOf(profile: LearnerProfile, topic: string, required: 
 
 /** Resolve question metadata to stable KnowledgeNode ids. Never fan a question out to every node in a topic. */
 export function knowledgeTargetsForQuestion(question: SessionQuestion['question']): { knowledgeId: string; weight: number }[] {
-  const candidates = knowledgeNodes.filter((node) => node.topic === question.topic && (!question.courseId || node.courseId === question.courseId));
+  const candidates = knowledgeNodes.filter((node) => (node.topic === question.topic || node.id === question.topic) && (!question.courseId || node.courseId === question.courseId));
   const targets = new Map<string, number>();
-  if (question.knowledgeId && knowledgeNodes.some((node) => node.id === question.knowledgeId && node.topic === question.topic)) {
+  if (question.knowledgeId && knowledgeNodes.some((node) => node.id === question.knowledgeId && (node.topic === question.topic || node.id === question.topic))) {
     targets.set(question.knowledgeId, 1);
   } else {
     const resolveUnique = (value: string) => {
