@@ -1,0 +1,314 @@
+[
+  {
+    "id": "sap-tsm-linux-operations",
+    "courseId": "sap-it-service-consultant",
+    "name": "Linux 系统运行与资源诊断",
+    "area": "sap-consulting",
+    "topic": "sap-tsm-linux-operations",
+    "priority": "P0",
+    "summary": "理解 SAP 系统主机上的 Linux 基础运行状态：进程、服务、文件系统、挂载、CPU、内存、磁盘、日志和用户权限。能够读懂常见只读诊断结果，区分容量不足、进程异常、服务未启动和权限问题，并把带时间戳的证据交给 Basis 或操作系统团队；不把毕业生训练变成未经授权的生产命令操作。",
+    "required": [
+      "进程和服务：理解进程、父子进程、服务管理器、服务状态和重启影响；认识 SAP 实例进程与操作系统进程之间的关系。",
+      "文件系统：理解挂载点、容量、inode、目录占用、文件权限和所有者；区分 df、du 类信息所回答的问题。",
+      "资源观察：理解 CPU 利用率、load average、内存、swap、I/O 等待和磁盘延迟的含义；避免只凭单个瞬时数值判断瓶颈。",
+      "日志与时间：识别系统日志、服务日志和 SAP 工作目录日志的用途；记录时区、时间窗口、主机名和复现条件。",
+      "权限边界：认识 root、SAP 系统管理员账号（如 <sid>adm）和普通用户的职责差异；不要通过 chmod 777、删除日志或随意重启来消除告警。",
+      "安全诊断：优先收集只读证据，遵守跳板机、变更窗口、命令审批和敏感日志处理要求。"
+    ],
+    "misconceptions": [
+      "磁盘空间不足只看文件系统使用率，不检查 inode 和挂载状态。",
+      "进程存在就等同于应用服务端到端可用。",
+      "遇到权限错误就扩大目录权限或使用 root 绕过。",
+      "日志文件变大就直接删除，而不确认轮转、保留和审计要求。"
+    ],
+    "angles": [
+      "fundamental",
+      "scenario",
+      "diagnosis",
+      "comparison",
+      "boundary",
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "sap-tsm-network-connectivity",
+    "courseId": "sap-it-service-consultant",
+    "name": "网络连通性、DNS 与 TLS",
+    "area": "sap-consulting",
+    "topic": "sap-tsm-network-connectivity",
+    "priority": "P0",
+    "summary": "建立从用户或调用方到 SAP 服务的网络路径视图，理解 DNS、IP、TCP 端口、路由、防火墙、代理、负载均衡、TLS 证书和时间同步之间的关系。能够将“连接失败”拆分为名称解析、传输连接、TLS 握手、负载均衡后端或应用响应等阶段，准备可复现的网络证据并协调正确团队。",
+    "required": [
+      "网络基础：理解 IP 地址、子网、路由、TCP 连接、端口和常见超时/拒绝/不可达现象的区别。",
+      "DNS：理解域名解析、记录、TTL、缓存和不同网络位置的解析差异；区分 DNS 失败与目标端口不可达。",
+      "访问控制：理解防火墙规则、安全组、网络 ACL、代理和出站/入站方向；记录源地址、目标地址、端口和时间。",
+      "TLS：理解证书有效期、证书链、主机名匹配、SNI 和信任库；区分 TCP 建连成功与 TLS 握手成功。",
+      "负载均衡：认识监听器、后端池、健康检查、会话保持和跨可用区流量路径；单个节点健康不等于整条访问路径正常。",
+      "故障证据：准备源/目标、解析结果、连接阶段、错误码、时间戳、请求 ID 和受影响范围，不在公开渠道暴露密钥或完整敏感报文。"
+    ],
+    "misconceptions": [
+      "ping 成功就证明 SAP 应用端口和 TLS 都正常。",
+      "将所有超时都归因于防火墙，不再检查 DNS、路由和后端健康。",
+      "只检查证书到期日，不检查主机名、证书链和客户端信任。",
+      "负载均衡器在线就等同于后端 SAP 服务可用。"
+    ],
+    "angles": [
+      "fundamental",
+      "mechanism",
+      "scenario",
+      "diagnosis",
+      "comparison",
+      "boundary"
+    ]
+  },
+  {
+    "id": "sap-tsm-abap-runtime",
+    "courseId": "sap-it-service-consultant",
+    "name": "AS ABAP 运行组件与工作进程",
+    "area": "sap-consulting",
+    "topic": "sap-tsm-abap-runtime",
+    "priority": "P0",
+    "summary": "理解 AS ABAP 的基本请求处理链和关键技术组件，包括 Dispatcher、不同类型的 Work Process、Message Server、Enqueue、Gateway、Internet Communication Manager（ICM）以及 SAP Start Service。能够根据对话请求、后台作业、锁、RFC 或 HTTP 问题识别应查看的状态和日志，不要求毕业生更改生产实例参数。",
+    "required": [
+      "请求分发：理解 Dispatcher 接收请求并将任务分配给可用 Work Process 的基本机制；区分 Dialog、Background、Update、Spool 等工作类型。",
+      "集中服务：理解 Message Server 的消息/实例通信角色，以及 Enqueue 服务在逻辑锁管理中的作用；知道锁等待可能影响业务事务。",
+      "通信组件：认识 Gateway 的 RFC 通信边界和 ICM 对 HTTP/HTTPS 等协议的处理职责；不要将它们与数据库服务混为一谈。",
+      "后台运行：理解后台作业的计划、开始条件、执行状态、运行日志和失败重跑风险；重复执行可能造成重复业务结果。",
+      "故障线索：识别系统日志、ABAP Short Dump、Work Process 状态、作业日志和 RFC 连接检查分别适合回答的问题。",
+      "变更和边界：实例参数、工作进程数量、服务重启和锁清理都可能影响生产；毕业生先收集证据并交给授权 Basis 专家。"
+    ],
+    "misconceptions": [
+      "所有 Work Process 都处理相同类型的工作。",
+      "Enqueue 锁等同于数据库事务锁，二者可以互相替代。",
+      "重跑失败的业务作业不会产生重复过账或副作用。",
+      "ICM 负责所有数据库连接和所有 SAP 内部通信。"
+    ],
+    "angles": [
+      "fundamental",
+      "mechanism",
+      "scenario",
+      "diagnosis",
+      "comparison",
+      "boundary"
+    ]
+  },
+  {
+    "id": "sap-tsm-backup-recovery",
+    "courseId": "sap-it-service-consultant",
+    "name": "HANA / ASE 备份、恢复与数据保护",
+    "area": "sap-consulting",
+    "topic": "sap-tsm-backup-recovery",
+    "priority": "P0",
+    "summary": "把数据库备份从“任务显示成功”提升为可恢复性判断。理解 SAP HANA 的数据备份、差异/增量备份、日志备份、备份目录和时间点恢复；了解 SAP ASE（Sybase）数据转储、事务日志转储及恢复顺序。能够核对保留策略、恢复目标、备份可访问性和演练证据，并确认托管环境中的备份职责。",
+    "required": [
+      "SAP HANA 备份：理解完整数据备份、差异/增量备份和 redo log 备份的关系；知道日志备份对时间点恢复和 RPO 的影响。",
+      "HANA 恢复：理解 SYSTEMDB 与 tenant database 的备份/恢复对象；恢复通常依赖可用的数据备份和后续日志；认识备份目录、backup.log 与第三方 BACKINT 集成的用途。",
+      "恢复验证：区分备份作业成功、备份介质可访问、恢复过程成功和业务应用验收；恢复演练要记录恢复点、耗时和实际数据损失窗口。",
+      "SAP ASE：理解 database dump、transaction log dump 和 restore 顺序；知道系统数据库 master 的备份对重建 ASE 环境的重要性。",
+      "业务目标：理解 RPO、RTO、保留期、加密、异地副本和恢复依赖；不要仅凭技术默认值推断客户合同目标。",
+      "责任核对：托管云、客户自管和不同服务方案的备份责任可能不同；按服务描述、合同与 RACI 确认操作方和证据提供方。"
+    ],
+    "misconceptions": [
+      "每天有数据备份就必然能恢复到任意时间点。",
+      "数据库复制可以替代备份和恢复测试。",
+      "SAP ASE 可以跳过中间事务日志转储直接加载最新日志。",
+      "在托管环境中默认由 SAP 或客户一方承担全部备份责任。"
+    ],
+    "angles": [
+      "fundamental",
+      "mechanism",
+      "scenario",
+      "comparison",
+      "diagnosis",
+      "boundary",
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "sap-tsm-migration-tools",
+    "courseId": "sap-it-service-consultant",
+    "name": "S/4HANA 转换工具与技术准备",
+    "area": "sap-consulting",
+    "topic": "sap-tsm-migration-tools",
+    "priority": "P0",
+    "summary": "理解从 SAP ECC 到 S/4HANA 的技术评估和系统转换准备顺序，认识 SAP Readiness Check、Maintenance Planner、Simplification Item Check、Custom Code Analysis、Software Update Manager（SUM）及 Database Migration Option（DMO）的定位。能够读懂评估输出、列出依赖和风险并组织专家评审，不要求毕业生独立运行转换。",
+    "required": [
+      "迁移路径：区分新实施（New Implementation）、系统转换（System Conversion）和选择性数据迁移（Selective Data Transition）的目标和适用背景。",
+      "前置评估：理解 SAP Readiness Check 用于识别现有系统与转换准备问题；Maintenance Planner 检查产品版本、业务功能和附加组件等规划条件。",
+      "简化项目：理解 Simplification Item Check 识别转换/升级相关简化项；检查结果需在进入技术转换阶段前分析并处理。",
+      "定制代码：理解自定义代码与 S/4HANA 简化变化之间的兼容性检查和适配工作；代码扫描不等于完成业务验证。",
+      "SUM 与 DMO：知道 SUM 承担软件更新/系统转换流程，DMO 在符合条件的路径中结合数据库迁移；具体工具版本和前置条件必须按目标版本指南核验。",
+      "切换准备：关注附加组件兼容、接口、数据量、停机窗口、测试、业务对账、备份、回退限制和上线批准。"
+    ],
+    "misconceptions": [
+      "把 Readiness Check 报告当作自动完成迁移或兼容性批准。",
+      "Maintenance Planner 与 SUM 是同一个工具，承担完全相同的工作。",
+      "DMO 是所有 S/4HANA 转换都必须使用的独立迁移步骤。",
+      "数据库转换成功就意味着业务数据和端到端流程已经验收。"
+    ],
+    "angles": [
+      "fundamental",
+      "comparison",
+      "scenario",
+      "tradeoff",
+      "design",
+      "boundary",
+      "implementation"
+    ]
+  },
+  {
+    "id": "sap-tsm-integration-operations",
+    "courseId": "sap-it-service-consultant",
+    "name": "SAP 接口运行与集成故障",
+    "area": "sap-consulting",
+    "topic": "sap-tsm-integration-operations",
+    "priority": "P0",
+    "summary": "理解 SAP 系统间常见的同步与异步集成方式及其运行证据，包括 RFC、IDoc、OData、REST/SOAP API、消息队列和 SAP Integration Suite Cloud Integration。能够使用消息 ID、相关 ID、时间窗口和处理状态定位异常，判断是否可安全重试，并保护日志中的业务和个人数据。",
+    "required": [
+      "接口模式：区分同步请求/响应、异步消息、批量交换和事件通知；根据响应时效、解耦、可靠性和业务一致性选择监控视角。",
+      "SAP 技术：理解 RFC、IDoc、OData 和 API 的基本用途；知道 IDoc 状态与应用处理结果需要结合上下文解读。",
+      "中间件运行：认识 Cloud Integration 的 Message Processing Log、成功/失败/重试状态和 Trace；Trace 可能包含敏感消息内容，应按授权和保留要求临时启用。",
+      "故障定位：关联发送方、接收方、消息 ID、时间戳、错误阶段、接口版本和相关变更；区分认证、网络、映射、业务校验和目标应用错误。",
+      "重试与幂等：理解超时后盲目重试可能导致重复创建业务对象；检查幂等键、消息状态和业务记录后再按既定流程处理。",
+      "服务责任：明确 SAP 应用团队、集成平台团队、网络/身份团队和外部伙伴的边界；对生产消息重放和数据修复执行授权流程。"
+    ],
+    "misconceptions": [
+      "所有接口失败都可以通过重试解决。",
+      "HTTP 200 或消息传输成功意味着目标业务单据处理成功。",
+      "开启 Trace 不会记录或暴露任何敏感业务数据。",
+      "只用接口名称查询就能可靠关联跨系统同一笔业务请求。"
+    ],
+    "angles": [
+      "fundamental",
+      "mechanism",
+      "scenario",
+      "diagnosis",
+      "comparison",
+      "boundary"
+    ]
+  },
+  {
+    "id": "sap-tsm-identity-security",
+    "courseId": "sap-it-service-consultant",
+    "name": "SAP 身份、授权与技术安全",
+    "area": "sap-consulting",
+    "topic": "sap-tsm-identity-security",
+    "priority": "P0",
+    "summary": "理解 SAP 系统中的身份管理、认证和授权是不同控制环节。认识用户、业务角色、权限对象、组织范围、技术用户、单点登录、证书和审计记录的关系；能够识别权限不足、身份同步失败和证书问题的初步线索，并遵守最小权限与职责分离原则。",
+    "required": [
+      "认证与授权：区分用户身份验证（Authentication）和访问权限判断（Authorization）；登录成功不表示拥有目标业务操作权限。",
+      "角色模型：理解用户、业务角色、目录/应用、授权对象和组织范围之间的关系；按岗位与业务责任分配最小权限。",
+      "身份生命周期：认识用户创建、变更、锁定、离职回收、身份联邦和用户供应；跨系统身份映射异常需要核对来源和同步链路。",
+      "技术身份：理解 RFC/API 技术用户、证书和服务身份的用途；避免共享个人账号、明文凭据和长期未轮换的秘密。",
+      "单点登录与证书：认识身份提供方、信任关系、Assertion/Token、证书有效期和时间同步等排错线索。",
+      "审计和控制：理解访问日志、变更日志、SoD、紧急访问和定期复核；生产权限调整必须有申请、批准、实施和验证记录。"
+    ],
+    "misconceptions": [
+      "登录成功就能证明用户具备业务操作授权。",
+      "为了快速恢复服务，可以把用户临时加入全权限角色且不记录。",
+      "技术用户可以由多人共享，因为它不属于真实员工。",
+      "证书问题只需延长有效期，不必验证信任链和使用方。"
+    ],
+    "angles": [
+      "fundamental",
+      "mechanism",
+      "scenario",
+      "diagnosis",
+      "comparison",
+      "boundary"
+    ]
+  },
+  {
+    "id": "sap-tsm-cloud-infrastructure",
+    "courseId": "sap-it-service-consultant",
+    "name": "Hyperscaler 云基础与部署架构",
+    "area": "sap-consulting",
+    "topic": "sap-tsm-cloud-infrastructure",
+    "priority": "P0",
+    "summary": "理解 AWS、Azure、GCP 等 Hyperscaler 的基础架构概念，并能将计算、网络、存储、可用区、负载均衡和监控映射到 SAP 系统景观。理解云平台与 SAP 应用托管服务的责任边界；能够读懂基础架构图和故障影响，不把毕业生训练成云平台管理员。",
+    "required": [
+      "地域与故障域：理解 Region、Availability Zone/Zone 和数据中心故障域的关系；高可用设计要考虑应用、数据库、网络和身份依赖。",
+      "计算与虚拟化：理解 VM、实例规格、CPU/内存、镜像、伸缩和维护事件；虚拟机正常不代表 SAP 服务正常。",
+      "网络：认识 VPC/VNet、子网、路由表、安全组/防火墙、私有连接和出站访问控制；连通性取决于完整路径。",
+      "存储：理解块存储、文件存储、对象存储在性能、共享访问和备份方面的用途差异；容量与 IOPS/吞吐量不是同一指标。",
+      "托管模式：区分 IaaS、PaaS、SaaS 与 SAP 托管服务；实际维护、补丁、备份、监控和安全责任必须依据服务描述和合同。",
+      "多方协作：识别 SAP、Hyperscaler、客户和实施伙伴的责任接口；收集云事件、资源 ID、区域和变更时间，按责任链升级。"
+    ],
+    "misconceptions": [
+      "云服务部署在多个可用区就自动保证端到端业务连续性。",
+      "云服务商默认负责客户操作系统、SAP 参数和所有身份设置。",
+      "对象存储适合直接替代数据库低延迟数据卷。",
+      "VM 的 CPU 和内存规格足够就无需再观察 I/O、网络和应用负载。"
+    ],
+    "angles": [
+      "fundamental",
+      "comparison",
+      "scenario",
+      "tradeoff",
+      "design",
+      "boundary"
+    ]
+  },
+  {
+    "id": "sap-tsm-itsm-service-management",
+    "courseId": "sap-it-service-consultant",
+    "name": "Incident、Problem、Change 与 SLA",
+    "area": "sap-consulting",
+    "topic": "sap-tsm-itsm-service-management",
+    "priority": "P0",
+    "summary": "将 TSM 技术工作放在可控的服务管理流程中，区分 Incident、Problem、Service Request 和 Change。理解按影响与紧急程度确定优先级、重大事件沟通、SLA/SLO、变更审批、实施验证和事后复盘；能够维护时间线和行动项，并在授权范围内协助服务恢复。",
+    "required": [
+      "流程定义：Incident 重点恢复服务；Problem 关注根因和复发风险；Service Request 处理标准请求；Change 控制对服务产生影响的修改。",
+      "优先级：根据业务影响、受影响用户/服务范围和紧急程度应用客户约定的优先级矩阵；不要仅按报告人的职级判断。",
+      "重大事件：建立统一事件负责人、事实时间线、技术工作流、客户沟通节奏和决策记录；未经验证不要给出根因或恢复承诺。",
+      "变更管理：记录变更范围、风险、测试、审批、窗口、实施计划、回退方案和验证；紧急变更也需要按规定补齐审查。",
+      "SLA 与 SLO：区分合同/服务协议中的 SLA 承诺与内部/技术目标 SLO；明确计算口径、维护窗口、排除项和测量来源。",
+      "关闭与复盘：恢复业务后验证用户场景，记录影响和根因状态；将问题记录、知识库、行动项和客户反馈纳入后续改进。"
+    ],
+    "misconceptions": [
+      "Incident 关闭后就无需再做 Problem 分析或防复发措施。",
+      "所有高优先级工单都应由同一专家立即执行，而不考虑影响和紧急程度。",
+      "SLO 达标自动等同于合同 SLA 已达标。",
+      "变更只要技术人员认为必要就可以跳过客户约定的审批。"
+    ],
+    "angles": [
+      "fundamental",
+      "comparison",
+      "scenario",
+      "diagnosis",
+      "boundary",
+      "tradeoff"
+    ]
+  },
+  {
+    "id": "sap-tsm-capacity-performance",
+    "courseId": "sap-it-service-consultant",
+    "name": "容量、性能基线与服务改进",
+    "area": "sap-consulting",
+    "topic": "sap-tsm-capacity-performance",
+    "priority": "P1",
+    "summary": "理解性能管理不能只看单点 CPU 或 HANA 内存使用率，需要建立正常基线、业务峰值和趋势视图。认识响应时间、吞吐量、并发、CPU、内存、I/O、存储增长和云成本的相互影响；能够用数据支持容量风险讨论和服务改进建议，不独立批准扩容或参数变更。",
+    "required": [
+      "性能指标：区分响应时间、吞吐量、并发、错误率和批处理完成时间；将技术指标关联到业务服务体验。",
+      "基线和趋势：按日/周/月及业务周期建立资源和性能基线；区分短暂尖峰、持续增长和突变，记录采样范围。",
+      "资源瓶颈：理解 CPU 饱和、内存压力、磁盘 I/O、网络延迟和锁等待可能产生的不同症状；避免把相关性直接当成根因。",
+      "HANA 观察：理解 HANA 内存分配、工作负载、昂贵语句和服务级告警的初步意义；复杂 SQL/参数分析交由 DBA 专家。",
+      "容量规划：结合业务增长、数据保留、批处理窗口、HA/DR 冗余和扩展周期估算需求；确认供应商规格和服务上限。",
+      "云成本和价值：关联计算、存储、数据传输和预留容量成本；以风险下降、性能改善和业务结果而不是单纯资源扩容衡量收益。"
+    ],
+    "misconceptions": [
+      "某一分钟 CPU 低就证明系统没有性能问题。",
+      "HANA 内存使用率高就必须立即增加内存。",
+      "扩容可以代替 SQL、接口和业务工作负载分析。",
+      "仅用基础设施可用率就能代表用户体验和业务服务质量。"
+    ],
+    "angles": [
+      "fundamental",
+      "scenario",
+      "diagnosis",
+      "comparison",
+      "tradeoff",
+      "synthesis"
+    ]
+  }
+]
