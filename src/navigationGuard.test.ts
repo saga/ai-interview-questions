@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { attemptNavigate, isTrainingSessionRunning, type Page } from './navigationGuard';
 
-const NON_TRAIN: Page[] = ['learn', 'progress', 'settings', 'agent', 'interview'];
+const NON_TRAIN: Page[] = ['learn', 'progress', 'map', 'settings', 'agent', 'interview'];
 
 describe('isTrainingSessionRunning', () => {
   it('quiz / result 视为进行中', () => {
@@ -14,7 +14,7 @@ describe('isTrainingSessionRunning', () => {
 });
 
 describe('attemptNavigate — P0-1 进行中锁定普通 tab 导航', () => {
-  it('进行中会话尝试切到 /progress：被拒绝、不导航、给出明确提示', () => {
+  it('进行中会话尝试切到普通页面（包括学习地图）：被拒绝、不导航、给出明确提示', () => {
     const navigate = vi.fn();
     const warn = vi.fn();
     const ok = attemptNavigate({ target: 'progress', phase: 'quiz', navigate, warn });
