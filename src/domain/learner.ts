@@ -435,9 +435,8 @@ export function conceptGapsOf(profile: LearnerProfile, topic: string, required: 
 }
 
 /** Resolve question metadata to stable KnowledgeNode ids. Never fan a question out to every node in a topic. */
-function knowledgeTargetsForQuestion(question: SessionQuestion['question']): { knowledgeId: string; weight: number }[] {
+export function knowledgeTargetsForQuestion(question: SessionQuestion['question']): { knowledgeId: string; weight: number }[] {
   const candidates = knowledgeNodes.filter((node) => node.topic === question.topic && (!question.courseId || node.courseId === question.courseId));
-  const byId = new Map(candidates.map((node) => [node.id, node]));
   const targets = new Map<string, number>();
   if (question.knowledgeId && knowledgeNodes.some((node) => node.id === question.knowledgeId && node.topic === question.topic)) {
     targets.set(question.knowledgeId, 1);
