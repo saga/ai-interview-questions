@@ -33,7 +33,7 @@ npm run deploy -- pages     # 部署 Cloudflare Pages
 npm run questions:manage -- add
 npm run questions:manage -- review
 npm run questions:manage -- coverage
-npm run questions:manage -- blueprint -- 10
+npm run questions:manage -- blueprint 10
 ```
 
 首次运行 Python 分析前执行 `uv sync --project analysis --extra analysis`。
