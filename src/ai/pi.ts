@@ -185,7 +185,16 @@ export async function callCodeBuddySDKCompletion(
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ model: model.trim(), system, user, history }),
   });
-  const payload = await response.json().catch(() => null) as { content?: unknown; error?: unknown } | null;
+  const payload = await response.json().catch(() => null) as {
+    content?: unknown;
+    error?: unknown;
+    usage?: {
+      inputTokens?: unknown;
+      outputTokens?: unknown;
+      cacheReadTokens?: unknown;
+      cacheCreationTokens?: unknown;
+    };
+  } | null;
   if (!response.ok) {
     const detail = typeof payload?.error === 'string' ? payload.error : `HTTP ${response.status}`;
     throw new Error(`CodeBuddy Agent SDK 调用失败：${detail}`);
