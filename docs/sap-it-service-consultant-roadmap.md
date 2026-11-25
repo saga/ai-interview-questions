@@ -31,7 +31,7 @@ SAP 技术主题也遵循同一边界：先理解概念用途、基本流程、�
 | 7. Run 阶段 | Cloud ALM、ITSM、事件/问题/变更、服务管理 | 恢复服务、定位根因、监控业务流程并持续改进 | Runbook、SLA、Problem record |
 | 8. 综合实践 | 客户案例和方案评审 | 从需求到运行支持完成一个可追溯交付闭环 | Solution outline、风险与决策日志 |
 
-## 49 个知识主题（含 Coursera 课程对齐、SAP Business AI 与 TSM 专项）
+## 59 个知识主题（含 Coursera 课程对齐、SAP Business AI 与 TSM 专项）
 
 ### 1. IT 服务咨询与顾问基本功
 
@@ -141,6 +141,28 @@ SAP Business AI 不是单一聊天机器人。需要区分 Joule（嵌入式业�
 - **接口与数据**：理解 OData、REST、SOAP、IDoc、RFC、事件集成及主数据迁移的基本作用，不要求初级顾问成为每种技术的开发专家。
 - **业务模块**：先建立跨模块流程概念，再按项目方向深入 Finance、Procurement、Sales、Manufacturing 或 Service，不要求一开始平均掌握所有模块。
 
+
+### TSM 专项：毕业生技术运维知识地图
+
+现有 SAP 课程保留 8 个 TSM 总览主题，并新增 10 个可单独学习和考核的技术运维主题。新增内容面向没有正式生产运维经验的毕业生，重点是读懂系统、识别问题、收集证据、判断影响、协调专家，而不是要求独立执行生产变更。
+
+| 新主题 | 必须理解的知识与工作场景 |
+|---|---|
+| Linux 系统运行与资源诊断 | 进程和服务、文件系统/inode、CPU/内存/swap/I/O、日志、权限及只读诊断 |
+| 网络连通性、DNS 与 TLS | IP/TCP/端口、DNS、路由、防火墙、代理、负载均衡、证书链、SNI 与 TLS 阶段 |
+| AS ABAP 运行组件与工作进程 | Dispatcher、Dialog/Background/Update/Spool Work Process、Message Server、Enqueue、Gateway、ICM、sapstartsrv |
+| HANA / ASE 备份、恢复与数据保护 | HANA 数据/日志备份、Backup Catalog、BACKINT、租户恢复、RPO/RTO、ASE dump 与事务日志恢复顺序 |
+| S/4HANA 转换工具与技术准备 | Readiness Check、Maintenance Planner、Simplification Item Check、自定义代码分析、SUM/DMO、Mock Conversion、Cutover 和回退限制 |
+| SAP 接口运行与集成故障 | RFC、IDoc、OData/API、Cloud Integration 消息日志、Trace、Correlation ID、幂等、重试和消息重放 |
+| SAP 身份、授权与技术安全 | Authentication/Authorization、业务角色、组织范围、技术用户、SSO、证书、SoD、审计和紧急访问 |
+| Hyperscaler 云基础与部署架构 | Region/Availability Zone、VM、私有网络、路由、安全组、块/对象存储、负载均衡和共享责任 |
+| Incident、Problem、Change 与 SLA | 事件恢复、根因分析、服务请求、变更控制、优先级、重大事件沟通、SLA/SLO 和行动闭环 |
+| 容量、性能基线与服务改进 | 响应时间、吞吐量、P95、CPU/内存/I/O、HANA 工作负载、容量预测、备份竞争和云成本 |
+
+**题目分布：**新增题 ID 为 `sap-tsm-081` 至 `sap-tsm-280`，每个新主题 20 道；80 道初级、120 道中级；60 道单选、140 道多选。题目覆盖基本概念识别、日志与监控解释、故障阶段定位、服务责任边界和初级决策权衡。
+
+**毕业生的岗位边界：**能够说明组件用途、整理主机/实例/时间/请求 ID 等证据、解释监控信号、识别潜在业务影响并按流程升级。生产参数调整、数据库恢复、权限扩大、证书私钥操作、接口消息重放和重大变更，应由有授权的专家执行并纳入组织变更流程。
+
 ## 初级与中级能力边界
 
 这里的级别以没有正式项目经验的毕业生为参照。初级题主要检查概念识别、基本流程和安全的第一步；中级题增加信息不完整、角色协作和简单权衡，但不要求候选人代替资深顾问作决定。
@@ -174,7 +196,7 @@ SAP Business AI 不是单一聊天机器人。需要区分 Joule（嵌入式业�
 
 ## 题库结构
 
-当前包含 720 道题，覆盖 49 个主题，其中 200 道为面向毕业生实习生的亚太客户沟通与项目协作情境题、40 道 SAP Business AI 题和 80 道 TSM 专项题；该批题目仅分 easy、medium，重点考查顾问判断、业务分析、实施权衡和问题处理。题目是学习与面试训练材料，不是 SAP 官方认证考试题，也不代表所有 SAP 产品版本具有相同功能。全课程统一遵守毕业生实习生能力边界：不以真实项目履历、客户管理经验或独立交付经验作为答题前提。
+当前包含 920 道题，覆盖 59 个主题，其中 200 道为面向毕业生实习生的亚太客户沟通与项目协作情境题、40 道 SAP Business AI 题和 280 道 TSM 专项题（80 道原有概览题 + 200 道本轮技术运维深化题）；TSM 新增题按 10 个新主题各 20 道编排，包含 80 道初级、120 道中级、60 道单选和 140 道多选。题库重点考查顾问判断、技术证据、运行风险和服务治理。题目是学习与面试训练材料，不是 SAP 官方认证考试题，也不代表所有 SAP 产品版本具有相同功能。全课程统一遵守毕业生实习生能力边界：不以真实项目履历、客户管理经验或独立交付经验作为答题前提。
 
 ## SAP Business AI 官方学习与参考资料
 
