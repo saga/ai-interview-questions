@@ -34,9 +34,10 @@ npm run questions:manage -- add
 npm run questions:manage -- review
 npm run questions:manage -- coverage
 npm run questions:manage -- blueprint 10
+npm run questions:manage -- challenge --topic=rag --limit=20
 ```
 
-首次运行 Python 分析前执行 `uv sync --project analysis --extra analysis`。
+题目语义质询固定使用本机 CodeBuddy Agent SDK，默认模型为 `hy4flash-free`；需先完成 CodeBuddy CLI 登录。可通过 `CHALLENGER_MODEL` 覆盖模型，不读取应用设置页的 Provider 配置。
 
 ## 文档
 - [SAP IT Service Consultant 学习路线](docs/sap-it-service-consultant-roadmap.md)：面向大学毕业生和实习生，按无正式项目经验设计；覆盖 59 个主题和 920 道情境题，其中 200 道亚太客户沟通与项目协作题、40 道 SAP Business AI 题、280 道 Technical Service Manager（TSM）专项题（含本轮新增 200 道初/中级技术运维题），另有 200 道对齐 Coursera 课程的初中级题目。\n- [SAP TSM 技术运维深化题覆盖矩阵](docs/sap-tsm-technical-operations-coverage-200.md)：新增 10 个技术知识节点、200 道题的知识映射、难度/题型分布、岗位能力边界与 SAP 官方参考资料。
