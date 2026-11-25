@@ -48,9 +48,12 @@ interface Props {
    * 缺省 false，不影响其它页面（训练 / 模拟面试）。
    */
   readOnly?: boolean;
+  /** 当前训练会话是否已记录用户主动查看补充信息。 */
+  tipsRequested?: boolean;
+  onTipsRequested?: (questionId: string) => void;
 }
 
-export default function QuestionCard({ index, question, format, value, onChange, challengerEnabled = false, challengerProvider, readOnly = false }: Props) {
+export default function QuestionCard({ index, question, format, value, onChange, challengerEnabled = false, challengerProvider, readOnly = false, tipsRequested = false, onTipsRequested }: Props) {
   const [challenge, setChallenge] = useState<QuestionChallenge | null>(null);
   const [challenging, setChallenging] = useState(false);
   const [tipsOpen, setTipsOpen] = useState(false);
@@ -121,21 +124,28 @@ export default function QuestionCard({ index, question, format, value, onChange,
             size="small"
             type="text"
             icon={<QuestionCircleOutlined />}
-            onClick={() => setTipsOpen(true)}
+            onClick={() => {
+              if (!tipsRequested) onTipsRequested?.(question.id);
+              setTipsOpen(true);
+            }}
           >
-            Tips
+            更多信息
           </Button>
           <Modal
-            title="面试官补充说明"
+            title="面试官补充背景"
             open={tipsOpen}
             onCancel={() => setTipsOpen(false)}
             footer={<Button type="primary" onClick={() => setTipsOpen(false)}>知道了</Button>}
             destroyOnHidden
           >
-            <Typography.Paragraph style={{ marginBottom: 0 }}>
+            <Typography.Paragraph type="secondary" style={{ marginBottom: 8 }}>
+              以下内容用于补充业务背景、流程、角色和场景约束，不包含正确答案或作答步骤。
+            </Typography.Paragraph>
+            <Typography.Paragraph style={{ marginBottom: 0, whiteSpace: 'pre-wrap' }}>
               {question.tips}
             </Typography.Paragraph>
           </Modal>
+          {tipsRequested && <Tag color="default" style={{ marginInlineStart: 4 }}>已查看</Tag>}
         </div>
       )}
 
