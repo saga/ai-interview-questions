@@ -5,7 +5,7 @@ import type { TableProps } from 'antd';
 import type { LearnerProfile, SessionRecord } from '../../schemas/learner';
 import type { KnowledgeNode } from '../../schemas/knowledge';
 import type { CoverageReport, TopicSuggestion } from '../../domain/learner';
-import { WEAK_MASTERY, WEAK_AVG } from '../../domain/learner';
+import { WEAK_MASTERY } from '../../domain/learner';
 import { KNOWLEDGE_AREA_LABELS } from '../../domain/knowledge/nodes';
 import { domainLabel, topicLabel } from '../../data/taxonomy';
 import { SNOWFLAKE_TOPIC_LABELS, type LearningTrackId } from '../../data/learningTracks';
