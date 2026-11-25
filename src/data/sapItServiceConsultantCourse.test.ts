@@ -87,6 +87,7 @@ describe('SAP IT Service Consultant course', () => {
     expect(questions.every((question) => !/(你是刚加入|作为实习生|Junior Consultant)/.test(question.question))).toBe(true);
     // 所有 SAP 题干必须包含独立的业务/流程背景句，不再只有一句抽象提问。
     expect(questions.every((question) => (question.question.match(/[。！？]/g) ?? []).length >= 2)).toBe(true);
+    expect(questions.every((question) => !/(流程流程|业务能力能力|SAP Activate 与实施方法流程|。 +)/.test(question.question))).toBe(true);
     expect(questions.every((question) => question.formats.choice?.options.every((option) => !/[。！？]，(?:并|便于|同时|方便)/.test(option)))).toBe(true);
     expect(nodes.find((node) => node.id === 'sap-business-ai')?.required.join(' ')).toContain('Joule Studio');
     const juniorRoleNoise = /你是刚加入项目|毕业生实习生或 Junior Consultant|应届毕业生或实习生|对初级顾问而言|把资深顾问或项目负责人的决策职责误当成实习生应独立承担的工作/;
