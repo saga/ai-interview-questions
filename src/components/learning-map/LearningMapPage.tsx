@@ -226,7 +226,7 @@ function G6LiteCanvas({
   );
 }
 
-function TopicDetail({ topic, profile, onGoTrain }: { topic: LearningMapTopic; profile: LearnerProfile; onGoTrain: () => void }) {
+function TopicDetail({ topic, onGoTrain }: { topic: LearningMapTopic; onGoTrain: () => void }) {
   return (
     <Card
       size="small"
@@ -255,18 +255,22 @@ function TopicDetail({ topic, profile, onGoTrain }: { topic: LearningMapTopic; p
             size="small"
             dataSource={topic.concepts}
             renderItem={(node) => {
-              const evidenceKey = `${topic.id}|${node.name.trim().toLowerCase()}`;
-              const evidence = profile.conceptEvidence?.[evidenceKey];
+              const statusLabel = node.status === 'mastered' ? '已掌握' : node.status === 'weak' ? '待加强' : node.status === 'learning' ? '学习中' : '未评估';
+              const statusColor = node.status === 'mastered' ? 'success' : node.status === 'weak' ? 'error' : node.status === 'learning' ? 'processing' : 'default';
               return (
                 <List.Item>
                   <Tooltip title={node.summary}>
                     <div style={{ width: '100%' }}>
                       <Space wrap>
                         <Typography.Text>{node.name}</Typography.Text>
-                        {evidence?.misses ? <Tag color="warning">缺失证据 {evidence.misses} 次</Tag> : <Tag>未单独评估</Tag>}
+                        <Tag color={statusColor}>{statusLabel}</Tag>
+                        {node.attempts > 0 && <Typography.Text strong>{Math.round(node.mastery * 100)}%</Typography.Text>}
                       </Space>
+                      {node.attempts > 0 && <Progress percent={Math.round(node.mastery * 100)} size="small" showInfo={false} status={node.status === 'weak' ? 'exception' : 'success'} />}
                       <Typography.Paragraph type="secondary" style={{ margin: '2px 0 0', fontSize: 12 }}>
-                        {node.required.slice(0, 3).join('；')}
+                        {node.attempts > 0
+                          ? `作答 ${node.attempts} 次 · 均分 ${node.avgScore} · 正向证据 ${node.positiveEvidence} · 负向证据 ${node.negativeEvidence}`
+                          : node.required.slice(0, 3).join('；')}
                       </Typography.Paragraph>
                     </div>
                   </Tooltip>
@@ -275,7 +279,7 @@ function TopicDetail({ topic, profile, onGoTrain }: { topic: LearningMapTopic; p
             }}
           />
           <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-            缺失证据来自开放题评估；没有记录不代表已经掌握。当前系统尚未为每个知识点单独计算正向掌握分。
+            掌握度来自明确关联到该知识点的题目表现；未评估表示目前没有可归属的答题证据，不代表零分。
           </Typography.Text>
         </div>
       )}
@@ -385,7 +389,7 @@ export default function LearningMapPage({ profile, nodes, defaultTrackId, onGoTr
       </Card>
 
       {selectedTopic ? (
-        <TopicDetail topic={selectedTopic} profile={profile} onGoTrain={() => onGoTrain(trackId)} />
+        <TopicDetail topic={selectedTopic} onGoTrain={() => onGoTrain(trackId)} />
       ) : selectedBranch ? (
         <Card size="small" title={selectedBranch.label}>
           <Typography.Text type="secondary">这个分支包含 {selectedBranch.totalTopics} 个主题。</Typography.Text>
@@ -419,6 +423,9 @@ export default function LearningMapPage({ profile, nodes, defaultTrackId, onGoTr
                       {priorityTag(topic.priority)}
                       {topic.attempts > 0 && <Typography.Text style={{ color: 'inherit', fontSize: 12 }}>{Math.round(topic.mastery * 100)}%</Typography.Text>}
                     </Space>
+                    <Typography.Text style={{ color: 'inherit', fontSize: 11 }}>
+                      知识点已评估 {topic.assessedConcepts}/{topic.conceptCount} · 已掌握 {topic.masteredConcepts}
+                    </Typography.Text>
                     {topic.attempts > 0 && (
                       <Progress percent={Math.round(topic.mastery * 100)} size="small" showInfo={false} status={topic.status === 'weak' ? 'exception' : 'success'} />
                     )}
