@@ -1,3 +1,7 @@
+## 2026-11-25 · CI Actions 升级至 Node 24 运行时
+- `.github/workflows/ci.yml` 的 verify / deploy 两个 job 均把 `actions/checkout` 升至 v7、`actions/setup-node` 升至 v7，消除 GitHub Actions 关于 Node 20 action runtime 的弃用告警。
+- 项目自身 `node-version` 保持 22（当前仍受支持，且符合本地运行要求）。
+
 ## 2026-11-25 · 变体池发布门禁修复
 - `refresh-variant-hash --write` 重设 333 条仅元数据/算法口径变化的变体指纹，不调用 LLM。
 - `languageSanity` 从句倒置检测改为按内容对齐变体选项与 canonical 选项，不再假设选项下标一一对应；因变体刻意重排选项导致的 28 条误报消失，新增 2 个纯逻辑回归测试。
