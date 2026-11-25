@@ -26,7 +26,7 @@ description: "检查题库质量。用户要求审查题库、校验题目、找
 ### Level 2 — Heuristic（启发式分布与重复）
 
 4. 运行 `npm run question:coverage` 与 `npm run question:audit`，统计题库规模、题型、难度、angle、topic × angle 密度、重复题和元数据覆盖率。
-5. 用 `uv run --project analysis --extra analysis python analysis/question_analysis.py --semantic --json` 发现语义重复候选与概念簇过密信号（默认离线，不访问 Hugging Face）。
+5. 用 `uv run --project analysis --extra analysis python analysis/question_analysis.py --semantic --json` 发现近重复候选与题簇过密信号（本地字符级 TF-IDF，完全离线）。
 6. 启发式告警（长度偏差、topic × angle 过密、难度 × angle 不一致）是 soft 信号，需结合完整题目人工复核，不要直接当作事实错误。
 
 ### Level 3 — Content quality（内容质量，由 challenger + 人工负责）
@@ -126,7 +126,7 @@ description: "检查题库质量。用户要求审查题库、校验题目、找
   加 `--sample N --seed S --review-sheet <file>` 做可复现的分层抽检并导出人工复核表（见 Level 3 步骤 7）。
 - `npm run question:audit`：运行无第三方依赖的 Python 离线审计，输出规模、分布、覆盖率和分级问题。
 - `python analysis/question_audit.py --json --output reports/question-audit.json`：生成机器可读报告；Python 报告是辅助分析，TypeScript/Zod 仍是数据契约唯一来源。
-- `uv run --project analysis --extra analysis python analysis/question_analysis.py --semantic --json`：使用仓库内 ARM64 ONNX INT8 模型发现语义重复和 embedding 概念簇；默认离线，不访问 Hugging Face。
+- `uv run --project analysis --extra analysis python analysis/question_analysis.py --semantic --json`：用本地字符级 TF-IDF 向量发现近重复题和题簇；完全离线，是词汇近似信号而非神经语义嵌入。
 - 审计报告中的 P0 表示结构性阻塞，P1/P2 仍需结合完整题目人工复核，不要把启发式告警直接当作事实错误。
 - 如果发现 topic × angle 覆盖缺口且用户要求补题，转 **fill-coverage-gap** skill 处理，不在本 skill 内直接生成新题。
 

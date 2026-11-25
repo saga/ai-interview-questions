@@ -1,7 +1,7 @@
 """Optional Python analysis for question-bank curation.
 
-Install with ``uv sync --extra analysis``. The heavier semantic model is only
-loaded when ``--semantic`` is explicitly requested.
+Install with ``uv sync --extra analysis``. The optional ``--semantic`` signal
+uses local character-level TF-IDF vectors (no model weights, no network access).
 """
 
 from __future__ import annotations
@@ -30,8 +30,7 @@ ROOT = Path(__file__).resolve().parents[1]
 QUESTIONS_DIR = ROOT / "src" / "data" / "questions"
 KNOWLEDGE_DIR = ROOT / "src" / "data" / "knowledge"
 CONCEPT_GRAPH_FILE = ROOT / "src" / "data" / "conceptGraph.json"
-LOCAL_MODEL_DIR = ROOT / "analysis" / "models" / "paraphrase-multilingual-MiniLM-L12-v2"
-QUANTIZED_MODEL_FILE = "onnx/model_qint8_arm64.onnx"
+LOCAL_EMBEDDING_MODEL = "local-char-tfidf"
 
 
 class QuestionRecord(BaseModel):
@@ -151,26 +150,17 @@ def pandas_coverage_report(frame: pd.DataFrame) -> dict[str, Any]:
     }
 
 
-def encode_embeddings(texts: list[str], model_name: str, requested_device: str) -> tuple[Any, str]:
-    from sentence_transformers import SentenceTransformer
+def encode_embeddings(texts: list[str]) -> tuple[Any, str]:
+    """Local character-level TF-IDF vectors (L2-normalized by scikit-learn).
 
-    model_path = Path(model_name)
-    if not model_path.is_absolute():
-        model_path = ROOT / model_path
-    if not model_path.exists():
-        raise FileNotFoundError(
-            f"本地 embedding 模型不存在：{model_path}。请准备仓库内模型，或通过 --model 指定本地目录。"
-        )
-    if requested_device != "cpu":
-        raise ValueError("ONNX Runtime 方案只支持 --device cpu；Apple Silicon 的 CoreML provider 需另行 benchmark")
-    model = SentenceTransformer(
-        str(model_path),
-        backend="onnx",
-        device="cpu",
-        local_files_only=True,
-        model_kwargs={"file_name": QUANTIZED_MODEL_FILE},
+    This is a lexical proximity signal, not a neural semantic embedding. It
+    avoids downloading or checking in model weights, so ``--semantic`` stays
+    fully offline and reproducible on any Python environment with scikit-learn.
+    """
+    vectorizer = TfidfVectorizer(
+        analyzer="char_wb", ngram_range=(1, 3), min_df=1, max_features=50_000, sublinear_tf=True
     )
-    return model.encode(texts, batch_size=32, normalize_embeddings=True, show_progress_bar=False), "onnx-cpu"
+    return vectorizer.fit_transform(texts), "cpu"
 
 
 def semantic_candidates(embeddings: Any, ids: list[str], threshold: float) -> list[dict[str, Any]]:
@@ -269,12 +259,12 @@ def analyze(args: argparse.Namespace) -> dict[str, Any]:
         "knowledgeGraph": graph_report(frame, nodes, edges),
     }
     if args.semantic:
-        embeddings, actual_device = encode_embeddings(texts, args.model, args.device)
+        embeddings, actual_device = encode_embeddings(texts)
         result["semanticConfig"] = {
-            "model": args.model,
+            "model": LOCAL_EMBEDDING_MODEL,
             "threshold": args.semantic_threshold,
             "normalizedEmbeddings": True,
-            "requestedDevice": args.device,
+            "requestedDevice": "cpu",
             "actualDevice": actual_device,
         }
         result["semanticDuplicateCandidates"] = semantic_candidates(embeddings, ids, args.semantic_threshold)
@@ -287,10 +277,8 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Analyze question-bank statistics and similarity")
     parser.add_argument("--json", action="store_true", help="print machine-readable JSON")
     parser.add_argument("--fuzzy-threshold", type=int, default=92)
-    parser.add_argument("--semantic", action="store_true", help="load sentence-transformers and find semantic duplicates")
+    parser.add_argument("--semantic", action="store_true", help="build local character TF-IDF vectors and find near duplicates")
     parser.add_argument("--semantic-threshold", type=float, default=0.9)
-    parser.add_argument("--model", default=str(LOCAL_MODEL_DIR.relative_to(ROOT)))
-    parser.add_argument("--device", choices=["cpu"], default="cpu")
     args = parser.parse_args()
     result = analyze(args)
     print(json.dumps(result, ensure_ascii=False, indent=2))

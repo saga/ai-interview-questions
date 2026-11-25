@@ -1,3 +1,9 @@
+## 2026-11-25 · 移除仓库内 ONNX 语义模型依赖
+- 删除 `analysis/models/paraphrase-multilingual-MiniLM-L12-v2/`（含 113 MB LFS 权重），仓库不再依赖 Git LFS 托管的模型文件。
+- `question_analysis --semantic` 改用本地字符级 TF-IDF 向量：不下载模型、不访问网络，是词汇近似信号而非神经语义嵌入；移除 `--model` / `--device` 参数。
+- 从 `analysis/pyproject.toml` 移除 `optimum-onnx[onnxruntime]` 与 `sentence-transformers`，并同步重算 `analysis/uv.lock`（连带移除 onnx / onnxruntime / torch / transformers 等传递依赖）。
+- README、架构与决策文档同步更新；已生成的 `curation-semantic-report.json` 保留为历史 curation 输入。
+
 ## 2026-11-24 · CodeBuddy SDK 调用契约与生命周期收口
 - 将应用 system prompt 改为 SDK 原生 options.systemPrompt.append，保留 CodeBuddy 默认 system prompt，用户输入保持独立；Query 参数类型直接从 SDK query() 推导，避免宽泛类型转换掩盖接口错误。
 - 使用 SDK 原生 abortController，超时/客户端断开时同时请求 abort、Query interrupt 和 iterator.return；迟到的 Query Handle 仍会被立即中断。

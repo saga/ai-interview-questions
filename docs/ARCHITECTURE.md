@@ -269,10 +269,9 @@ analysis/question_audit.py   Python 标准库离线审计（npm run question:aud
                              Python 只做分析，不复制 TypeScript schema
 analysis/question_analysis.py Python 离线分析：pandas/NumPy 统计、rapidfuzz 近重复、
                              scikit-learn TF-IDF/聚类/难度信号、NetworkX 图分析；
-                             --semantic 使用仓库内 ARM64 ONNX INT8 embedding 模型
-                             做语义重复与 embedding 聚类，不参与线上运行时
-analysis/models/              Git LFS 管理的本地分析模型；当前仅 check in
-                             paraphrase-multilingual-MiniLM-L12-v2 的 ONNX INT8 权重
+                             --semantic 使用本地字符级 TF-IDF 向量做近重复与题簇分析；
+                             不下载模型、不访问网络，是词汇近似信号而非神经语义嵌入
+analysis/models/              已移除；模型权重不再入库
 types.ts              跨层行为契约（LLMProvider / QuestionBank / AnswerValue 等），数据形状类型直接用 schemas/*
 ```
 
@@ -727,6 +726,8 @@ Zod 4 作为**数据边界的 runtime contract**，不进入 domain 业务层。
   对象本身早已在远端（`git lfs fetch --all` 可取），只是 smudge 从未生效。
   已改为 `**/models/**/*.onnx|bin|safetensors`。教训：加 LFS 资产后必须用
   `git check-attr -a <真实路径>` 验证命中，不能只看 `git lfs ls-files`（它只列指针记录）。
+  2026-11-25 已移除仓库内 ONNX 权重及 `optimum-onnx` / `sentence-transformers` 依赖，
+  `--semantic` 改用本地 TF-IDF + SVD 稠密向量；此条保留作历史。
 
 - **antd 为 6.x**：`Divider` 仅支持 `horizontal / vertical`，无 `orientation` 左右。
 - **测试里的白名单不许硬编码第二份（踩坑 2026-09-07）**：`nodes.test.ts` 曾硬编码 10 角度白名单，

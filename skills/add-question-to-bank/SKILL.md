@@ -124,8 +124,8 @@ description: "写新题并落库。用户要求新增面试题、起草题目或
    - **目标格子计数 +1**：重跑"添加前"第 3 步的计数命令，确认目标 (topic, angle) 确实 +1。
      注意这不是覆盖审计——`question:coverage` 的缺口数按节点声明的 `angles` 算，
      加题后缺口数不变是正常的，别拿它当验收标准。全库覆盖审计转 **check-question-bank-quality**。
-   - `HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 uv run --project analysis --extra analysis python analysis/question_analysis.py --semantic --json`
-     使用仓库内 ONNX INT8 模型检查语义重复；这是人工复核信号，不替代 TypeScript/Zod 契约校验。
+   - `uv run --project analysis --extra analysis python analysis/question_analysis.py --semantic --json`
+     使用本地字符级 TF-IDF 向量检查近重复题（完全离线）；这是人工复核信号，不替代 TypeScript/Zod 契约校验。
 5. 再运行 `npm run typecheck` 和 `npm run test`。
 6. 运行 `git diff --check`，确认没有意外改动。
 7. 最终说明新增题的 id、覆盖的知识缺口、语义重复候选、验证结果、检索可见性确认（"遮住正确项后题干仍成立"、hint 模式不漏题）和仍需人工复核的事实。

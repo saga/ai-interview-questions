@@ -690,6 +690,7 @@
 - 不做：强行把 1300 旧题迁到 concepts schema（Concept 仅作分析维度，topic×angle 为主索引）；对 advisory review 信号（same-topic-angle-overloaded 399、topic-difficulty-skew 115、answer-leaks-by-length 110、option-length-leak 110、missing-source 103）不做强制改写——它们是指南不是硬门禁。
 - 验证：`validate:questions` 1314/1314 通过；16 题文件外科式编辑答案索引零改动；语义报告本机 3m24s 生成；`question_curate` 强制 rewrite/remove 项清零。
 - 关联：`skills/check-question-bank-quality/SKILL.md`（存量题改写契约 + 10 条改写内部 Prompt 硬约束）、`docs/improvement_plan/plan0901_3.md`（12 节 curation 方案）、`analysis/{question_audit,question_analysis,question_curate}.py`、`analysis/curation-plan.json`（最终计划）、`analysis/curation-semantic-report.json`（语义近重复）。
+- 后续调整（2026-11-25）：不再把 ONNX INT8 权重 check in（Git LFS 113 MB），移除 `optimum-onnx[onnxruntime]` 与 `sentence-transformers` 依赖；`question_analysis --semantic` 改用本地字符级 TF-IDF 向量，完全离线且不访问 Hugging Face。已生成的 `curation-semantic-report.json` 是旧模型的历史产物，保留作 curation 输入，但不是当前 `--semantic` 的可复现输出。
 
 ## ADR-066 · 评分聚合 bug 修复 + Copilot RAG 语义边界收口
 
