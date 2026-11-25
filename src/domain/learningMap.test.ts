@@ -47,6 +47,10 @@ describe('learning map progress projection', () => {
     ];
     const profile = emptyProfile();
     addStat(profile, 'agent-fundamentals', 0.8, 82);
+    profile.knowledgeStats = {
+      'agent-fundamentals': { attempts: 3, practiceSessions: 2, avgScore: 88, lastScore: 90, mastery: 0.82, positiveEvidence: 3, negativeEvidence: 0, trend: 'improving', scoreWeightTotal: 3, lastSeenAt: 100 },
+      'agent-loop': { attempts: 2, practiceSessions: 2, avgScore: 45, lastScore: 40, mastery: 0.4, positiveEvidence: 0, negativeEvidence: 2, trend: 'declining', scoreWeightTotal: 2, lastSeenAt: 100 },
+    };
 
     const report = buildLearningMapReport('ai', profile, nodes);
     const branch = report.branches.find((item) => item.id === 'agent-engineering');
@@ -60,7 +64,13 @@ describe('learning map progress projection', () => {
       conceptCount: 2,
       status: 'mastered',
       attempts: 2,
+      assessedConcepts: 2,
+      masteredConcepts: 1,
     });
+    const conceptStatuses = Object.fromEntries(
+      report.branches.flatMap((item) => item.topics.flatMap((topic) => topic.concepts.map((concept) => [concept.id, concept.status]))),
+    );
+    expect(conceptStatuses).toMatchObject({ 'agent-fundamentals': 'mastered', 'agent-loop': 'weak' });
   });
 
   it('沿用进度页掌握判定，并区分未开始、待加强和已掌握', () => {
