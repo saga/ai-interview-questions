@@ -74,7 +74,7 @@ export const SAP_IT_SERVICE_TOPIC_LABELS: Record<string, string> = Object.fromEn
 );
 
 export const SAP_IT_SERVICE_ANGLE_WHITELIST: Record<string, QuestionAngle[]> = Object.fromEntries(
-  [...SAP_IT_SERVICE_COURSE_TOPICS, ...SAP_COURSERA_COURSE_TOPICS, ...SAP_JUNIOR_PRACTICE_TOPICS].map(({ id }) => [id, ['scenario', 'fundamental', 'comparison', 'tradeoff', 'design', 'diagnosis', 'synthesis', 'implementation']]),
+  [...SAP_IT_SERVICE_COURSE_TOPICS, ...SAP_COURSERA_COURSE_TOPICS, ...SAP_JUNIOR_PRACTICE_TOPICS].map(({ id }) => [id, ['scenario', 'fundamental', 'comparison', 'tradeoff', 'design', 'diagnosis', 'synthesis', 'implementation', 'boundary']]),
 );
 
 export const CAMPUS_EMPLOYMENT_COURSE_TOPICS = [
