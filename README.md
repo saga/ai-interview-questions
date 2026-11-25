@@ -133,4 +133,3 @@ npm run deploy     # = wrangler deploy（Workers + Assets 模式）
 **发布范围（Python 分析工程不发布）：** 发布产物仅为 `dist/`（`wrangler deploy` 只上传该目录）。仓库中的 Python 分析脚本（`analysis/*.py`、`analysis/pyproject.toml`、`analysis/uv.lock`）仅供本地语义去重分析，不参与浏览器构建，**不会被发布**。浏览器运行所需的全部资源——含题库 JSON（已在构建期打包进 `dist/`）——均已包含。
 
 > 若需部署到子路径（非根域名），先在 `vite.config.ts` 设置 `base: '/subpath/'` 再 `npm run build`。
-
