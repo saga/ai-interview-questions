@@ -19,6 +19,7 @@ import {
   recommendWeakTopics,
   recommendationText,
   sessionFromQuiz,
+  knowledgeTargetsForQuestion,
   expandWithPrerequisites,
   suggestNextTopics,
   topMisconceptionsOf,
@@ -374,6 +375,13 @@ describe('recommendationText', () => {  it('有薄弱主题时给出优先练习
 });
 
 describe('sessionFromQuiz', () => {
+  it('题目 topic 直接使用 KnowledgeNode.id 时，能够准确关联而不扩散到同主题节点', () => {
+    const target = knowledgeNodes.find((node) => node.id !== node.topic);
+    expect(target).toBeDefined();
+    const question = { ...choiceA.question, topic: target!.id } as Question;
+    expect(knowledgeTargetsForQuestion(question)).toEqual([{ knowledgeId: target!.id, weight: 1 }]);
+  });
+
   it('把明确关联的题目评分累计到 KnowledgeNode，而不是只记在 topic', () => {
     const target = knowledgeNodes[0];
     const question = {
