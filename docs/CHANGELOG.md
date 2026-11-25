@@ -1,3 +1,8 @@
+## 2026-11-25 · 题目语义质询固定使用 CodeBuddy
+- 批量质询脚本不再读取 `CHALLENGER_PROVIDER`、API Key 或应用 Provider 配置，直接调用服务端 `CodeBuddySdkRuntime`。
+- 默认模型设为 `hy4flash-free`，允许通过 `CHALLENGER_MODEL` 显式覆盖；质询并发、报告格式和 `--gate` 行为保持不变。
+- README 补充本机 CodeBuddy CLI 登录要求和调用方式。该修改只影响题库语义质询，不改变训练、评分、变体生成等功能的 Provider 选择。
+
 ## 2026-11-25 · 新增 G6Lite 学习地图
 - 新增顶层“学习地图”Tab，可在 AI、Snowflake、SAP、Security Architecture 和校招面试体系之间切换。
 - 使用 G6Lite 0.1.0 UMD + Dagre 展示“学习体系 → 知识分支 → 主题”；点击主题查看作答次数、均分、掌握度和对应 KnowledgeNode。
