@@ -56,6 +56,28 @@ function normalizedText(value: string): string {
   return value.normalize('NFKC').toLocaleLowerCase().replace(/[\p{P}\p{S}\s]+/gu, '');
 }
 
+function hasKnowledgeTarget(question: Question, nodes: KnowledgeNode[]): boolean {
+  const candidates = nodes.filter((node) =>
+    (node.topic === question.topic || node.id === question.topic)
+    && (!question.courseId || node.courseId === question.courseId),
+  );
+  if (question.knowledgeId) return candidates.some((node) => node.id === question.knowledgeId);
+
+  const resolves = (value: string): boolean => {
+    const normalized = value.trim().toLowerCase();
+    if (!normalized) return false;
+    const matches = candidates.filter((node) =>
+      node.id.toLowerCase() === normalized || node.name.trim().toLowerCase() === normalized,
+    );
+    return matches.length === 1;
+  };
+  if (question.concepts && (
+    resolves(question.concepts.core) || question.concepts.supporting.some(resolves)
+  )) return true;
+  if (question.subtopic && resolves(question.subtopic)) return true;
+  return candidates.length === 1;
+}
+
 function printUsage(): never {
   console.error('用法：npm run question:add -- --file draft.json --check');
   console.error('或：npm run question:add -- --file draft.json --write --output src/data/questions/p1-gap-fill.json');
@@ -93,6 +115,17 @@ for (const question of incoming) {
     newlyCovered.add(`${question.topic} × ${question.angle}`);
   }
   if (!nodeIds.has(question.topic)) errors.push(`${question.id}: topic "${question.topic}" 没有知识节点`);
+  const topicCandidates = nodes.filter((node) =>
+    (node.topic === question.topic || node.id === question.topic)
+    && (!question.courseId || node.courseId === question.courseId),
+  );
+  if (topicCandidates.length > 1 && !hasKnowledgeTarget(question, nodes)) {
+    errors.push(
+      `${question.id}: topic "${question.topic}" 对应多个 KnowledgeNode，必须通过 knowledgeId、concepts 或 subtopic 明确关联；候选：${topicCandidates.map((node) => node.id).join(', ')}`,
+    );
+  } else if (question.knowledgeId && !hasKnowledgeTarget(question, nodes)) {
+    errors.push(`${question.id}: knowledgeId "${question.knowledgeId}" 不属于该 topic / course 的有效 KnowledgeNode`);
+  }
   if (!validAngles.has(question.angle)) errors.push(`${question.id}: angle 不合法`);
   // 只查「缺失」：非法值在 `parseQuestionArray`（Zod）阶段就已抛错，到不了这里。
   if (!question.cognitiveTask) {
