@@ -119,6 +119,10 @@ export async function loadLearner(config?: ProficiencyConfig): Promise<LearnerPr
     for (const session of [...hydratedSessions].reverse()) rebuilt = updateLearner(rebuilt, session, config);
     knowledgeStats = rebuilt.knowledgeStats ?? {};
   }
+  knowledgeStats = Object.fromEntries(Object.entries(knowledgeStats).map(([knowledgeId, stat]) => [knowledgeId, {
+    ...stat,
+    mastery: calculateProficiency(stat.avgScore, stat.attempts, stat.practiceSessions, config),
+  }]));
 
   return {
     ...safe,
