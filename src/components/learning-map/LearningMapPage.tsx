@@ -37,6 +37,7 @@ interface Props {
   nodes: KnowledgeNode[];
   defaultTrackId: LearningTrackId;
   onGoTrain: (trackId: LearningTrackId) => void;
+  onTrackChange: (trackId: LearningTrackId) => void;
 }
 
 interface G6LiteNodeClickEvent {
@@ -253,7 +254,7 @@ function TopicDetail({ topic, onGoTrain }: { topic: LearningMapTopic; onGoTrain:
   );
 }
 
-export default function LearningMapPage({ profile, nodes, defaultTrackId, onGoTrain }: Props) {
+export default function LearningMapPage({ profile, nodes, defaultTrackId, onGoTrain, onTrackChange }: Props) {
   const [trackId, setTrackId] = useState<LearningTrackId>(defaultTrackId);
   const report = useMemo(() => buildLearningMapReport(trackId, profile, nodes), [trackId, profile, nodes]);
   const graphData = useMemo(() => buildLearningMapGraphData(report), [report]);
@@ -302,7 +303,11 @@ export default function LearningMapPage({ profile, nodes, defaultTrackId, onGoTr
         <Select
           value={trackId}
           style={{ minWidth: 190 }}
-          onChange={(value) => setTrackId(value as LearningTrackId)}
+          onChange={(value) => {
+            const nextTrackId = value as LearningTrackId;
+            setTrackId(nextTrackId);
+            onTrackChange(nextTrackId);
+          }}
           options={LEARNING_TRACKS.map((track) => ({ label: track.shortTitle, value: track.id }))}
           aria-label="选择学习体系"
         />
