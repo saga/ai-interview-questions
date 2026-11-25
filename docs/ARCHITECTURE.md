@@ -8,7 +8,7 @@
 
 ## 总体形态
 
-单页应用（SPA）：`Vite + React 19 + TypeScript + Ant Design`，五页（训练 / 进度 / 面试 / Agent 面试 / 设置）。多数 LLM Provider 通过 `@earendil-works/pi-ai` 在**浏览器内**直连（one-shot 调用），用户填写的云端密钥存 `localStorage`；GitHub Copilot SDK 与 Tencent CodeBuddy Agent SDK 例外：SDK 运行于 Node 侧，由独立 Vite dev middleware 提供仅开发期的 localhost API，不把 CLI 凭据交给浏览器。CodeBuddy 使用 `@tencent-ai/agent-sdk` 的 `query()`：应用 system prompt 通过 SDK 原生 append 字段追加，不覆盖 CodeBuddy 默认 system prompt；通过空工具白名单、拒绝型权限回调、空设置源和非持久化 Session 限制副作用；总截止时间同时覆盖初始化与消息流，并使用 SDK AbortController、Query interrupt 和 iterator 清理（ADR-095）。两个 SDK 均只承担 one-shot 普通问答、评分和题目变体，不接入 `pi-agent-core` 的流式工具调用契约。旧版 Cloudflare Workers AI 的同源代理链路（`Vite proxy → Express(server/index.js) → api.cloudflare.com` 与生产 `worker/index.ts`）在该 provider 下线后成为遗留代码，当前白名单中没有引擎使用它。应用不引入新的常驻业务后端。「Agent 面试」页由 `@earendil-works/pi-agent-core` 驱动（`src/agent/`），使用独立的流式工具调用契约。规则式「模拟面试」与训练流程仍走确定性引擎（ADR-017）。**遗留代理安全（ADR-060）**：生产 Worker 的遗留 `/api/ai/*` 通道仍固定校验 `hostname === 'api.cloudflare.com' && protocol === 'https:'`，拒绝协议相对或绝对 URL 改写目标主机，避免把带 Authorization 的请求变成开放中继。
+单页应用（SPA）：`Vite + React 19 + TypeScript + Ant Design`，七个顶层页面（学习体系选择 / 课程训练 / 进度 / 学习地图 / 面试 / Agent 面试 / 设置）。多数 LLM Provider 通过 `@earendil-works/pi-ai` 在**浏览器内**直连（one-shot 调用），用户填写的云端密钥存 `localStorage`；GitHub Copilot SDK 与 Tencent CodeBuddy Agent SDK 例外：SDK 运行于 Node 侧，由独立 Vite dev middleware 提供仅开发期的 localhost API，不把 CLI 凭据交给浏览器。CodeBuddy 使用 `@tencent-ai/agent-sdk` 的 `query()`：应用 system prompt 通过 SDK 原生 append 字段追加，不覆盖 CodeBuddy 默认 system prompt；通过空工具白名单、拒绝型权限回调、空设置源和非持久化 Session 限制副作用；总截止时间同时覆盖初始化与消息流，并使用 SDK AbortController、Query interrupt 和 iterator 清理（ADR-095）。两个 SDK 均只承担 one-shot 普通问答、评分和题目变体，不接入 `pi-agent-core` 的流式工具调用契约。旧版 Cloudflare Workers AI 的同源代理链路（`Vite proxy → Express(server/index.js) → api.cloudflare.com` 与生产 `worker/index.ts`）在该 provider 下线后成为遗留代码，当前白名单中没有引擎使用它。应用不引入新的常驻业务后端。「Agent 面试」页由 `@earendil-works/pi-agent-core` 驱动（`src/agent/`），使用独立的流式工具调用契约。规则式「模拟面试」与训练流程仍走确定性引擎（ADR-017）。**遗留代理安全（ADR-060）**：生产 Worker 的遗留 `/api/ai/*` 通道仍固定校验 `hostname === 'api.cloudflare.com' && protocol === 'https:'`，拒绝协议相对或绝对 URL 改写目标主机，避免把带 Authorization 的请求变成开放中继。
 
 **产品定位（ADR-015）**：个人 AI 面试教练，不是题库测试配置器。首页是训练入口（继续/快速/自定义），系统内部概念（评分权重、API Key 状态）不暴露给用户；每次训练都会沉淀 Learner Memory，并据此推荐下一次训练。
 
@@ -18,7 +18,7 @@
 
 ## 顶层学习体系与课程隔离
 
-`src/data/learningTracks.ts` 注册四个并列体系：`ai`、`snowflake`、`security-architecture`、`campus-employment`。课程切换只影响当前使用的知识节点、题库与 Learner Profile 投影；课程题通过 `courseId` 明确归属，不将 Security Architecture 混入 AI 的六大能力域，也不将它误标成 Snowflake 的 `data-platform`。
+`src/data/learningTracks.ts` 注册五个并列体系：`ai`、`snowflake`、`security-architecture`、`sap-it-service-consultant`、`campus-employment`。课程切换只影响当前使用的知识节点、题库与 Learner Profile 投影；课程题通过 `courseId` 明确归属，不将 Security Architecture 混入 AI 的六大能力域，也不将它误标成 Snowflake 的 `data-platform`。
 
 Security Architecture 使用独立的 `security-architecture` 分类元数据、主题白名单、知识节点 JSON 和题库 JSON。题目按 `topic = KnowledgeNode.id` 绑定评分要点，并通过 `source.materialId / relatedMaterials` 保留标准与实践来源。主课程入口展示各课程独立的主题数、节点数与题目数；旧会话推断从课程注册表读取，而不是硬编码课程数量。
 
@@ -26,6 +26,18 @@ Security Architecture 使用独立的 `security-architecture` 分类元数据、
 
 
 校招面试课程使用独立的 `campus-employment` 分类元数据、课程主题目录、知识节点和题库文件。课程主要面向计算机科学与软件工程本科应届生，研究生科研与实习经历作为扩展案例；覆盖岗位认知、自我介绍、项目贡献、团队协作、冲突沟通、责任交付、主动解决问题、学习与 AI 工具、压力管理、自我认知、业务价值、工程伦理、面试表达、Offer 决策和科研/本科经历转化。题目使用情境式单选/多选，不包含开放题，也不将其归入 AI 的六大 taxonomy；所有题目通过 `courseId` 和 `topic = KnowledgeNode.id` 绑定课程知识节点，并保留 2025–2026 面经或训练扩展的来源标签。课程路线、研究来源和 500 题覆盖分别见 `docs/campus-employment-course-roadmap.md`、`docs/campus-employment-interview-research-2025-2026.md` 与 `docs/campus-employment-question-coverage-500.md`。
+
+## 学习地图（G6Lite）
+
+新增顶层页面 `/map?track=<LearningTrackId>`，跨学习体系查看当前课程的知识分支、学习覆盖与需要补强的主题。
+
+- **数据来源**：只读 `LearnerProfile.topicStats` 和当前学习体系的 `KnowledgeNode`；不创建第二份进度数据，不写入训练记录。
+- **统计粒度**：掌握证据以 `topic` 为 key。同一 topic 下可能有多个 KnowledgeNode（Concept），地图把它们作为一个主题统计，知识点只在主题详情中展开，避免重复计算。
+- **状态定义**：未开始（attempts = 0）；待加强（已有作答，但未满足当前掌握阈值）；已掌握（与进度页一致，mastery ≥ `WEAK_MASTERY` 或 avgScore ≥ `WEAK_AVG`）。覆盖率与掌握率分开计算。
+- **分支组织**：AI 使用六个 taxonomy 能力域；Snowflake 使用平台/数据库、数据架构/工程、数据产品/智能应用；SAP 使用核心课程、Technology Consultant 补充、毕业生项目实践；Security Architecture 与校招课程也有各自的分支目录。未被目录覆盖的新 topic 会进入“其他知识主题”，不静默丢弃。
+- **可视化**：使用 G6Lite 0.1.0 UMD 浏览器构建，通过 Dagre 左到右展示体系 → 分支 → 主题；节点颜色对应掌握状态，点击主题查看统计和具体知识点。采用固定版本 CDN，不增加 npm/lockfile 依赖；脚本或 WebGL 不可用时显示提示，下面的分支列表和学习状态仍然可用。
+- **操作边界**：学习地图只读本地画像；“进入训练”导航回对应 track 的既有训练流程，仍经过训练会话导航锁。浏览地图不自动改变成绩或掌握度。
+
 
 课程题型策略：普通 AI 面试题库的开放形态由 `generateOpenQuestions` 门控；校招课程 500 道题全部是预置情境式选择题（375 单选、125 多选，多选占 25%），包含两种 `formats.choice.type`，不设置 `formats.open`，由本地确定性逻辑评分。前 5 个知识主题各有 9 道多选题，其余 10 个主题各有 8 道；四个选项的长度比例不超过 1.8，正确项与干扰项平均长度差不超过 12 个字符，并均衡分布答案位置；单选题正确项成为最长选项不超过 150/375，独占最长不超过 115/375。单选答案恰有一个索引，多选答案有 3 个索引；判分要求所选索引集合与正确答案集合完全一致。校招课程不设置 open 形态例外，也不依赖 LLM 才能完成训练。
 
