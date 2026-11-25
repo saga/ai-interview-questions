@@ -144,10 +144,16 @@ function G6LiteCanvas({
               width: (item: { data?: { kind?: string } }) => item.data?.kind === 'root' ? 232 : item.data?.kind === 'branch' ? 224 : 220,
               height: (item: { data?: { kind?: string } }) => item.data?.kind === 'root' ? 58 : item.data?.kind === 'branch' ? 52 : 46,
               borderRadius: 9,
-              fill: (item: { data?: { kind?: string; status?: LearningMapStatus } }) =>
-                item.data?.kind === 'root' ? '#1677ff' : item.data?.kind === 'branch' ? '#e6f4ff' : statusColor(item.data?.status ?? 'unstarted'),
-              stroke: (item: { data?: { kind?: string; status?: LearningMapStatus } }) =>
-                item.data?.kind === 'root' ? '#0958d9' : item.data?.kind === 'branch' ? '#91caff' : item.data?.status === 'mastered' ? '#389e0d' : item.data?.status === 'weak' ? '#d48806' : '#d9d9d9',
+              fill: (item: { data?: { kind?: string; status?: LearningMapStatus; masteryPercent?: number } }) => {
+                if (item.data?.kind === 'root') return '#1677ff';
+                if (item.data?.kind === 'branch') {
+                  const mastery = item.data.masteryPercent ?? 0;
+                  return mastery >= 75 ? '#d9f7be' : mastery > 0 ? '#fff7e6' : '#f0f0f0';
+                }
+                return statusColor(item.data?.status ?? 'unstarted');
+              },
+              stroke: (item: { data?: { kind?: string; status?: LearningMapStatus; masteryPercent?: number } }) =>
+                item.data?.kind === 'root' ? '#0958d9' : item.data?.kind === 'branch' ? ((item.data.masteryPercent ?? 0) >= 75 ? '#389e0d' : (item.data.masteryPercent ?? 0) > 0 ? '#d48806' : '#bfbfbf') : item.data?.status === 'mastered' ? '#389e0d' : item.data?.status === 'weak' ? '#d48806' : '#d9d9d9',
               strokeWidth: 1.5,
               label: (item: { name?: string; id: string }) => item.name ?? item.id,
               labelPlacement: 'center',
@@ -214,13 +220,13 @@ function G6LiteCanvas({
         }}
       />
       <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-        可拖动画布、滚轮缩放；点击主题节点查看学习记录。颜色代表当前学习状态。
+        可拖动画布、滚轮缩放；分支颜色和百分比表示已掌握主题占比。具体主题的掌握度见下方主题列表。
       </Typography.Text>
     </div>
   );
 }
 
-function TopicDetail({ topic, onGoTrain }: { topic: LearningMapTopic; onGoTrain: () => void }) {
+function TopicDetail({ topic, profile, onGoTrain }: { topic: LearningMapTopic; profile: LearnerProfile; onGoTrain: () => void }) {
   return (
     <Card
       size="small"
@@ -233,27 +239,43 @@ function TopicDetail({ topic, onGoTrain }: { topic: LearningMapTopic; onGoTrain:
         <Col xs={12} sm={6}><Statistic title="掌握度" value={topic.attempts ? Math.round(topic.mastery * 100) : '—'} suffix={topic.attempts ? '%' : undefined} /></Col>
         <Col xs={12} sm={6}><Statistic title="知识点" value={topic.conceptCount} suffix="个" /></Col>
       </Row>
+      {topic.attempts > 0 && (
+        <div style={{ marginTop: 12 }}>
+          <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+            <Typography.Text strong>主题掌握度</Typography.Text>
+            <Typography.Text strong>{Math.round(topic.mastery * 100)}%</Typography.Text>
+          </Space>
+          <Progress percent={Math.round(topic.mastery * 100)} status={topic.status === 'weak' ? 'exception' : 'success'} />
+        </div>
+      )}
       {topic.concepts.length > 0 && (
         <div style={{ marginTop: 12 }}>
           <Typography.Text strong>这个主题包含的知识点</Typography.Text>
           <List
             size="small"
             dataSource={topic.concepts}
-            renderItem={(node) => (
-              <List.Item>
-                <Tooltip title={node.summary}>
-                  <div style={{ width: '100%' }}>
-                    <Typography.Text>{node.name}</Typography.Text>
-                    <Typography.Paragraph type="secondary" style={{ margin: '2px 0 0', fontSize: 12 }}>
-                      {node.required.slice(0, 3).join('；')}
-                    </Typography.Paragraph>
-                  </div>
-                </Tooltip>
-              </List.Item>
-            )}
+            renderItem={(node) => {
+              const evidenceKey = `${topic.id}|${node.name.trim().toLowerCase()}`;
+              const evidence = profile.conceptEvidence?.[evidenceKey];
+              return (
+                <List.Item>
+                  <Tooltip title={node.summary}>
+                    <div style={{ width: '100%' }}>
+                      <Space wrap>
+                        <Typography.Text>{node.name}</Typography.Text>
+                        {evidence?.misses ? <Tag color="warning">缺失证据 {evidence.misses} 次</Tag> : <Tag>未单独评估</Tag>}
+                      </Space>
+                      <Typography.Paragraph type="secondary" style={{ margin: '2px 0 0', fontSize: 12 }}>
+                        {node.required.slice(0, 3).join('；')}
+                      </Typography.Paragraph>
+                    </div>
+                  </Tooltip>
+                </List.Item>
+              );
+            }}
           />
           <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-            详细知识点按课程定义列出；掌握度按整个主题的训练结果统计，不会把主题下的知识点重复计数。
+            缺失证据来自开放题评估；没有记录不代表已经掌握。当前系统尚未为每个知识点单独计算正向掌握分。
           </Typography.Text>
         </div>
       )}
@@ -352,9 +374,9 @@ export default function LearningMapPage({ profile, nodes, defaultTrackId, onGoTr
         title={<Space><ApartmentOutlined /> 知识体系结构</Space>}
         extra={
           <Space size={6} wrap>
-            <Tag color="success">已掌握</Tag>
-            <Tag color="warning">待加强</Tag>
-            <Tag>未开始</Tag>
+            <Tag color="success">掌握度较高</Tag>
+            <Tag color="warning">部分掌握 / 待加强</Tag>
+            <Tag>尚无作答记录</Tag>
           </Space>
         }
         style={{ marginBottom: 12 }}
@@ -363,7 +385,7 @@ export default function LearningMapPage({ profile, nodes, defaultTrackId, onGoTr
       </Card>
 
       {selectedTopic ? (
-        <TopicDetail topic={selectedTopic} onGoTrain={() => onGoTrain(trackId)} />
+        <TopicDetail topic={selectedTopic} profile={profile} onGoTrain={() => onGoTrain(trackId)} />
       ) : selectedBranch ? (
         <Card size="small" title={selectedBranch.label}>
           <Typography.Text type="secondary">这个分支包含 {selectedBranch.totalTopics} 个主题。</Typography.Text>
@@ -395,7 +417,11 @@ export default function LearningMapPage({ profile, nodes, defaultTrackId, onGoTr
                     <Space size={4} wrap>
                       {statusTag(topic.status)}
                       {priorityTag(topic.priority)}
+                      {topic.attempts > 0 && <Typography.Text style={{ color: 'inherit', fontSize: 12 }}>{Math.round(topic.mastery * 100)}%</Typography.Text>}
                     </Space>
+                    {topic.attempts > 0 && (
+                      <Progress percent={Math.round(topic.mastery * 100)} size="small" showInfo={false} status={topic.status === 'weak' ? 'exception' : 'success'} />
+                    )}
                   </Space>
                 </Button>
               </List.Item>
@@ -449,7 +475,7 @@ export default function LearningMapPage({ profile, nodes, defaultTrackId, onGoTr
                 <Space style={{ width: '100%', justifyContent: 'space-between' }} wrap>
                   <Typography.Text strong>{branch.label}</Typography.Text>
                   <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                    已掌握 {branch.masteredTopics}/{branch.totalTopics} · 待加强 {branch.weakTopics} · 未开始 {branch.unstartedTopics}
+                    已掌握 {branch.masteredTopics}/{branch.totalTopics} · {branch.masteryPercent}% · 待加强 {branch.weakTopics} · 未开始 {branch.unstartedTopics}
                   </Typography.Text>
                 </Space>
                 <Progress percent={branch.masteryPercent} size="small" strokeColor="#52c41a" />
