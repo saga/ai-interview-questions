@@ -1,3 +1,11 @@
+## 2026-11-25 · 新增 G6Lite 学习地图
+- 新增顶层“学习地图”Tab，可在 AI、Snowflake、SAP、Security Architecture 和校招面试体系之间切换。
+- 使用 G6Lite 0.1.0 UMD + Dagre 展示“学习体系 → 知识分支 → 主题”；点击主题查看作答次数、均分、掌握度和对应 KnowledgeNode。
+- 直接投影现有 LearnerProfile.topicStats，不增加第二套进度存储；统计按 topic 去重，同一 topic 下的多个知识点不会重复计数。
+- 增加已接触覆盖率、已掌握率、待加强/未开始主题及优先学习建议；保持与进度页相同的掌握阈值。
+- G6Lite 使用固定版本 CDN 延迟加载；加载失败或 WebGL 不可用时保留分支进度和主题列表，不影响其他页面和训练。
+- 新增 learning map 纯逻辑测试，并把 map 页面纳入进行中训练的导航锁。
+
 ## 2026-11-25 · 移除 OpenRouter 与 Cloudflare Workers AI provider
 - 从 `providerIdSchema` / `PROVIDER_IDS` / pi-ai 装配 / CredentialStore / capabilities / 设置面板彻底移除 `openrouter` 与 `cloudflare-workers-ai`；`accountId` 字段一并删除。
 - 旧 localStorage 配置读取时丢弃这两个 id；`parseConfigJSON` 与 Monaco enum 会拒绝/不再提示它们。默认配置、配置样例、测试与文档同步。
