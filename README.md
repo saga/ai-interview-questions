@@ -27,6 +27,7 @@ npm run questions           # 题库完整审计
 npm run questions:analyze   # 题库统计与分析（支持 --semantic --json）
 npm run questions:manage    # 列出题库维护任务
 npm run deploy              # 部署 Workers + Assets
+npm run deploy -- pages      # 部署到 Cloudflare Pages
 ```
 
 题库维护通过统一入口调用，例如：
@@ -34,6 +35,7 @@ npm run deploy              # 部署 Workers + Assets
 ```bash
 npm run questions:manage -- add
 npm run questions:manage -- review
+npm run questions:manage -- coverage
 npm run questions:manage -- blueprint -- 10
 npm run questions:analyze -- --semantic --json
 ```
