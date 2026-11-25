@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { KnowledgeNode } from '../schemas/knowledge';
+import { LEARNING_TRACKS } from '../data/learningTracks';
+import { knowledgeNodes } from '../data/knowledgeMap';
+import { knowledgeForTrack } from './learningTracks';
 import { emptyProfile } from './learner';
 import {
   buildLearningMapGraphData,
@@ -136,6 +139,17 @@ describe('learning map progress projection', () => {
     const report = buildLearningMapReport('security-architecture', emptyProfile(), nodes);
     expect(report.branches).toHaveLength(1);
     expect(report.branches[0]).toMatchObject({ id: 'other', label: '其他知识主题', totalTopics: 1 });
+  });
+
+  it('五个学习体系的每个 topic 都恰好进入一个地图分支', () => {
+    for (const track of LEARNING_TRACKS) {
+      const expected = new Set(knowledgeForTrack(knowledgeNodes, track.id).map((item) => item.topic));
+      const report = buildLearningMapReport(track.id, emptyProfile(), knowledgeNodes);
+      const actual = report.branches.flatMap((branch) => branch.topics.map((topic) => topic.id));
+      expect(report.totalTopics).toBe(expected.size);
+      expect(new Set(actual).size).toBe(actual.length);
+      expect(new Set(actual)).toEqual(expected);
+    }
   });
 
   it('G6Lite 图数据包含唯一节点 ID、完整分支连线和 topic 选择信息', () => {
