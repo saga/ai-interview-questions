@@ -164,6 +164,7 @@ describe('learning map progress projection', () => {
 
     expect(new Set(ids).size).toBe(ids.length);
     expect(ids).toContain('learning-map-root');
+    expect(graph.nodes.find((item) => item.id === 'learning-map-root')?.name).toContain('0%');
     expect(ids).toContain('branch:agent-engineering');
     expect(graph.edges).toHaveLength(3);
     const branch = graph.nodes.find((item) => item.id === 'branch:agent-engineering');
