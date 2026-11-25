@@ -13,16 +13,13 @@
 // 这样 LLM 的偶发误判不会直接卡住 CI，但 --gate 可用于「新批次入库前」的准入检查。
 //
 // 用法：
-//   npm run question:challenge -- --ids=q-1,q-2
-//   npm run question:challenge -- --topic=knowledge-distillation --limit=10 --out=temp/challenge.json
-//   npm run question:challenge -- --ids=q-1 --dry-run          # 只打印待质询清单与 prompt，不调用 LLM
-//   npm run question:challenge -- --topic=rag --gate           # 有 blocker 时退出 1
+//   npm run questions:manage -- challenge --ids=q-1,q-2
+//   npm run questions:manage -- challenge --topic=knowledge-distillation --limit=10
+//   npm run questions:manage -- challenge --ids=q-1 --dry-run
+//   npm run questions:manage -- challenge --topic=rag --gate
 //
-// 引擎配置走环境变量（不读 localStorage——Node 侧没有浏览器存储）：
-//   CHALLENGER_PROVIDER  引擎 id，默认 deepseek
-//   CHALLENGER_MODEL     模型 id
-//   CHALLENGER_API_KEY   API Key（也可复用 <ENGINE>_API_KEY）
-//   CHALLENGER_BASE_URL  可选，自建网关 / 代理
+// 质询固定使用本机 CodeBuddy Agent SDK，默认模型 hy4flash-free。
+// 可通过 CHALLENGER_MODEL 显式覆盖模型；不读取应用 Provider 配置。
 
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
