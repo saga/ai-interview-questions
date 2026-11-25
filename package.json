@@ -9,11 +9,11 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "check": "npm run typecheck && npm run test",
-    "verify": "npm run check && npm run content -- audit && npm run content -- mutation-check",
-    "content": "node scripts/manage.mjs",
-    "deploy": "node scripts/manage.mjs deploy",
-    "typecheck": "tsc -p tsconfig.app.json && tsc -p tsconfig.node.json"
+    "verify": "npm run build && npm run test && npm run questions && node scripts/mutation-check.mjs",
+    "questions": "node scripts/questions-audit.mjs",
+    "questions:analyze": "uv run --project analysis --extra analysis python analysis/question_analysis.py",
+    "questions:manage": "node scripts/questions-manage.mjs",
+    "deploy": "wrangler deploy"
   },
   "dependencies": {
     "@ant-design/charts": "^2.6.7",
