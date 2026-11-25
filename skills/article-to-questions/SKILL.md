@@ -48,7 +48,7 @@ description: "把一篇技术文章转成题库题目。用户提供文章链接
    - `formats.choice`：`type`/`options`/`answer`，single 恰好 1 个答案、multiple 至少 2 个；
      **默认按 multiple 起草**，只有结论唯一的题才用 single（题型分布要求见 `spec §9`）
    - `explanation`：解释正确答案和关键误区
-5. 运行 `npm run question:coverage`，确认这些题解决的是真实缺口而不是已饱和的 topic × angle 组合；如果发现更值得补的缺口，改用 **fill-coverage-gap** skill 的蓝图再决定题目方向。
+5. 运行 `npm run questions:manage -- coverage`，确认这些题解决的是真实缺口而不是已饱和的 topic × angle 组合；如果发现更值得补的缺口，改用 **fill-coverage-gap** skill 的蓝图再决定题目方向。
 6. 把草稿交给 **add-question-to-bank** skill 的完整校验与写入流程（`question:add --check`、去重、语义重复检查、`validate:questions`、`typecheck`、`test`）。本 skill 不重复实现写入逻辑。
 
 ## 内容质量把关
@@ -79,7 +79,7 @@ description: "把一篇技术文章转成题库题目。用户提供文章链接
 - **Diagnostic Value**：考生答错时，能否较明确地定位他缺哪个 Concept、机制或工程判断？如果做错了却说不清缺在哪，诊断价值低，应重写。
 - **Retrieval Visibility**：遮住正确项后，题干+选项在 hint 模式下是否仍然不指向唯一答案？`explanation` 被 `[Q]` 引用单独展示时是否仍能自证？`misconceptions` 是否已填（hint 模式下"错在哪"的唯一证据）？
 
-**注意**：`npm run question:coverage` 的"缺口数"是选题信号，不是质量通过条件。覆盖率达标不代表题目合格；质量门以本清单 + **add-question-to-bank** 的"结构质量门槛"为准。
+**注意**：`npm run questions:manage -- coverage` 的"缺口数"是选题信号，不是质量通过条件。覆盖率达标不代表题目合格；质量门以本清单 + **add-question-to-bank** 的"结构质量门槛"为准。
 
 ## 边界
 
