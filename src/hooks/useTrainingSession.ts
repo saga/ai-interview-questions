@@ -65,6 +65,7 @@ export interface TrainingSession {
   handleFinishEarly: () => Promise<void>;
   doSubmit: () => Promise<void>;
   handleAnswerChange: (id: string, v: AnswerValue) => void;
+  handleTipsRequested: (id: string) => void;
   handleContinue: () => void;
   handleAgentComplete: (record: SessionRecord) => Promise<void>;
   handleRestart: () => void;
@@ -312,6 +313,20 @@ export function useTrainingSession(message: MessageApi, onRestart: () => void, t
     setAnswers((prev) => ({ ...prev, [id]: v }));
   };
 
+  /** 记录用户主动查看补充背景信息；同一道题在同一场训练中只记一次。 */
+  const handleTipsRequested = (id: string) => {
+    const current = sessionRef.current;
+    if (!current || current.questions.some((sq) => sq.question.id === id && sq.tipsRequested)) return;
+    const next = {
+      ...current,
+      questions: current.questions.map((sq) =>
+        sq.question.id === id ? { ...sq, tipsRequested: true } : sq,
+      ),
+    };
+    sessionRef.current = next;
+    setSession(next);
+  };
+
   const handleContinue = () => {
     const def = buildCoachDefinition(profileForTrack(profileRef.current, trackId, knowledgeNodes), { title: `${trackId === 'snowflake' ? 'Snowflake' : 'AI'} · 继续训练` , mode: 'coach' });
     void handleStart(def);
@@ -427,6 +442,7 @@ export function useTrainingSession(message: MessageApi, onRestart: () => void, t
     handleFinishEarly,
     doSubmit,
     handleAnswerChange,
+    handleTipsRequested,
     handleContinue,
     handleAgentComplete,
     handleRestart,
