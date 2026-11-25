@@ -37,7 +37,17 @@ export const SAP_IT_SERVICE_COURSE_TOPICS = [
   { id: 'sap-tsm-cloud-service-model', label: 'TSM · SAP 云服务、RISE 与共享责任模型' },
   { id: 'sap-tsm-lifecycle-management', label: 'TSM · SAP 技术生命周期、升级与迁移' },
   { id: 'sap-tsm-operational-monitoring', label: 'TSM · SAP 运行监控、告警与可观测性' },
-  { id: 'sap-tsm-customer-service-governance', label: 'TSM · Technical Service Management 与客户技术治理' }
+  { id: 'sap-tsm-customer-service-governance', label: 'TSM · Technical Service Management 与客户技术治理' },
+  { id: 'sap-tsm-linux-operations', label: 'TSM · Linux 系统运行与资源诊断', description: '进程、服务、文件系统、CPU、内存、日志和安全的基础观察；通过证据定位问题，不要求未经授权修改生产主机。' },
+  { id: 'sap-tsm-network-connectivity', label: 'TSM · 网络连通性、DNS 与 TLS', description: 'DNS、TCP、路由、防火墙、代理、负载均衡、TLS 证书和端到端连接诊断。' },
+  { id: 'sap-tsm-abap-runtime', label: 'TSM · AS ABAP 运行组件与工作进程', description: 'Dispatcher、Work Process、Message Server、Enqueue、Gateway、ICM、后台作业和关键日志。' },
+  { id: 'sap-tsm-backup-recovery', label: 'TSM · HANA / ASE 备份、恢复与数据保护', description: 'HANA 数据/日志备份、备份目录、时间点恢复，以及 SAP ASE 数据库与事务日志转储和恢复顺序。' },
+  { id: 'sap-tsm-migration-tools', label: 'TSM · S/4HANA 转换工具与技术准备', description: 'Readiness Check、Maintenance Planner、Simplification Item Check、Custom Code Analysis、SUM 与 DMO 的定位及切换准备。' },
+  { id: 'sap-tsm-integration-operations', label: 'TSM · SAP 接口运行与集成故障', description: 'RFC、IDoc、OData、API、消息队列、Cloud Integration 监控、重试、幂等和接口证据。' },
+  { id: 'sap-tsm-identity-security', label: 'TSM · SAP 身份、授权与技术安全', description: '认证与授权、业务角色、最小权限、技术用户、SSO、证书、审计和访问异常诊断。' },
+  { id: 'sap-tsm-cloud-infrastructure', label: 'TSM · Hyperscaler 云基础与部署架构', description: 'Region/Availability Zone、VM、网络、存储、负载均衡、弹性、共享责任与云部署边界。' },
+  { id: 'sap-tsm-itsm-service-management', label: 'TSM · Incident、Problem、Change 与 SLA', description: '事件恢复、根因分析、变更控制、重大事件沟通、优先级、SLA/SLO 和服务请求。' },
+  { id: 'sap-tsm-capacity-performance', label: 'TSM · 容量、性能基线与服务改进', description: '性能基线、资源趋势、容量预测、工作负载、云成本、服务指标和持续改进行动。' }
 ] as const;
 
 
@@ -137,7 +147,7 @@ export const LEARNING_TRACKS = [
     shortTitle: 'SAP',
     description: '面向大学毕业生和实习生的 SAP 入门课程，包含 IT Service Consultant、SAP Technology Consultant 及 SAP Technical Service Manager（TSM）岗位专项学习。TSM 专项覆盖 SAP Basis、基础设施、HANA、HA/DR、RISE/ECS、生命周期、运行监控和客户技术治理；以基础知识、证据收集、跨团队协作和正确升级为主，不要求毕业生独立承担生产运维或客户架构决策。',
     actionLabel: '进入 SAP 顾问学习',
-    topicCount: 49,
+    topicCount: 59,
     learningPathUrl: 'https://github.com/saga/ai-interview-questions/blob/main/docs/sap-it-service-consultant-roadmap.md',
   },
   {
