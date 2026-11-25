@@ -7,13 +7,14 @@
 import type { AnswerValue } from '../types';
 import type { CognitiveTask, QuestionAngle } from '../schemas/common';
 import type { InterviewDefinition, ScoringRubric } from '../schemas/interview';
-import type { AngleStat, AssessmentStat, LearnerProfile, QuestionResult, SessionRecord, Trend } from '../schemas/learner';
+import type { AngleStat, AssessmentStat, KnowledgeStats, LearnerProfile, QuestionResult, SessionRecord, Trend } from '../schemas/learner';
 import type { EvaluationResult } from '../schemas/evaluation';
 import type { SessionQuestion } from '../schemas/session';
 import type { ProficiencyConfig } from '../schemas/ai-config';
 import { proficiencyConfigSchema } from '../schemas/ai-config';
 import { DEFAULT_RUBRIC } from './evaluation';
 import { prerequisiteClosure, topoRankOf } from './conceptGraph';
+import { knowledgeNodes } from '../data/knowledgeMap';
 
 const SESSION_CAP = 50;
 const TREND_EPSILON = 2; // 上次 vs 平均分差超过该值才算"在进步/下滑"
@@ -105,6 +106,7 @@ export function emptyProfile(): LearnerProfile {
     totalQuestions: 0,
     overallScore: 0,
     topicStats: {},
+    knowledgeStats: {},
     angleCoverage: {},
     assessmentCoverage: {},
     conceptEvidence: {},
@@ -194,6 +196,7 @@ export function updateLearner(
   if (s.questionResults.length === 0) return profile;
 
   const topicStats = { ...profile.topicStats };
+  const knowledgeStats: Record<string, KnowledgeStats> = { ...(profile.knowledgeStats ?? {}) };
   const angleCoverage = { ...(profile.angleCoverage ?? {}) };
   const assessmentCoverage = { ...(profile.assessmentCoverage ?? {}) };
   const conceptEvidence = { ...(profile.conceptEvidence ?? {}) };
@@ -276,6 +279,56 @@ export function updateLearner(
     }
   }
 
+  // KnowledgeNode-level evidence. Only explicitly or unambiguously mapped questions contribute.
+  const byKnowledge = new Map<string, { result: QuestionResult; weight: number; score: number }[]>();
+  for (const result of s.questionResults) {
+    for (const target of result.knowledgeTargets ?? []) {
+      const node = knowledgeNodes.find((item) => item.id === target.knowledgeId && item.topic === result.topic);
+      if (!node) continue;
+      const missing = (result.missingConcepts ?? []).some((value) => {
+        const normalized = value.trim().toLowerCase();
+        return normalized === node.id.toLowerCase() || normalized === node.name.trim().toLowerCase()
+          || node.required.some((required) => required.trim().toLowerCase() === normalized);
+      });
+      const misconception = (result.misconceptionIds ?? []).some((value) =>
+        node.misconceptions.some((known) => known.trim().toLowerCase() === value.trim().toLowerCase()),
+      );
+      const score = missing || misconception ? Math.min(result.score, 49) : result.score;
+      const list = byKnowledge.get(target.knowledgeId) ?? [];
+      list.push({ result, weight: target.weight * scoreWeight(result.format, config), score });
+      byKnowledge.set(target.knowledgeId, list);
+    }
+  }
+  for (const [knowledgeId, observations] of byKnowledge) {
+    const previous = knowledgeStats[knowledgeId];
+    const addedWeight = observations.reduce((sum, item) => sum + item.weight, 0);
+    const addedScore = observations.reduce((sum, item) => sum + item.score * item.weight, 0);
+    if (addedWeight <= 0) continue;
+    const previousWeight = previous?.scoreWeightTotal ?? 0;
+    const scoreWeightTotal = previousWeight + addedWeight;
+    const attempts = (previous?.attempts ?? 0) + observations.length;
+    const avgScore = Math.round((((previous?.avgScore ?? 0) * previousWeight + addedScore) / scoreWeightTotal) * 10) / 10;
+    const lastScore = observations[observations.length - 1].score;
+    const practiceSessions = (previous?.practiceSessions ?? 0) + 1;
+    const trend: Trend = previous
+      ? lastScore > previous.avgScore + TREND_EPSILON ? 'improving'
+        : lastScore < previous.avgScore - TREND_EPSILON ? 'declining' : 'flat'
+      : 'flat';
+    knowledgeStats[knowledgeId] = {
+      attempts,
+      practiceSessions,
+      avgScore,
+      lastScore,
+      mastery: calculateProficiency(avgScore, attempts, practiceSessions, config),
+      positiveEvidence: (previous?.positiveEvidence ?? 0) + observations.filter((item) => item.score >= WEAK_AVG).length,
+      negativeEvidence: (previous?.negativeEvidence ?? 0) + observations.filter((item) => item.score < WEAK_AVG).length,
+      trend,
+      scoreWeightTotal,
+      lastSeenAt: s.startedAt,
+      evidence: [...(previous?.evidence ?? []), ...observations.map(({ result, score }) => ({ questionId: result.questionId, score, at: s.startedAt }))].slice(-10),
+    };
+  }
+
   for (const [topic, results] of byTopic) {
     const prev = topicStats[topic];
     const n = results.length;
@@ -323,6 +376,7 @@ export function updateLearner(
     totalQuestions: profile.totalQuestions + s.questionResults.length,
     overallScore,
     topicStats,
+    knowledgeStats,
     angleCoverage,
     assessmentCoverage,
     conceptEvidence,
@@ -380,6 +434,33 @@ export function conceptGapsOf(profile: LearnerProfile, topic: string, required: 
   return gaps;
 }
 
+/** Resolve question metadata to stable KnowledgeNode ids. Never fan a question out to every node in a topic. */
+function knowledgeTargetsForQuestion(question: SessionQuestion['question']): { knowledgeId: string; weight: number }[] {
+  const candidates = knowledgeNodes.filter((node) => node.topic === question.topic && (!question.courseId || node.courseId === question.courseId));
+  const byId = new Map(candidates.map((node) => [node.id, node]));
+  const targets = new Map<string, number>();
+  if (question.knowledgeId && knowledgeNodes.some((node) => node.id === question.knowledgeId && node.topic === question.topic)) {
+    targets.set(question.knowledgeId, 1);
+  } else if (question.concepts) {
+    const resolve = (value: string) => candidates.find((node) =>
+      node.id.toLowerCase() === value.trim().toLowerCase() || node.name.trim().toLowerCase() === value.trim().toLowerCase(),
+    );
+    const core = resolve(question.concepts.core);
+    if (core) targets.set(core.id, 1);
+    for (const value of question.concepts.supporting) {
+      const node = resolve(value);
+      if (node && !targets.has(node.id)) targets.set(node.id, 0.4);
+    }
+  } else if (question.subtopic) {
+    const match = candidates.find((node) => node.id.toLowerCase() === question.subtopic!.trim().toLowerCase()
+      || node.name.trim().toLowerCase() === question.subtopic!.trim().toLowerCase());
+    if (match) targets.set(match.id, 1);
+  }
+  // A topic with exactly one KnowledgeNode is an unambiguous one-to-one mapping.
+  if (targets.size === 0 && candidates.length === 1) targets.set(candidates[0].id, 1);
+  return [...targets].map(([knowledgeId, weight]) => ({ knowledgeId, weight }));
+}
+
 /** 由一次已评分的训练会话构造 SessionRecord（纯函数；答案只影响判分结果，不在此读取）。 */
 export function sessionFromQuiz(
   session: { questions: SessionQuestion[]; startedAt: number; definition?: { title?: string; mode?: SessionRecord['mode']; courseId?: string } },
@@ -402,6 +483,7 @@ export function sessionFromQuiz(
         format,
         angle: q.angle,
         cognitiveTask: q.cognitiveTask,
+        knowledgeTargets: knowledgeTargetsForQuestion(q),
         score: g.overall,
         correct: format === 'choice' ? (g.dimensions.correctness ?? 0) === 100 : undefined,
         // 选择题判定性打分，不知道用户漏了哪个知识点，故不产生 gaps / missingConcepts；
