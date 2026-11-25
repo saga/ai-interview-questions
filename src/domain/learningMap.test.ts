@@ -166,6 +166,8 @@ describe('learning map progress projection', () => {
     expect(ids).toContain('learning-map-root');
     expect(ids).toContain('branch:agent-engineering');
     expect(graph.edges).toHaveLength(3);
+    const branch = graph.nodes.find((item) => item.id === 'branch:agent-engineering');
+    expect(branch?.data).toMatchObject({ masteryPercent: 0, masteredTopics: 0, totalTopics: 2 });
     expect(topic?.data).toMatchObject({
       kind: 'topic',
       topicId: 'agent-fundamentals',
