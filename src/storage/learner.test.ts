@@ -4,6 +4,7 @@ import { db } from './db';
 import { loadLearner, saveLearner, resetLearnerData } from './learner';
 import { emptyProfile, updateLearner, sessionFromQuiz } from '../domain/learner';
 import type { LearnerProfile, SessionRecord } from '../schemas/learner';
+import { knowledgeNodes } from '../data/knowledgeMap';
 
 function mkRecord(over: Partial<SessionRecord> = {}): SessionRecord {
   return {
@@ -62,6 +63,30 @@ describe('storage/learner (IndexedDB)', () => {
     // topicStats 聚合正确：transformer 与 moe 均在两次会话各出现一次 → attempts=2
     expect(got.topicStats.transformer.attempts).toBe(2);
     expect(got.topicStats.moe.attempts).toBe(2);
+  });
+
+  it('旧会话有原题快照时，loadLearner 自动补建 KnowledgeNode 掌握度', async () => {
+    const target = knowledgeNodes[0];
+    const question = {
+      id: 'legacy-knowledge-q', category: 'legacy', topic: target.topic, tags: [], difficulty: 'easy',
+      angle: 'scenario', question: '知识点验证题', explanation: '解析',
+      ...(target.courseId ? { courseId: target.courseId } : {}), knowledgeId: target.id,
+      formats: { open: { referenceAnswer: '参考答案' } },
+    };
+    const record: SessionRecord = {
+      ...mkRecord({ id: 'legacy-knowledge', startedAt: 1000 }),
+      questionResults: [{ questionId: question.id, category: question.category, topic: question.topic, format: 'open', score: 90, gaps: [] }],
+      questions: [{ question, format: 'open' }] as never,
+    };
+    const profile = updateLearner(emptyProfile(), record);
+    // 模拟旧版本：画像聚合和 questionResult 都没有 knowledgeStats / knowledgeTargets。
+    profile.knowledgeStats = {};
+    delete profile.sessions[0].questionResults[0].knowledgeTargets;
+    await saveLearner(profile);
+
+    const loaded = await loadLearner();
+    expect(loaded.knowledgeStats?.[target.id]?.attempts).toBe(1);
+    expect(loaded.sessions[0].questionResults[0].knowledgeTargets).toEqual([{ knowledgeId: target.id, weight: 1 }]);
   });
 
   it('save → load 往返保留 angleCoverage 与 conceptEvidence（证据层不会静默丢失）', async () => {
