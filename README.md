@@ -39,7 +39,7 @@ uv run --project analysis --extra analysis python analysis/question_analysis.py 
 报告中的 `pandas.topicCounts` 对应 `df.groupby("topic").size()`，`pandas.topicAngleCounts` 对应 `df.groupby(["topic", "angle"]).size()`。TF-IDF/KMeans、embedding 聚类和难度分类是质量信号，不是题目正确性的证明；`--semantic` 使用本地字符级 TF-IDF 向量同时发现近重复题和题簇：不下载模型、不访问网络，是词汇近似信号而非神经语义嵌入。仓库不再存放模型权重，也不依赖 Git LFS、ONNX Runtime 或 Sentence Transformers。Python 只负责离线分析，题目运行时契约仍由 TypeScript/Zod 校验。
 
 ## 文档
-- [SAP IT Service Consultant 学习路线](docs/sap-it-service-consultant-roadmap.md)：面向大学毕业生和实习生，按无正式项目经验设计；覆盖 49 个主题和 720 道情境题，其中新增 200 道面向毕业生实习生的亚太客户沟通与项目协作题、40 道 SAP Business AI 题和 80 道 Technical Service Manager（TSM）专项题；另有 200 道对齐 Coursera 课程的初中级题目。
+- [SAP IT Service Consultant 学习路线](docs/sap-it-service-consultant-roadmap.md)：面向大学毕业生和实习生，按无正式项目经验设计；覆盖 59 个主题和 920 道情境题，其中 200 道亚太客户沟通与项目协作题、40 道 SAP Business AI 题、280 道 Technical Service Manager（TSM）专项题（含本轮新增 200 道初/中级技术运维题），另有 200 道对齐 Coursera 课程的初中级题目。\n- [SAP TSM 技术运维深化题覆盖矩阵](docs/sap-tsm-technical-operations-coverage-200.md)：新增 10 个技术知识节点、200 道题的知识映射、难度/题型分布、岗位能力边界与 SAP 官方参考资料。
 - [SAP 顾问课程研究与官方资料](docs/sap-it-service-consultant-research.md)：课程范围、SAP 官方 Learning Journeys、Cloud ALM 与题目来源边界。
 - [中国大学生本科研究生校招面试技巧培训路线](docs/campus-employment-course-roadmap.md)：面向计算机/软件工程应届生的 15 个知识主题与 785 道情境式校招面试选择题（555 道单选、230 道多选），包含选项长度与答案位置质量校验。
 - [2025–2026 校招面试调研](docs/campus-employment-interview-research-2025-2026.md)：候选人面经、官方招聘材料和练习扩展题的来源边界。
