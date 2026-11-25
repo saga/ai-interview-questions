@@ -20,6 +20,7 @@ interface Props {
   onFinish: () => void;
   challengerEnabled?: boolean;
   challengerProvider?: LLMProvider | null;
+  onTipsRequested?: (questionId: string) => void;
 }
 
 /** 自适应面试的逐题视图：答一题、评一题，下一题由迁移策略决定。 */
@@ -36,6 +37,7 @@ export default function AdaptiveQuiz({
   onFinish,
   challengerEnabled = false,
   challengerProvider,
+  onTipsRequested,
 }: Props) {
   return (
     <div>
@@ -59,6 +61,8 @@ export default function AdaptiveQuiz({
         onChange={onChange}
         challengerEnabled={challengerEnabled}
         challengerProvider={challengerProvider}
+        tipsRequested={sq.tipsRequested ?? false}
+        onTipsRequested={onTipsRequested}
       />
 
       <Button
