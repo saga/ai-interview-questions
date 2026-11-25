@@ -398,8 +398,6 @@ export default function App() {
         <Layout.Content
           className="app-content"
           style={{
-            maxWidth: 980,
-            margin: '0 auto',
             width: '100%',
             flex: 1,
             minWidth: 0,
