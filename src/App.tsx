@@ -283,6 +283,7 @@ export default function App() {
             profile={p}
             nodes={knowledgeNodes}
             defaultTrackId={runtimeTrackId}
+            onTrackChange={(trackId) => navigate(`/map?track=${trackId}`)}
             onGoTrain={(trackId) =>
               attemptNavigate({
                 target: 'train',
