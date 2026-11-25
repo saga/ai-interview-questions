@@ -104,22 +104,22 @@ description: "写新题并落库。用户要求新增面试题、起草题目或
 
 ## 修改与验证
 
-1. 先将草稿保存为 JSON 数组，运行 `npm run questions:manage -- add -- --file draft.json --check`。
+1. 先将草稿保存为 JSON 数组，运行 `npm run questions:manage -- add --file draft.json --check`。
    该命令已内置**题型门禁**（AGENTS.md §4.2，实现见 `scripts/add-question.ts`）：本批选择题 ≥ 3 道且单选占比 > 1/3 时**直接报错退出**，并打印单选/多选分布。被拦住时应改写为多选，不要想办法绕过门禁；少于 3 道选择题的小批量自动豁免。
    手工查看分布：
    ```
    python3 -c "import json,collections;d=json.load(open('draft.json',encoding='utf-8'));c=collections.Counter(q['formats']['choice']['type'] for q in d if q['formats'].get('choice'));print(dict(c))"
    ```
-2. 检查通过且人工确认后，使用 `npm run questions:manage -- add -- --file draft.json --write --output src/data/questions/<batch>.json` 写入；目标文件不能覆盖已有文件。
+2. 检查通过且人工确认后，使用 `npm run questions:manage -- add --file draft.json --write --output src/data/questions/<batch>.json` 写入；目标文件不能覆盖已有文件。
 3. 直接修改题库时使用 `apply_patch`，保持现有格式和排序风格。
 4. 运行：
-   - `npm run questions`
+   - `npm run check`
    - `npx vitest run src/data/bank.test.ts`
    - `npx vitest run src/domain/knowledge/retrieve.test.ts src/application/conversation/knowledgeCapability.test.ts`
      数据改动会直接影响检索：这两组用例守住投影、混合评分、graph 扩展与四种答案安全模式。
    - `npm run questions:manage -- lint-bias`
    - `npm run questions:manage -- lint-length -- --changed`（检查新增/修改题目对象；新题草稿仍须先通过 `question:add --check`）
-   - `npm run questions` —— 内容质量只读审计（软信号，非门禁）。新题若命中，
+   - `npm run check` —— 内容质量只读审计（软信号，非门禁）。新题若命中，
      先判断是不是真问题：命中的是**词汇/统计嫌疑**，不是语义判定。
    - **目标格子计数 +1**：重跑"添加前"第 3 步的计数命令，确认目标 (topic, angle) 确实 +1。
      注意这不是覆盖审计——`question:coverage` 的缺口数按节点声明的 `angles` 算，
