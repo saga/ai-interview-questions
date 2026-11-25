@@ -269,7 +269,7 @@ function TopicDetail({ topic, onGoTrain }: { topic: LearningMapTopic; onGoTrain:
                       {node.attempts > 0 && <Progress percent={Math.round(node.mastery * 100)} size="small" showInfo={false} status={node.status === 'weak' ? 'exception' : 'success'} />}
                       <Typography.Paragraph type="secondary" style={{ margin: '2px 0 0', fontSize: 12 }}>
                         {node.attempts > 0
-                          ? `作答 ${node.attempts} 次 · 均分 ${node.avgScore} · 正向证据 ${node.positiveEvidence} · 负向证据 ${node.negativeEvidence}`
+                          ? `作答 ${node.attempts} 次 · 均分 ${node.avgScore} · 正向 ${node.positiveEvidence} · 负向 ${node.negativeEvidence}${node.lastSeenAt ? ` · 最近练习 ${new Date(node.lastSeenAt).toLocaleDateString()}` : ''}`
                           : node.required.slice(0, 3).join('；')}
                       </Typography.Paragraph>
                     </div>
