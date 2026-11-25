@@ -435,40 +435,80 @@ export function conceptGapsOf(profile: LearnerProfile, topic: string, required: 
 }
 
 /** Resolve question metadata to stable KnowledgeNode ids. Never fan a question out to every node in a topic. */
-export function knowledgeTargetsForQuestion(question: SessionQuestion['question']): { knowledgeId: string; weight: number }[] {
-  const candidates = knowledgeNodes.filter((node) => (node.topic === question.topic || node.id === question.topic) && (!question.courseId || node.courseId === question.courseId));
-  const targets = new Map<string, number>();
-  if (question.knowledgeId && knowledgeNodes.some((node) => node.id === question.knowledgeId && (node.topic === question.topic || node.id === question.topic))) {
-    targets.set(question.knowledgeId, 1);
-  } else {
-    const resolveUnique = (value: string) => {
-      const normalized = value.trim().toLowerCase();
-      const matches = candidates.filter((node) =>
-        node.id.toLowerCase() === normalized || node.name.trim().toLowerCase() === normalized,
-      );
-      return matches.length === 1 ? matches[0] : undefined;
-    };
-    if (question.concepts) {
-      const core = resolveUnique(question.concepts.core);
-      if (core) targets.set(core.id, 1);
-      for (const value of question.concepts.supporting) {
-        const node = resolveUnique(value);
-        if (node && !targets.has(node.id)) targets.set(node.id, 0.4);
-      }
-    }
-    if (targets.size === 0 && question.subtopic) {
-      const node = resolveUnique(question.subtopic);
-      if (node) targets.set(node.id, 1);
-    }
-    // When the topic itself is a KnowledgeNode id, it is a stable, explicit semantic match.
-    if (targets.size === 0) {
-      const topicNode = resolveUnique(question.topic);
-      if (topicNode) targets.set(topicNode.id, 1);
-    }
-    // A topic with exactly one KnowledgeNode is an unambiguous one-to-one mapping.
-    if (targets.size === 0 && candidates.length === 1) targets.set(candidates[0].id, 1);
+export type KnowledgeTargetResolutionSource = 'knowledgeId' | 'concepts' | 'subtopic' | 'topic-id' | 'unique-topic' | 'unmapped';
+
+export interface KnowledgeTargetResolution {
+  targets: { knowledgeId: string; weight: number }[];
+  source: KnowledgeTargetResolutionSource;
+  candidateCount: number;
+  reason?: 'invalid-knowledge-id' | 'ambiguous-topic' | 'no-node-for-topic';
+}
+
+/**
+ * Resolve a question only when its metadata identifies KnowledgeNode(s) unambiguously.
+ * A question is never spread across every node in its topic.
+ */
+export function resolveKnowledgeTargetsForQuestion(question: SessionQuestion['question']): KnowledgeTargetResolution {
+  const candidates = knowledgeNodes.filter((node) =>
+    (node.topic === question.topic || node.id === question.topic)
+    && (!question.courseId || node.courseId === question.courseId),
+  );
+  const result = (targets: Map<string, number>, source: KnowledgeTargetResolutionSource): KnowledgeTargetResolution => ({
+    targets: [...targets].map(([knowledgeId, weight]) => ({ knowledgeId, weight })),
+    source,
+    candidateCount: candidates.length,
+  });
+  const exactId = (value: string) => candidates.filter((node) => node.id.toLowerCase() === value.trim().toLowerCase());
+  const exactName = (value: string) => candidates.filter((node) => node.name.trim().toLowerCase() === value.trim().toLowerCase());
+  const resolveUnique = (value: string) => {
+    const matches = [...new Map([...exactId(value), ...exactName(value)].map((node) => [node.id, node])).values()];
+    return matches.length === 1 ? matches[0] : undefined;
+  };
+
+  if (question.knowledgeId) {
+    const node = knowledgeNodes.find((item) =>
+      item.id === question.knowledgeId
+      && (item.topic === question.topic || item.id === question.topic)
+      && (!question.courseId || item.courseId === question.courseId),
+    );
+    return node
+      ? result(new Map([[node.id, 1]]), 'knowledgeId')
+      : { targets: [], source: 'unmapped', candidateCount: candidates.length, reason: 'invalid-knowledge-id' };
   }
-  return [...targets].map(([knowledgeId, weight]) => ({ knowledgeId, weight }));
+
+  const targets = new Map<string, number>();
+  if (question.concepts) {
+    const core = resolveUnique(question.concepts.core);
+    if (core) targets.set(core.id, 1);
+    for (const value of question.concepts.supporting) {
+      const node = resolveUnique(value);
+      if (node && !targets.has(node.id)) targets.set(node.id, 0.4);
+    }
+    if (targets.size > 0) return result(targets, 'concepts');
+  }
+
+  if (question.subtopic) {
+    const node = resolveUnique(question.subtopic);
+    if (node) return result(new Map([[node.id, 1]]), 'subtopic');
+  }
+
+  // A topic that is itself a KnowledgeNode id is an exact stable reference.
+  const topicIdMatches = exactId(question.topic);
+  if (topicIdMatches.length === 1) return result(new Map([[topicIdMatches[0].id, 1]]), 'topic-id');
+
+  // A one-node topic is the only safe implicit fallback.
+  if (candidates.length === 1) return result(new Map([[candidates[0].id, 1]]), 'unique-topic');
+
+  return {
+    targets: [],
+    source: 'unmapped',
+    candidateCount: candidates.length,
+    reason: candidates.length > 1 ? 'ambiguous-topic' : 'no-node-for-topic',
+  };
+}
+
+export function knowledgeTargetsForQuestion(question: SessionQuestion['question']): { knowledgeId: string; weight: number }[] {
+  return resolveKnowledgeTargetsForQuestion(question).targets;
 }
 
 /** 由一次已评分的训练会话构造 SessionRecord（纯函数；答案只影响判分结果，不在此读取）。 */
