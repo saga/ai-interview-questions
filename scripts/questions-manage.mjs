@@ -2,6 +2,12 @@ import { spawnSync } from "node:child_process";
 
 const tasks = {
   coverage: ["node", "scripts/question-coverage.ts"],
+  validate: ["node", "scripts/validate-questions.ts"],
+  identity: ["node", "scripts/check-question-identity.ts"],
+  quality: ["node", "scripts/audit-question-quality.ts"],
+  integrity: ["node", "scripts/audit-bank-integrity.ts"],
+  "lint-bias": ["node", "scripts/lint-bias.ts"],
+  "lint-length": ["node", "scripts/lint-length.ts"],
   add: ["node", "scripts/add-question.ts"],
   review: ["node", "scripts/review-question.ts"],
   blueprint: ["node", "scripts/question-blueprint.ts"],
