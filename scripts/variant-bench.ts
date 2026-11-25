@@ -19,7 +19,7 @@
 //   --n <k>          取前 k 道选择题（默认 10）
 //   --parallel       用 Promise.all 并发（模拟 buildSession 启动路径，默认）
 //   --sequential      串行调用（看纯求和耗时，作对照）
-//   --provider <id>   deepseek / openrouter / local（默认 deepseek）
+//   --provider <id>   deepseek / google / local（默认 deepseek）
 //   --base-url <url> 本地 OpenAI 兼容服务地址（provider=local 或自定义网关时用）
 //   --dry-run        **不联网**：用内置合成 LLM 跑通整条管线（读题 → 解析 → 校验 → 遥测 → 汇总），
 //                    验证本脚本自身的统计口径（avg/p95/fallback 归因）与管线接线。

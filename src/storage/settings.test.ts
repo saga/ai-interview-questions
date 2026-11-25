@@ -77,38 +77,16 @@ describe('loadConfig', () => {
     ]);
   });
 
-  it('历史遗留的已下线引擎（openai/anthropic）被丢弃，openrouter 恢复后正常保留', () => {
+  it('已下线引擎（openai/anthropic/openrouter/cloudflare）被丢弃并回退默认配置', () => {
     store['ai-interview-trainer.config'] = JSON.stringify({
       providers: [
-        { id: 'chrome', enabled: true },
         { id: 'openai', enabled: true, model: 'gpt-4o', apiKey: 'sk-a' },
         { id: 'anthropic', enabled: false, model: 'claude-3-5-sonnet', apiKey: 'sk-b' },
+        { id: 'openrouter', enabled: true, model: 'anthropic/claude-haiku-4.5', apiKey: 'sk-or-v1-x' },
+        { id: 'cloudflare-workers-ai', enabled: true, model: '@cf/x', apiKey: 'tok', accountId: 'acc' },
       ],
     });
-    expect(loadConfig()).toEqual({
-      providers: [{ id: 'chrome', enabled: true, model: '', apiKey: '', baseUrl: '' }],
-      generateOpenQuestions: false,
-      questionChallengerEnabled: false,
-      runtimeVariantEnabled: false,
-      masteryThreshold: 75,
-      disabledCategories: [],
-      proficiency: DEFAULT_CONFIG.proficiency,
-    });
-
-    store['ai-interview-trainer.config'] = JSON.stringify({
-      providers: [{ id: 'openrouter', enabled: true, model: 'anthropic/claude-haiku-4.5', apiKey: 'sk-or-v1-x' }],
-    });
-    expect(loadConfig()).toEqual({
-      providers: [
-        { id: 'openrouter', enabled: true, model: 'anthropic/claude-haiku-4.5', apiKey: 'sk-or-v1-x', baseUrl: '' },
-      ],
-      generateOpenQuestions: false,
-      questionChallengerEnabled: false,
-      runtimeVariantEnabled: false,
-      masteryThreshold: 75,
-      disabledCategories: [],
-      proficiency: DEFAULT_CONFIG.proficiency,
-    });
+    expect(loadConfig()).toEqual(DEFAULT_CONFIG);
   });
 
   it('新链式形态逐项清洗并去重（同引擎保留首个）', () => {
@@ -303,32 +281,9 @@ describe('parseConfigJSON（config.json 编辑器校验）', () => {
     if (res.ok) expect(res.config.providers[0]).toMatchObject({ id: 'local', enabled: false });
   });
 
-  it('cloudflare：accountId 齐全时通过，缺失时整体拒绝', () => {
-    const CF = { id: 'cloudflare-workers-ai', model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast', apiKey: 'cf-token' };
-    const ok = parseConfigJSON(JSON.stringify({ providers: [{ ...CF, accountId: '023e105f' }] }));
-    expect(ok).toEqual({
-      ok: true,
-      config: {
-        providers: [
-          {
-            id: 'cloudflare-workers-ai',
-            enabled: true,
-            model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
-            apiKey: 'cf-token',
-            baseUrl: '',
-            accountId: '023e105f',
-          },
-        ],
-        generateOpenQuestions: false,
-        questionChallengerEnabled: false,
-        runtimeVariantEnabled: false,
-        masteryThreshold: 75,
-        disabledCategories: [],
-        proficiency: DEFAULT_CONFIG.proficiency,
-      },
-    });
-    const bad = parseConfigJSON(JSON.stringify({ providers: [CF] }));
-    expect(bad).toMatchObject({ ok: false, error: expect.stringContaining('Account ID') });
+  it.each(['openrouter', 'cloudflare-workers-ai'])('已下线引擎 %s 被整体拒绝', (id) => {
+    const res = parseConfigJSON(JSON.stringify({ providers: [{ id, enabled: true, model: 'm', apiKey: 'k' }] }));
+    expect(res.ok).toBe(false);
   });
 
   it.each([

@@ -1,101 +1,73 @@
 # 部署说明（Deployment）
 
-本应用是纯前端 SPA（Vite + React，构建产物 `dist/`）。**Cloudflare Workers AI 这一 provider 必须有一个「同源代理」才能用**，本文档说明为什么、以及各部署方式下的正确配置。
+本应用是纯前端 SPA（Vite + React，构建产物 `dist/`，HashRouter）。当前 provider 白名单为：
+
+`chrome` / `local` / `deepseek` / `google` / `copilot-sdk` / `codebuddy-sdk`
+
+`openrouter` 与 `cloudflare-workers-ai` 已从白名单、配置样例、设置 UI 和运行时装配中彻底移除：旧 localStorage 配置读取时会被丢弃，高级 JSON 编辑器保存时会拒绝。
 
 ---
 
-## 1. 为什么需要同源代理（关键背景）
+## 1. 各部署方式对照
 
-Cloudflare Workers AI 的 REST 域名 `api.cloudflare.com` **不返回 CORS 头**，浏览器从前端直连它会被同源策略拦截（表现为 `Connection error` / 请求失败）。
+| 部署方式 | 页面 | 云端 provider | 本地 SDK |
+|---|---|---|---|
+| 本地 `npm run dev`（Vite :5173） | ✅ | ✅ 浏览器直连各自默认地址 | ✅ CodeBuddy / Copilot |
+| 本机 `npm run server`（:3000，可选） | ✅（serve `dist/`） | ✅ | ❌ |
+| Cloudflare Workers（`wrangler deploy`） | ✅ | ✅ | ❌ |
+| Cloudflare Pages（`*.pages.dev`） | ✅ | ✅ | ❌ |
+| GitHub Pages / 其它纯静态 | ✅ | ✅ | ❌ |
 
-因此前端不能直连 `api.cloudflare.com`，而是请求**与自己同源**的 `/api/ai/...`，再由服务端把这段前缀剥掉、转发到 `api.cloudflare.com`：
-
-```
-前端   →  /api/ai/client/v4/accounts/{accountId}/ai/v1/...      （同源，无 CORS）
-服务端 →  剥掉 /api/ai 前缀  →  https://api.cloudflare.com/client/v4/accounts/{accountId}/ai/v1/...
-```
-
-`src/ai/pi.ts` 的 `getModel` 会把 cloudflare provider 的 `baseUrl` 由 pi-ai 内置的
-`https://api.cloudflare.com/...` **仅替换源**为同源代理前缀 `${location.origin}/api/ai/...`，
-保留 pi-ai 原有的 `{CLOUDFLARE_ACCOUNT_ID}` 占位符与路径拼接（accountId 由 credential store 注入）。
-注意 `baseUrl` 必须是**绝对 URL**——pi-ai 底层用 OpenAI SDK，会对 `baseUrl` 执行 `new URL()`，
-传相对路径会抛 `Failed to construct 'URL': Invalid URL`。
-
-**核心结论：代理必须存在于「部署目标自己的源(origin)」上。** 它只活在服务端，前端代码里没有任何可被部署带走的代理逻辑。
+> `/api/ai/*` 代理代码仍保留在 `worker/index.ts`、`server/index.js` 与 `vite.config.ts` 中，但当前没有任何 provider 使用它，属于待清理的遗留通道。
 
 ---
 
-## 2. 各部署方式对照
-
-| 部署方式 | 代理由谁提供 | cloudflare provider 是否可用 |
-|---|---|---|
-| 本地 `npm run dev` | Vite dev proxy → 可选 Node 服务(`server/index.js`, 端口 3000) | ✅ 可用 |
-| Cloudflare Workers(`wrangler deploy`) | `worker/index.ts`(main 脚本) | ✅ 可用 |
-| 自有 Node 主机 | 直接运行 `npm run server`(含 `server/index.js`) | ✅ 可用 |
-| **GitHub Pages(纯静态)** | **无** | ❌ **不可用** |
-
-> 其它 cloud provider（deepseek / openrouter / google）走各自默认 `baseUrl`，在任意静态托管上是否可用取决于其域名是否返回 CORS 头；`local` provider 仅本机有效。
-
----
-
-## 3. 本地开发
+## 2. 本地开发
 
 ```bash
 npm install
-npm run dev      # 并行启动 Vite(5173) 与可选 Node 服务(3000)
+npm run dev      # Vite(5173) + 可选 Node 服务(3000)
 ```
 
-链路：`前端(:5173) → vite proxy(/api/ai) → Node 服务(:3000) → api.cloudflare.com`。
-Node 服务(`server/index.js`)是**可选**的，仅用于本地以同源方式代理 Cloudflare、规避 CORS；
-不运行时应用照常工作，只是 cloudflare provider 无法调用。
+浏览器请打开 **`http://localhost:5173`**：
+
+- Vite dev server 提供页面，并通过 `vite-plugin-copilot-sdk.ts` / `vite-plugin-codebuddy-sdk.ts` 暴露本机 SDK 接口。
+- 两个 SDK 接口只允许 localhost / 127.0.0.1 / ::1 访问，CLI 凭据始终留在 Node 进程，不进入浏览器配置。
+- Node server(:3000) 是可选的；不运行时应用照常工作。
+
+### GitHub Copilot SDK
+启用 `copilot-sdk` 需要本机安装并登录 GitHub Copilot CLI。模型字段可填 `auto` 或账户支持的模型 ID，不需要 API Key。
+
+### Tencent CodeBuddy Agent SDK
+启用 `codebuddy-sdk` 需要本机安装 CodeBuddy CLI 并完成登录。模型留空时使用 CLI 默认模型。Node.js 要求 22.13+，`persistSession: false` 要求 CLI 2.125.1+。
+
+两个 SDK 都只支持 one-shot 调用；不加载用户/项目设置、Skills 或 MCP，不开放文件、Shell 等工具，不持久化 Session。超时或客户端断开会触发 abort、Query interrupt 与迭代器清理。它们不接入 Agent 面试的工具调用运行时，也不存在于生产构建中。
 
 ---
 
-### GitHub Copilot SDK（仅本地开发）
-
-GitHub Copilot SDK 通过 `vite-plugin-copilot-sdk.ts` 作为 Vite 开发中间件调用，不经过 Express。启用 `copilot-sdk` 前，需要本机已安装并登录 GitHub Copilot CLI。配置不需要 API Key，模型字段可填写 `auto` 或当前账户支持的模型 ID。
-
-### Tencent CodeBuddy Agent SDK（仅本地开发）
-
-CodeBuddy Agent SDK 通过 `vite-plugin-codebuddy-sdk.ts` 调用官方 `@tencent-ai/agent-sdk` 的 `query()` API，不经过 Express。启用 `codebuddy-sdk` 前，需要本机安装 CodeBuddy CLI 并完成登录；也可以按 CodeBuddy CLI 规范配置 API Key 和环境变量。模型字段可留空，使用 CLI 默认模型。CodeBuddy 本地运行时要求 Node.js 22.13 或更高版本，且 `persistSession: false` 要求 CodeBuddy CLI 2.125.1 或更高版本。SDK 运行在 Vite 的 Node 进程中，浏览器只访问限制为 localhost 的同源接口，不接触本机登录凭据。
-
-两个本地 SDK 都只支持普通问答、评分和题目变体等 one-shot 调用；system prompt 通过 SDK 原生参数传递；默认不加载用户/项目设置、Skills 或 MCP，不开放文件、Shell 等工具，不持久化 Session。超时或客户端断开时会触发 SDK AbortController，并补充 Query interrupt 与迭代器清理；这不等于对所有 CLI/模型故障都能保证进程已停止。它们也不接入 Agent 面试的工具调用运行时。它们仅在 Vite 开发模式存在，静态构建和 Cloudflare Worker 不会暴露这些接口。
-
-## 4. Cloudflare Workers 部署（推荐）
+## 3. Cloudflare Workers 部署
 
 ```bash
 npm run build
-npx wrangler deploy
+npm run cloudflare:deploy     # = wrangler deploy
 ```
 
-- `wrangler.toml` 同时配置 `[assets]`(托管 `dist/`)与 `main = "./worker/index.ts"`。
-- `worker/index.ts` 是极薄的服务端：收到 `/api/ai/*` 时剥前缀并转发到 `api.cloudflare.com`
-  （与 `server/index.js` 转发逻辑一致）；其它路径交给 `[assets]` 提供静态 SPA。
-- 这样 `wrangler deploy` 后 cloudflare provider 在生产环境真正可用。
+- `wrangler.toml` 配置 `[assets]`（托管 `dist/`）和 `not_found_handling = "single-page-application"`。
+- `main = "./worker/index.ts"` 仍保留遗留 `/api/ai/*` 代理；其它路径交给 `[assets]`。
 
 ---
 
-## 5. GitHub Pages（纯静态，cloudflare provider 不可用）
+## 4. Cloudflare Pages 部署
 
-GitHub Pages 只托管静态文件，**没有任何服务端代码**，无法提供 `/api/ai` 代理：
+Pages 项目只托管 `dist/`，用于让 `*.pages.dev` 正常打开页面：
 
-- 部署后页面照常加载，但**启用 cloudflare 模型时会调用失败**（请求 `/api/ai/...` 得到 404，
-  被应用包成「⚠️ 模型调用失败」提示）。应用不会整体崩溃，仅该 provider 不可用。
-- 若一定要在 GitHub Pages 上用 cloudflare provider，必须**外接一个代理**，例如：
-  - 你自己挂的一个 Cloudflare Worker（单独部署，把 `你的域名/api/ai/*` 转发到 `api.cloudflare.com`），
-    然后前端 `baseUrl` 指向该 Worker 域名（需相应改造 `getModel`）；
-  - 或其它 serverless / 自建反向代理。
-- 纯静态方案下，建议改用 `local` / `openrouter` / `deepseek` 等在浏览器端可用的 provider
-  （前提是对应域名返回 CORS 头）。
+- **Git 集成**：Cloudflare 控制台 → Workers & Pages → `ai-interview-questions` → Settings → Build & deployment，设置 Build command = `npm run build`、Build output directory = `dist`、Root directory = 空，然后重新部署。
+- **CLI 部署**：`npm run cloudflare:pages:deploy`（`npm run build && wrangler pages deploy dist --project-name ai-interview-questions`，需 `CLOUDFLARE_API_TOKEN` 具备 Pages 编辑权限）。
+
+Pages 没有 Worker，也没有本地 SDK 接口；只保证页面和云端 provider 可用。
 
 ---
 
-## 6. 代理前缀约定
+## 5. 其它纯静态托管（GitHub Pages 等）
 
-`/api/ai` 是各环境统一的同源代理前缀：
-
-- `vite.config.ts`：`server.proxy['/api/ai']` → `http://localhost:3000`
-- `server/index.js`：剥离 `/api/ai` → `https://api.cloudflare.com`
-- `worker/index.ts`：剥离 `/api/ai` → `https://api.cloudflare.com`
-
-三者剥离逻辑一致：请求路径 `/api/ai/client/v4/...` 在服务端变成 `/client/v4/...` 再转发。
+只托管 `dist/` 即可，SPA 回退到 `index.html`。deepseek / google 走各自默认 `baseUrl`，是否可用取决于对应域名是否返回 CORS 头；本地 SDK 不可用。

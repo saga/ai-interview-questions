@@ -18,13 +18,6 @@ describe('capabilitiesFor（P2⑦ 能力协商）', () => {
     });
   });
 
-  it('openrouter 支持 jsonMode + toolCalls，但 contextCaching 保守为 false', () => {
-    const c = capabilitiesFor(entry('openrouter'));
-    expect(c.jsonMode).toBe(true);
-    expect(c.toolCalls).toBe(true);
-    expect(c.contextCaching).toBe(false);
-  });
-
   it('chrome 不声明原生 jsonMode / toolCalls（走 prompt + parser 兜底）', () => {
     const c = capabilitiesFor(entry('chrome'));
     expect(c.jsonMode).toBe(false);

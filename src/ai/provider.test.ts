@@ -95,14 +95,6 @@ describe('isEntryValid（按引擎区分校验）', () => {
     expect(isEntryValid({ id: 'deepseek', enabled: true, model: 'deepseek-flash', apiKey: 'sk-x' })).toBe(true);
   });
 
-  it('cloudflare 需要 apiKey + model + accountId 三者齐全', () => {
-    const cf = { id: 'cloudflare-workers-ai' as const, enabled: true };
-    expect(isEntryValid({ ...cf, model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast', apiKey: 'tok', accountId: '' })).toBe(false);
-    expect(isEntryValid({ ...cf, model: '', apiKey: 'tok', accountId: 'acc' })).toBe(false);
-    expect(isEntryValid({ ...cf, model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast', apiKey: '', accountId: 'acc' })).toBe(false);
-    expect(isEntryValid({ ...cf, model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast', apiKey: 'tok', accountId: 'acc' })).toBe(true);
-  });
-
 });
 
 describe('isConfigValid（至少一个启用且合法的引擎）', () => {
@@ -139,22 +131,15 @@ describe('createLLMProvider（工厂分派）', () => {
     expect(p).toBeInstanceOf(PiAIProvider);
   });
 
-  it('google / cloudflare 等新云端引擎同样走 PiAIProvider 并可组成降级链', () => {
+  it('google 等云端引擎走 PiAIProvider 并可组成降级链', () => {
     const p = createLLMProvider({
       providers: [
         entry({ id: 'google', model: 'gemini-2.5-flash', apiKey: 'AIza-x' }),
-        {
-          id: 'cloudflare-workers-ai',
-          enabled: true,
-          model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
-          apiKey: 'tok',
-          accountId: 'acc',
-        },
-        entry({ id: 'openrouter', model: 'anthropic/claude-haiku-4.5', apiKey: 'sk-or' }),
+        entry({ id: 'deepseek', model: 'deepseek-flash', apiKey: 'sk-ds' }),
       ],
     });
     expect(p).toBeInstanceOf(FallbackProvider);
-    expect(p?.name).toBe('pi-ai(google) → pi-ai(cloudflare-workers-ai) → pi-ai(openrouter)');
+    expect(p?.name).toBe('pi-ai(google) → pi-ai(deepseek)');
   });
 
   it('多引擎返回降级链，只包含启用且合法的通道', () => {

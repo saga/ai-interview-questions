@@ -4,7 +4,7 @@
 //   · 本地开发由 Vite dev server（vite.config.ts 的 proxy）同源代理 /api/ai；
 //   · 生产环境由 Cloudflare 纯静态 Assets 托管 dist/，本服务可作为可选的后端，
 //     既同源代理 /api/ai/*，也可直接 serve 构建产物 dist/。
-// 本服务是 Cloudflare Workers AI 浏览器直连 CORS 问题的唯一服务端解法：把构建产物
+// 遗留通道（Cloudflare provider 已下线，当前无使用者）：把构建产物
 // dist/ 以同源方式 serve 出来，并代理 /api/ai/* 到 https://api.cloudflare.com，
 // 从而能在本机或自有 Node 主机以「同源」方式跑完整应用、规避浏览器直连 Cloudflare 的
 // CORS。它是可选依赖（不参与 Cloudflare 静态构建与部署），仅在需要服务端能力时启用。

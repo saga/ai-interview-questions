@@ -19,9 +19,7 @@ const PROVIDER_LABELS: Record<string, string> = {
   chrome: 'Chrome 内置 AI',
   local: '本地 OpenAI 兼容服务',
   deepseek: 'DeepSeek',
-  openrouter: 'OpenRouter',
   google: 'Google Gemini',
-  'cloudflare-workers-ai': 'Cloudflare Workers AI',
   'copilot-sdk': 'GitHub Copilot SDK',
   'codebuddy-sdk': 'Tencent CodeBuddy Agent SDK',
 };
@@ -244,10 +242,7 @@ export default function SettingsPanel({
                 <code>local</code> —— 本机 OpenAI 兼容服务（默认 {DEFAULT_LOCAL_BASE_URL}），无需密钥；
               </li>
               <li>
-                <code>deepseek</code> / <code>openrouter</code> / <code>google</code>（Gemini）—— 云端直连，需 API Key；
-              </li>
-              <li>
-                <code>cloudflare-workers-ai</code> —— Cloudflare Workers AI，需 API Token + Account ID；
+                <code>deepseek</code> / <code>google</code>（Gemini）—— 云端直连，需 API Key；
               </li>
               <li>
                 <code>copilot-sdk</code> —— 使用本机 Copilot CLI 登录态，无需 API Key；模型可填 <code>auto</code>。仅 Vite 开发模式提供此运行时。
@@ -529,7 +524,7 @@ export default function SettingsPanel({
               />
               {provider.id !== 'chrome' && provider.id !== 'copilot-sdk' && provider.id !== 'codebuddy-sdk' && (
                 <Input.Password
-                  addonBefore={provider.id === 'cloudflare-workers-ai' ? 'API Token' : 'API Key'}
+                  addonBefore="API Key"
                   value={provider.apiKey}
                   onChange={(event) => updateProvider(index, { apiKey: event.target.value })}
                   placeholder="可留空（该引擎停用时不影响保存）"
@@ -541,13 +536,6 @@ export default function SettingsPanel({
                   value={provider.baseUrl ?? ''}
                   onChange={(event) => updateProvider(index, { baseUrl: event.target.value })}
                   placeholder={DEFAULT_LOCAL_BASE_URL}
-                />
-              )}
-              {provider.id === 'cloudflare-workers-ai' && (
-                <Input
-                  addonBefore="Account ID"
-                  value={provider.accountId ?? ''}
-                  onChange={(event) => updateProvider(index, { accountId: event.target.value })}
                 />
               )}
             </Space>

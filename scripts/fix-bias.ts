@@ -84,7 +84,6 @@ function loadEntry(): ProviderEntry | null {
           model: entry.model,
           apiKey: entry.apiKey ?? '',
           baseUrl: entry.baseUrl ?? '',
-          ...(entry.accountId ? { accountId: entry.accountId } : {}),
         };
       }
     } catch {
@@ -100,7 +99,6 @@ function loadEntry(): ProviderEntry | null {
       model,
       apiKey: process.env.FIXBIAS_API_KEY ?? '',
       baseUrl: process.env.FIXBIAS_BASE_URL ?? '',
-      ...(process.env.FIXBIAS_ACCOUNT_ID ? { accountId: process.env.FIXBIAS_ACCOUNT_ID } : {}),
     };
   }
   return null;

@@ -205,7 +205,6 @@ function loadProviderEntry(): ProviderEntry {
   const model = process.env.VARIANT_MODEL ?? process.env.AI_PROVIDER_MODEL;
   const apiKey = process.env.VARIANT_API_KEY ?? process.env.AI_PROVIDER_API_KEY;
   const baseUrl = process.env.VARIANT_BASE_URL ?? process.env.AI_PROVIDER_BASE_URL;
-  const accountId = process.env.VARIANT_ACCOUNT_ID ?? process.env.AI_PROVIDER_ACCOUNT_ID;
   if (!id || !model || !apiKey) {
     throw new Error(
       '缺少 provider 配置：请设置 VARIANT_PROVIDER / VARIANT_MODEL / VARIANT_API_KEY（或 AI_PROVIDER_*）环境变量。\n' +
@@ -218,7 +217,6 @@ function loadProviderEntry(): ProviderEntry {
     model,
     apiKey,
     ...(baseUrl ? { baseUrl } : {}),
-    ...(accountId ? { accountId } : {}),
   };
   if (!isEntryValid(entry)) {
     throw new Error(`provider 配置非法：${JSON.stringify({ id, hasModel: Boolean(model), hasKey: Boolean(apiKey) })}`);

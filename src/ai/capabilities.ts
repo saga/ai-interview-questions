@@ -35,27 +35,11 @@ const CAPABILITY_TABLE: Record<ProviderEntry['id'], LLMCapabilities> = {
     contextCaching: true,
     multiRound: true,
   },
-  // OpenRouter：OpenAI 兼容通道，绝大多数模型支持 JSON 模式与原生工具调用。
-  openrouter: {
-    jsonMode: true,
-    toolCalls: true,
-    thinking: false,
-    contextCaching: false,
-    multiRound: true,
-  },
   // Google Gemini：结构化输出走 Gemini 自有参数（非 response_format=json_object），原生工具调用支持，
   // 但本适配层暂不为它附加 json_object，故 jsonMode 此处为 false（避免向非预期引擎发送错误参数）。
   google: {
     jsonMode: false,
     toolCalls: true,
-    thinking: false,
-    contextCaching: false,
-    multiRound: true,
-  },
-  // Cloudflare Workers AI：模型各异，保守按「无原生 JSON / 无原生工具」处理（prompt + parser 兜底）。
-  'cloudflare-workers-ai': {
-    jsonMode: false,
-    toolCalls: false,
     thinking: false,
     contextCaching: false,
     multiRound: true,

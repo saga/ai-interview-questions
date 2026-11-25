@@ -1,3 +1,13 @@
+## 2026-11-25 · 移除 OpenRouter 与 Cloudflare Workers AI provider
+- 从 `providerIdSchema` / `PROVIDER_IDS` / pi-ai 装配 / CredentialStore / capabilities / 设置面板彻底移除 `openrouter` 与 `cloudflare-workers-ai`；`accountId` 字段一并删除。
+- 旧 localStorage 配置读取时丢弃这两个 id；`parseConfigJSON` 与 Monaco enum 会拒绝/不再提示它们。默认配置、配置样例、测试与文档同步。
+- 当前 provider：`chrome` / `local` / `deepseek` / `google` / `copilot-sdk` / `codebuddy-sdk`。`/api/ai/*` 代理代码保留但已无使用者，属遗留通道。
+- 验证：`typecheck` ✅、`test` 747/747 ✅。
+
+## 2026-11-25 · Pages 与 Workers 双静态部署
+- 新增 `npm run cloudflare:pages:deploy`：`npm run build` 后用 `wrangler pages deploy dist` 发布 `*.pages.dev`，与现有 `npm run cloudflare:deploy`（Workers + Assets）并存。
+- `DEPLOYMENT.md` 补充 Pages Git 集成的 Build command / output directory 配置；Pages 仅保证页面展示，不含 `/api/ai` 或本地 SDK 接口。
+
 ## 2026-11-25 · CI Actions 升级至 Node 24 运行时
 - `.github/workflows/ci.yml` 的 verify / deploy 两个 job 均把 `actions/checkout` 升至 v7、`actions/setup-node` 升至 v7，消除 GitHub Actions 关于 Node 20 action runtime 的弃用告警。
 - 项目自身 `node-version` 保持 22（当前仍受支持，且符合本地运行要求）。

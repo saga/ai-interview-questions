@@ -1,5 +1,5 @@
 {
-  "$comment": "应用配置示例。实际存储位置：浏览器 localStorage，key = ai-interview-trainer.config（设置页直接编辑此 JSON 保存后写入）。providers 是有序降级链（ADR-023）：调用时从上到下尝试，失败自动切换下一个——弱模型（chrome/local）排前、云端强模型殿后兜底。可用引擎：chrome / local / deepseek / openrouter / google / cloudflare-workers-ai / copilot-sdk / codebuddy-sdk（两个本地 SDK 仅在 Vite 开发模式可调用）。generateOpenQuestions 控制是否生成开放题（默认 false，ADR-031）；questionChallengerEnabled 控制题目质询者（使用当前 provider 降级链，默认 false）。注意：baseUrl 仅 id=local 使用；google / cloudflare 的地址由底层 pi-ai 内置（cloudflare 用 accountId + model 拼装），填 baseUrl 无效，故下方示例对其留空。",
+  "$comment": "应用配置示例。实际存储位置：浏览器 localStorage，key = ai-interview-trainer.config（设置页直接编辑此 JSON 保存后写入）。providers 是有序降级链（ADR-023）：调用时从上到下尝试，失败自动切换下一个——弱模型（chrome/local）排前、云端强模型殿后兜底。可用引擎：chrome / local / deepseek / google / copilot-sdk / codebuddy-sdk（两个本地 SDK 仅在 Vite 开发模式可调用）。generateOpenQuestions 控制是否生成开放题（默认 false，ADR-031）；questionChallengerEnabled 控制题目质询者（使用当前 provider 降级链，默认 false）。注意：baseUrl 仅 id=local 使用；deepseek / google 的地址由底层 pi-ai 内置，填 baseUrl 无效，故下方示例对其留空。",
 
   "example-0-完整引擎清单-仅chrome与local启用": {
     "providers": [
@@ -25,26 +25,11 @@
         "baseUrl": ""
       },
       {
-        "id": "openrouter",
-        "enabled": false,
-        "model": "anthropic/claude-haiku-4.5",
-        "apiKey": "",
-        "baseUrl": ""
-      },
-      {
         "id": "google",
         "enabled": false,
         "model": "gemini-2.0-flash",
         "apiKey": "",
         "baseUrl": ""
-      },
-      {
-        "id": "cloudflare-workers-ai",
-        "enabled": false,
-        "model": "@cf/moonshotai/kimi-k2.6",
-        "apiKey": "",
-        "accountId": "",
-        "baseUrl": "https://api.cloudflare.com/client/v4"
       },
       {
         "id": "copilot-sdk",
@@ -99,7 +84,7 @@
     ]
   },
 
-  "example-3-多云端降级链-gemini加cloudflare加openrouter兜底": {
+  "example-3-多云端降级链-gemini加deepseek兜底": {
     "providers": [
       {
         "id": "google",
@@ -109,24 +94,9 @@
         "baseUrl": ""
       },
       {
-        "id": "cloudflare-workers-ai",
-        "enabled": true,
-        "model": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
-        "apiKey": "cloudflare-api-token-xxxx",
-        "baseUrl": "",
-        "accountId": "023e105f4ecef8ad9ca31a8372d0c353"
-      },
-      {
-        "id": "openrouter",
-        "enabled": true,
-        "model": "anthropic/claude-haiku-4.5",
-        "apiKey": "sk-or-v1-xxxxxxxxxxxxxxxx",
-        "baseUrl": ""
-      },
-      {
         "id": "deepseek",
-        "enabled": false,
-        "model": "deepseek-v4-pro",
+        "enabled": true,
+        "model": "deepseek-flash",
         "apiKey": "sk-xxxxxxxxxxxxxxxx",
         "baseUrl": ""
       }
@@ -134,12 +104,11 @@
   },
 
   "$字段说明": {
-    "providers[].id": "'chrome' | 'local' | 'deepseek' | 'openrouter' | 'google' | 'cloudflare-workers-ai' | 'copilot-sdk' | 'codebuddy-sdk'（其余 id 在保存时被整体拒绝，读取时被丢弃）",
+    "providers[].id": "'chrome' | 'local' | 'deepseek' | 'google' | 'copilot-sdk' | 'codebuddy-sdk'（其余 id 在保存时被整体拒绝，读取时被丢弃）",
     "providers[].enabled": "停用的引擎保留配置但不参与降级链；停用引擎允许配置不完整",
-    "providers[].model": "模型 ID；chrome 留空；local 填本地服务的模型 ID（见其 /v1/models）；deepseek 如 deepseek-flash；openrouter 填聚合平台的全名（如 anthropic/claude-haiku-4.5）；google 填 Gemini 模型（如 gemini-2.5-flash）；cloudflare 填 @cf/ 前缀模型（如 @cf/meta/llama-3.3-70b-instruct-fp8-fast）；copilot-sdk 可填 auto 或 SDK 支持的模型 ID；codebuddy-sdk 留空时使用本机 CLI 默认模型",
-    "providers[].apiKey": "云端引擎必填（deepseek/openrouter/google 为 API Key，cloudflare 为 API Token）；local 可选（部分服务需要）；chrome、copilot-sdk 与 codebuddy-sdk 不适用（两个 SDK 均复用本机 CLI 登录态；CodeBuddy API Key 如使用则通过 Node 进程环境变量配置，不存浏览器配置）",
+    "providers[].model": "模型 ID；chrome 留空；local 填本地服务的模型 ID（见其 /v1/models）；deepseek 如 deepseek-flash；google 填 Gemini 模型（如 gemini-2.5-flash）；copilot-sdk 可填 auto 或 SDK 支持的模型 ID；codebuddy-sdk 留空时使用本机 CLI 默认模型",
+    "providers[].apiKey": "云端引擎必填（deepseek/google 为 API Key）；local 可选（部分服务需要）；chrome、copilot-sdk 与 codebuddy-sdk 不适用（两个 SDK 均复用本机 CLI 登录态；CodeBuddy API Key 如使用则通过 Node 进程环境变量配置，不存浏览器配置）",
     "providers[].baseUrl": "仅 id=local 使用，OpenAI 兼容服务地址，默认 http://127.0.0.1:8888/v1（Unsloth Studio），也支持 vLLM / Ollama / llama.cpp 等",
-    "providers[].accountId": "仅 id='cloudflare-workers-ai' 使用：Cloudflare Account ID（仪表盘右侧可查），API Token 之外必填；其他引擎不需要此字段",
     "generateOpenQuestions": "布尔值，默认 false：不生成开放题（纯开放题不入卷、双形态题一律出选择）；true 时按组卷配额（约 30%）生成开放题",
     "runtimeVariantEnabled": "布尔值，默认 false：运行时变体开关。默认 OFF 时训练只走 Offline Variant Pool（题库离线预生成的变体资产，零 LLM 落地）；仅当 Pool 未命中、且本开关开启、且存在可用 provider 时，才退化到 1 次 LLM 运行时生成，且运行时结果不写回题库。即「离线池优先 + 运行时可选兜底」"
   }

@@ -1515,6 +1515,10 @@
   引擎元数据全部来自 pi-ai catalog，「随服务商维护」的成本担忧随之消失。
 - 验证：settings/provider 用例更新并新增（accountId 清洗与校验、cloudflare 缺失整体拒绝、
   新云端组链 name 断言）；typecheck/build 通过。
+- 后续调整（2026-11-25）：`openrouter` 与 `cloudflare-workers-ai` 再次下线——从 ProviderId 白名单、
+  schema、CredentialStore、capabilities、设置 UI、样例配置与测试中彻底移除，`accountId` 字段同步删除。
+  旧配置读取时丢弃这两项，JSON 编辑器保存时拒绝。保留的云端直连引擎为 `deepseek` 与 `google`；
+  `/api/ai/*` 代理代码成为无使用者的遗留通道。ADR-026 保留作历史决策记录。
 
 ## ADR-025 · 引擎收敛为 chrome/local/deepseek + 设置页改为 config.json 编辑器
 
