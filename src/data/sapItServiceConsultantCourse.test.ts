@@ -100,7 +100,7 @@ describe('SAP IT Service Consultant course', () => {
       question.question,
       question.assessment.target,
       question.explanation,
-      ...question.formats.choice?.options ?? [],
+      ...(question.formats.choice?.options ?? []),
       ...question.misconceptions,
     ].join(' ')))).toBe(true);
     expect(nodes.every((node) => !juniorRoleNoise.test([
