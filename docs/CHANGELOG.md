@@ -1,3 +1,9 @@
+## 2026-11-25 · 变体池发布门禁修复
+- `refresh-variant-hash --write` 重设 333 条仅元数据/算法口径变化的变体指纹，不调用 LLM。
+- `languageSanity` 从句倒置检测改为按内容对齐变体选项与 canonical 选项，不再假设选项下标一一对应；因变体刻意重排选项导致的 28 条误报消失，新增 2 个纯逻辑回归测试。
+- 无 LLM provider 可重生成时，裁剪 67 条不可修复变体：56 条真实 stale、3 条真实语言质量不合格、8 对选项雷同中各删一条（同时消除 2 对路径重复）。变体池 2061 → 1994，覆盖题 1215 → 1194。
+- `npm run question:validate-variants` 退出码 0、池健康；`validate:questions`、`typecheck`、`test`（748/748）与 `git diff --check` 均通过。
+
 ## 2026-11-25 · 移除仓库内 ONNX 语义模型依赖
 - 删除 `analysis/models/paraphrase-multilingual-MiniLM-L12-v2/`（含 113 MB LFS 权重），仓库不再依赖 Git LFS 托管的模型文件。
 - `question_analysis --semantic` 改用本地字符级 TF-IDF 向量：不下载模型、不访问网络，是词汇近似信号而非神经语义嵌入；移除 `--model` / `--device` 参数。

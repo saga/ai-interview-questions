@@ -23,7 +23,7 @@
         "generatedAt": 1788854593645,
         "generator": "offline",
         "promptVersion": "v4",
-        "sourceHash": "fnv1a-b2b63793",
+        "sourceHash": "fnv1a-65eeb96f",
         "batch": "assessmentreplace",
         "model": "manual",
         "contentHash": "fnv1a-c77b94e5",
@@ -40,10 +40,10 @@
           ],
           "question": "请解释 AI Agent 中“记忆（Memory）”机制，区分短期记忆与长期记忆，并说明各自的作用。",
           "options": [
-            "短期记忆是当前会话的上下文，保存最近对话与中间结果支撑即时推理；长期记忆是跨会话持久化的知识库，常借助向量检索按需召回",
+            "短期记忆负责跨会话的用户画像积累，长期记忆只存放当前任务用完即弃的临时中间变量",
             "短期与长期记忆本质相同，都应把全部历史对话逐字保存，并按时间顺序全量回放进上下文",
             "长期记忆只能存在于模型参数之中，会话结束后上下文内的信息无法持久化到任何外部存储",
-            "短期记忆负责跨会话的用户画像积累，长期记忆只存放当前任务用完即弃的临时中间变量"
+            "短期记忆是当前会话的上下文，保存最近对话与中间结果支撑即时推理；长期记忆是跨会话持久化的知识库，常借助向量检索按需召回"
           ]
         }
       }
@@ -68,7 +68,7 @@
         "generatedAt": 1788854593646,
         "generator": "offline",
         "promptVersion": "v4",
-        "sourceHash": "fnv1a-d36b6f3b",
+        "sourceHash": "fnv1a-30dfa19b",
         "batch": "assessmentreplace",
         "model": "manual",
         "contentHash": "fnv1a-28562bed",
@@ -86,8 +86,8 @@
           ],
           "question": "Agent 应该保存完整执行轨迹（trajectory），还是只保存最终结果？从调试、隐私、成本三个角度论述。",
           "options": [
-            "为了隐私合规，轨迹一律不得保存，出现问题时只要重新运行一次 Agent 即可完整还原现场，无需任何历史留痕",
             "轨迹分级保留并脱敏存储，作为调试与归因的生命线；但消费端默认只见压缩视图——存不存历史和给不给模型看是两个独立决策，应按角色与用途分别授权访问",
+            "为了隐私合规，轨迹一律不得保存，出现问题时只要重新运行一次 Agent 即可完整还原现场，无需任何历史留痕",
             "既然已经存了完整轨迹，运行时就应把全量原文原样喂回上下文，否则这些存储投入就完全失去了它本该有的价值",
             "轨迹存储成本高昂，生产环境只应保留最终的业务结果以控制预算，中间过程全部丢弃才是最优的工程取舍"
           ]
@@ -112,7 +112,7 @@
         "generatedAt": 1788854593647,
         "generator": "offline",
         "promptVersion": "v4",
-        "sourceHash": "fnv1a-d36b6f3b",
+        "sourceHash": "fnv1a-30dfa19b",
         "batch": "assessmentreplace",
         "model": "manual",
         "contentHash": "fnv1a-225d2fb5",
@@ -130,56 +130,10 @@
           ],
           "question": "Agent 应该保存完整执行轨迹（trajectory），还是只保存最终结果？从调试、隐私、成本三个角度论述。",
           "options": [
-            "为了隐私合规，轨迹一律不得保存，出现问题时只要重新运行一次 Agent 即可完整还原现场，无需任何历史留痕",
             "轨迹分级保留并脱敏存储，作为调试与归因的生命线；但消费端默认只见压缩视图——存不存历史和给不给模型看是两个独立决策，应按角色与用途分别授权访问",
+            "为了隐私合规，轨迹一律不得保存，出现问题时只要重新运行一次 Agent 即可完整还原现场，无需任何历史留痕",
             "既然已经存了完整轨迹，运行时就应把全量原文原样喂回上下文，否则这些存储投入就完全失去了它本该有的价值",
             "轨迹存储成本高昂，生产环境只应保留最终的业务结果以控制预算，中间过程全部丢弃才是最优的工程取舍"
-          ]
-        }
-      }
-    ],
-    "mem-cog-01": [
-      {
-        "id": "mem-cog-01__context-options__assessmentreplace__0",
-        "kind": "context-options",
-        "question": "某运维 Agent 上线首周产生四条记录：当前堆栈报错的代码分析、三天前 CI 报错的处置、团队部署偏好、Review 三段式要求。标签系统要把它们写入四类记忆，下列映射正确的是？",
-        "options": [
-          "堆栈报错分析属于 Working Memory，只驻留当前任务上下文，任务结束即清空",
-          "三天前 CI 处置属于 Episodic Memory，是带时间戳与交互背景的事件记录",
-          "部署偏好属于 Semantic Memory，是从多次交互抽象出的持久事实知识",
-          "三段式要求属于 Procedural Memory，固化了特定工作流的行为范式"
-        ],
-        "angle": "scenario",
-        "cognitiveTask": "apply",
-        "assessment": {
-          "target": "能把运维场景的四条记录按时效与抽象层级映射到四类记忆",
-          "reasoningGoal": "先判断每条记录的时效与抽象前提；再逐项验证映射关系；并排除张冠李戴的映射。"
-        },
-        "generatedAt": 1788854593648,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-6511f324",
-        "batch": "assessmentreplace",
-        "model": "manual",
-        "contentHash": "fnv1a-4ff68e26",
-        "sourceSnapshot": {
-          "id": "mem-cog-01",
-          "topic": "memory",
-          "angle": "mechanism",
-          "difficulty": "medium",
-          "cognitiveTask": "explain",
-          "tags": [
-            "working-memory",
-            "episodic-memory",
-            "semantic-memory",
-            "procedural-memory"
-          ],
-          "question": "AI Agent 的记忆架构通常借鉴认知科学，将其划分为不同功能的记忆类型。现有一个智能编程/运维 Agent，在其运行过程中记录了以下数据：1. 当前正在针对某堆栈报错及对应代码段进行 Debug 分析；2. 记录“三天前与用户排查了 CI/CD 流程报错，并修改了部署脚本”；3. 记录“用户团队在生产环境采用 GitHub Actions 部署，且偏好使用 Python”；4. 记录“在生成代码 Review 总结时，用户要求固定采用三段式结构”。关于上述数据与 Agent 记忆类型的对应关系，下列分析正确的是？（多选）",
-          "options": [
-            "数据 1 属于 Working Memory（工作记忆），仅驻留于当前任务的 Context Window 中，任务结束即被清空",
-            "数据 2 属于 Episodic Memory（情境记忆），是带有时间戳和特定交互事件背景的事件记录",
-            "数据 3 属于 Semantic Memory（语义记忆），是从多次交互中抽象出的独立于特定对话的持久事实与知识",
-            "数据 4 属于 Procedural Memory（程序记忆），固化了 Agent 针对特定任务或工作流的行为范式与偏好规则"
           ]
         }
       }
@@ -204,7 +158,7 @@
         "generatedAt": 1788854593648,
         "generator": "offline",
         "promptVersion": "v4",
-        "sourceHash": "fnv1a-a61217f8",
+        "sourceHash": "fnv1a-b5476e9c",
         "batch": "assessmentreplace",
         "model": "manual",
         "contentHash": "fnv1a-aabf539f",
@@ -223,8 +177,8 @@
           "question": "在开发 Agent 产品时，用户往往感觉“模型记住了昨天的对话”。从 Transformer 模型底层的 API 合约与系统架构的角度来看，这种记忆连续性的本质是？",
           "options": [
             "商业 LLM API 在服务端默认保留了跨请求的模型隐层状态（Hidden States）及 Key-Value Cache",
-            "LLM 本身是无状态的（Stateless），每一轮 API 调用都基于全新空白状态；连续性完全由外围 Agent 平台系统通过状态管理、记忆检索与 Prompt 动态组装工程来实现",
             "LLM 在 Fine-tuning / Continual Pre-training 过程中实时将用户的对话记录更新到了模型权重参数中",
+            "LLM 本身是无状态的（Stateless），每一轮 API 调用都基于全新空白状态；连续性完全由外围 Agent 平台系统通过状态管理、记忆检索与 Prompt 动态组装工程来实现",
             "只要 Prompt 长度不超过模型宣称的最大 Context Limit，LLM 就能在无外部数据库辅助的情况下自动跨 Session 持久化所有状态"
           ]
         }
@@ -250,7 +204,7 @@
         "generatedAt": 1788854593649,
         "generator": "offline",
         "promptVersion": "v4",
-        "sourceHash": "fnv1a-5d830349",
+        "sourceHash": "fnv1a-3ee3b2c1",
         "batch": "assessmentreplace",
         "model": "manual",
         "contentHash": "fnv1a-9377f5ff",
@@ -268,9 +222,9 @@
           "question": "设计一个 ESG Research Agent：从几十份 ESG PDF 报告中提取碳排放等指标并生成横向对比结论。难点在数字准确性与口径不一致，怎么处理？",
           "options": [
             "为提高效率，应让 LLM 在抽取指标的同时直接完成跨公司对比计算，省去单独的计算代码层。",
-            "LLM 只负责带出处与口径说明的结构化字段抽取，单位换算与横向对比交给确定性代码完成，不确定的字段留空并标注原因而非猜测填充。",
+            "缺失口径的指标由模型按行业惯例推测一个合理值填入，避免对比表中出现空格影响观感。",
             "口径不一致的问题可以忽略，直接把不同标准下的数值归一相加比较即可反映真实排放水平。",
-            "缺失口径的指标由模型按行业惯例推测一个合理值填入，避免对比表中出现空格影响观感。"
+            "LLM 只负责带出处与口径说明的结构化字段抽取，单位换算与横向对比交给确定性代码完成，不确定的字段留空并标注原因而非猜测填充。"
           ]
         }
       }
@@ -459,52 +413,6 @@
         }
       }
     ],
-    "graphrag-07": [
-      {
-        "id": "graphrag-07__surface-options__assessmentreplace__0",
-        "kind": "surface-options",
-        "question": "某 Agentic RAG 上线后出现怪象：所有全局分析类问题都被路由到向量检索，答案错得离谱，且复现困难。定位这次路由失效，下列哪些判断成立？",
-        "options": [
-          "检索前缺了 LLM 驱动的分类路由，点查与全局分析被扔进同一条路径",
-          "路由只能单层单点，无法在索引族与算法两个层级上分层决策",
-          "前置路由多一次 LLM 调用，延迟与 Token 成本必然上升",
-          "误判把全局问题送进向量检索，召回域错配且动态路径更难排查"
-        ],
-        "angle": "debugging",
-        "cognitiveTask": "troubleshoot",
-        "assessment": {
-          "target": "能从全局问题被错路由的故障定位路由机制的缺口与代价",
-          "reasoningGoal": "先缩小故障范围（缺路由、层级、代价、误判四类）；再逐项验证各判断能否解释故障；并排除与机制不符的描述。"
-        },
-        "generatedAt": 1788854593651,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-a26894fd",
-        "batch": "assessmentreplace",
-        "model": "manual",
-        "contentHash": "fnv1a-22a2709b",
-        "sourceSnapshot": {
-          "id": "graphrag-07",
-          "topic": "graph-rag",
-          "angle": "system-design",
-          "difficulty": "hard",
-          "cognitiveTask": "evaluate",
-          "tags": [
-            "agentic-rag",
-            "routing",
-            "retrieval-strategy",
-            "latency"
-          ],
-          "question": "由于没有单一的检索策略（如 Vector RAG、GraphRAG Global Search、SQL 查询）能完美胜任所有类型的用户提问，现代系统架构引入了 Agentic RAG（基于 Agent 的动态路由检索）。关于 Agentic RAG 的工作机制及其引入的工程权衡，下列哪些说法是正确的？（多选）",
-          "options": [
-            "Agentic RAG 在检索前增加一层由 LLM 驱动的查询分类与路由机制，依据问题特征自动选择最合适的检索路径（如点状问答走向量检索，全局分析走 GraphRAG）",
-            "路由选择可以在多个抽象层级上发生，例如顶层由 Composite Retriever 选择查询哪个索引，子层由 Auto-router 选择具体检索算法",
-            "引入 Agentic 路由会增加检索前置的 LLM 调用，导致整体查询时延（Latency）和 Token 成本上升",
-            "如果前置路由模块发生误判（例如将全局分析问题错判为简单向量检索），会导致后续检索结果质量严重下降，且这种失效模式相较于固定静态路由更难排查调试"
-          ]
-        }
-      }
-    ],
     "rag-private-enterprise-01": [
       {
         "id": "rag-private-enterprise-01__surface-options__assessmentreplace__0",
@@ -619,7 +527,7 @@
         "generatedAt": 1788854593653,
         "generator": "offline",
         "promptVersion": "v4",
-        "sourceHash": "fnv1a-bdbddf29",
+        "sourceHash": "fnv1a-bfc844bd",
         "batch": "assessmentreplace",
         "model": "manual",
         "contentHash": "fnv1a-986dcf14",
@@ -636,10 +544,10 @@
           ],
           "question": "Agent Evaluation 与传统 API 单元测试的核心区别是什么？",
           "options": [
-            "将温度固定为 0 并锁定随机种子，使输出完全可复现，从而保留全部精确断言；确定性解码保证每次结果逐字节一致，旧版快照比对机制可继续作为回归判据。",
+            "承认 Agent 输出非确定且达成路径多样，把评估对象转向结果质量（规则校验或 LLM judge 打分）与中间轨迹合理性，用固定评测集统计成功率并按版本回归",
             "暂停自动化评估，改为上线后纯人工抽检观察；红灯源于输出非确定而非真实退化，自动化断言在此场景下失效，依赖人工长期体验更贴合用户真实感受。",
             "大面积红灯说明模型确实退化，应立即回滚模型版本并冻结后续更新；指标恶化是模型能力下滑的直接证据，停止迭代可避免问题进一步扩大。",
-            "承认 Agent 输出非确定且达成路径多样，把评估对象转向结果质量（规则校验或 LLM judge 打分）与中间轨迹合理性，用固定评测集统计成功率并按版本回归"
+            "将温度固定为 0 并锁定随机种子，使输出完全可复现，从而保留全部精确断言；确定性解码保证每次结果逐字节一致，旧版快照比对机制可继续作为回归判据。"
           ]
         }
       }
@@ -711,7 +619,7 @@
         "generatedAt": 1788854593655,
         "generator": "offline",
         "promptVersion": "v4",
-        "sourceHash": "fnv1a-02673cc1",
+        "sourceHash": "fnv1a-8657a55d",
         "batch": "assessmentreplace",
         "model": "manual",
         "contentHash": "fnv1a-397310ac",
@@ -728,9 +636,9 @@
           "question": "Offline Evaluation 和 Online Evaluation 有什么区别？各自能回答什么问题、不能回答什么问题？",
           "options": [
             "Offline Evaluation 直接度量真实流量，因此比在线 A/B 测试更能代表用户的真实体验",
-            "Online Evaluation 适用于发布前的验证，Offline Evaluation 适用于上线后的监控，两者不能结合使用",
+            "Offline 在固定数据集上可重复可对比、成本低，适合迭代守门但覆盖不了真实流量长尾；Online 用真实流量验证效果可信但周期长成本高，两者互补",
             "只要 Offline 指标全部通过即可保证上线安全，Online Evaluation 属于可有可无的补充环节",
-            "Offline 在固定数据集上可重复可对比、成本低，适合迭代守门但覆盖不了真实流量长尾；Online 用真实流量验证效果可信但周期长成本高，两者互补"
+            "Online Evaluation 适用于发布前的验证，Offline Evaluation 适用于上线后的监控，两者不能结合使用"
           ]
         }
       }

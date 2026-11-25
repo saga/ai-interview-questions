@@ -24,7 +24,7 @@
         "generatedAt": 1789598159745,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-cc6b9906",
+        "sourceHash": "fnv1a-8e53daa6",
         "batch": "manual-bq",
         "model": "manual",
         "contentHash": "fnv1a-ed6b424a",
@@ -49,9 +49,9 @@
           "question": "某保险公司用既有 SageMaker 基础设施做保费预测 Web 应用，训练数据存 S3 且增长快；需持续重训练方案：员工上传新客户数据文件到 S3 时须自动重训练并将模型重部署到应用。哪种方案满足？（单选）",
           "options": [
             "用 Glue 对每个上传文件跑 ETL，经 SDK 调 SageMaker 端点，实时推理在更新数据集重训练后重部署。",
-            "建 Lambda + webhook 在上传时生成事件，SageMaker Pipelines 重训练后重部署，EventBridge 事件总线以 Lambda 为源、Pipelines 为目标。",
+            "建 Step Functions 标准工作流：首状态调 Lambda 响应员工上传新文件，用 SageMaker Pipelines 在更新数据集重训练后重部署，下一状态在工作流收到响应时运行该流水线。",
             "建 Step Functions Express 工作流用 SDK 集成取 S3 数据，Data Wrangler 导出到 Autopilot，Autopilot 重训练后重部署。",
-            "建 Step Functions 标准工作流：首状态调 Lambda 响应员工上传新文件，用 SageMaker Pipelines 在更新数据集重训练后重部署，下一状态在工作流收到响应时运行该流水线。"
+            "建 Lambda + webhook 在上传时生成事件，SageMaker Pipelines 重训练后重部署，EventBridge 事件总线以 Lambda 为源、Pipelines 为目标。"
           ]
         }
       },
@@ -75,7 +75,7 @@
         "generatedAt": 1789598159746,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-cc6b9906",
+        "sourceHash": "fnv1a-8e53daa6",
         "batch": "manual-bq",
         "model": "manual",
         "contentHash": "fnv1a-d3b75520",
@@ -100,9 +100,9 @@
           "question": "某保险公司用既有 SageMaker 基础设施做保费预测 Web 应用，训练数据存 S3 且增长快；需持续重训练方案：员工上传新客户数据文件到 S3 时须自动重训练并将模型重部署到应用。哪种方案满足？（单选）",
           "options": [
             "用 Glue 对每个上传文件跑 ETL，经 SDK 调 SageMaker 端点，实时推理在更新数据集重训练后重部署。",
-            "建 Lambda + webhook 在上传时生成事件，SageMaker Pipelines 重训练后重部署，EventBridge 事件总线以 Lambda 为源、Pipelines 为目标。",
+            "建 Step Functions 标准工作流：首状态调 Lambda 响应员工上传新文件，用 SageMaker Pipelines 在更新数据集重训练后重部署，下一状态在工作流收到响应时运行该流水线。",
             "建 Step Functions Express 工作流用 SDK 集成取 S3 数据，Data Wrangler 导出到 Autopilot，Autopilot 重训练后重部署。",
-            "建 Step Functions 标准工作流：首状态调 Lambda 响应员工上传新文件，用 SageMaker Pipelines 在更新数据集重训练后重部署，下一状态在工作流收到响应时运行该流水线。"
+            "建 Lambda + webhook 在上传时生成事件，SageMaker Pipelines 重训练后重部署，EventBridge 事件总线以 Lambda 为源、Pipelines 为目标。"
           ]
         }
       }
@@ -128,7 +128,7 @@
         "generatedAt": 1789598159748,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-6213585a",
+        "sourceHash": "fnv1a-14e98330",
         "batch": "manual-bq",
         "model": "manual",
         "contentHash": "fnv1a-69625acb",
@@ -155,8 +155,8 @@
           "options": [
             "配 Bedrock Guardrails 自定义内容过滤与毒性检测，用 Model Evaluation 检幻觉，prompt-响应对存 DynamoDB 加 TTL，CloudWatch 自定义指标接合规仪表盘。",
             "用 PrivateLink 安全访问 Bedrock，Lambda 做自定义提示校验，prompt-响应对存 S3 配生命周期，自建 CloudWatch 仪表盘监控。",
-            "用 Bedrock Agents + Knowledge Bases 接地响应，Guardrails 保内容安全，OpenSearch 存储索引 prompt-响应对，集成 QuickSight 生成合规报告并检测行为漂移。",
-            "用 SageMaker Model Monitor 检漂移，WAF 过滤内容，交互存加密 RDS，API Gateway 建自定义 HTTP API 接合规仪表盘。"
+            "用 SageMaker Model Monitor 检漂移，WAF 过滤内容，交互存加密 RDS，API Gateway 建自定义 HTTP API 接合规仪表盘。",
+            "用 Bedrock Agents + Knowledge Bases 接地响应，Guardrails 保内容安全，OpenSearch 存储索引 prompt-响应对，集成 QuickSight 生成合规报告并检测行为漂移。"
           ]
         }
       },
@@ -180,7 +180,7 @@
         "generatedAt": 1789598159749,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-6213585a",
+        "sourceHash": "fnv1a-14e98330",
         "batch": "manual-bq",
         "model": "manual",
         "contentHash": "fnv1a-d222322a",
@@ -207,8 +207,8 @@
           "options": [
             "配 Bedrock Guardrails 自定义内容过滤与毒性检测，用 Model Evaluation 检幻觉，prompt-响应对存 DynamoDB 加 TTL，CloudWatch 自定义指标接合规仪表盘。",
             "用 PrivateLink 安全访问 Bedrock，Lambda 做自定义提示校验，prompt-响应对存 S3 配生命周期，自建 CloudWatch 仪表盘监控。",
-            "用 Bedrock Agents + Knowledge Bases 接地响应，Guardrails 保内容安全，OpenSearch 存储索引 prompt-响应对，集成 QuickSight 生成合规报告并检测行为漂移。",
-            "用 SageMaker Model Monitor 检漂移，WAF 过滤内容，交互存加密 RDS，API Gateway 建自定义 HTTP API 接合规仪表盘。"
+            "用 SageMaker Model Monitor 检漂移，WAF 过滤内容，交互存加密 RDS，API Gateway 建自定义 HTTP API 接合规仪表盘。",
+            "用 Bedrock Agents + Knowledge Bases 接地响应，Guardrails 保内容安全，OpenSearch 存储索引 prompt-响应对，集成 QuickSight 生成合规报告并检测行为漂移。"
           ]
         }
       }
@@ -234,7 +234,7 @@
         "generatedAt": 1789598159749,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-e5890917",
+        "sourceHash": "fnv1a-09717af5",
         "batch": "manual-bq",
         "model": "manual",
         "contentHash": "fnv1a-c4710285",
@@ -258,9 +258,9 @@
           ],
           "question": "某公司把 AI 助手做成 React 应用，用 AWS Amplify + AppSync GraphQL + Bedrock 知识库；GraphQL 调 RetrieveAndGenerate，配 Lambda resolver（RequestResponse）。用户报复杂问题常超时变慢。哪种方案解决性能问题？（单选）",
           "options": [
-            "用 AWS Amplify AI Kit 从 GraphQL API 实现流式响应并优化客户端渲染。",
-            "增大 Lambda resolver 超时并加指数退避重试。",
             "让应用向 SQS 队列发请求，AppSync resolver 轮询处理队列。",
+            "增大 Lambda resolver 超时并加指数退避重试。",
+            "用 AWS Amplify AI Kit 从 GraphQL API 实现流式响应并优化客户端渲染。",
             "改为流式模型调用并经 API Gateway WebSocket 推送，绕开 AppSync 同步解析器。"
           ]
         }
@@ -285,7 +285,7 @@
         "generatedAt": 1789598159750,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-e5890917",
+        "sourceHash": "fnv1a-09717af5",
         "batch": "manual-bq",
         "model": "manual",
         "contentHash": "fnv1a-f6a8f141",
@@ -309,9 +309,9 @@
           ],
           "question": "某公司把 AI 助手做成 React 应用，用 AWS Amplify + AppSync GraphQL + Bedrock 知识库；GraphQL 调 RetrieveAndGenerate，配 Lambda resolver（RequestResponse）。用户报复杂问题常超时变慢。哪种方案解决性能问题？（单选）",
           "options": [
-            "用 AWS Amplify AI Kit 从 GraphQL API 实现流式响应并优化客户端渲染。",
-            "增大 Lambda resolver 超时并加指数退避重试。",
             "让应用向 SQS 队列发请求，AppSync resolver 轮询处理队列。",
+            "增大 Lambda resolver 超时并加指数退避重试。",
+            "用 AWS Amplify AI Kit 从 GraphQL API 实现流式响应并优化客户端渲染。",
             "改为流式模型调用并经 API Gateway WebSocket 推送，绕开 AppSync 同步解析器。"
           ]
         }
@@ -338,7 +338,7 @@
         "generatedAt": 1789598159751,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-171d6b7e",
+        "sourceHash": "fnv1a-65d83bde",
         "batch": "manual-bq",
         "model": "manual",
         "contentHash": "fnv1a-747c2ebe",
@@ -362,10 +362,10 @@
           ],
           "question": "某金融公司经 Bedrock 用多个 FM，新法规要求对敏感金融数据做 token 管理：须在接近模型专属 token 上限时主动告警，支撑 >5000 请求/分钟，并留存 token 用量指标供业务单元分摊成本。哪种方案满足？（单选）",
           "options": [
-            "在 Lambda 开发模型专属分词器，发请求前预估 token 用量，发布 CloudWatch 指标并在接近阈值时告警，详细用量存 DynamoDB 供成本报告。",
+            "用 API Gateway 为所有 Bedrock 调用建代理，按预定义配额做请求限流，超限额直接拒绝。",
             "用 Bedrock Guardrails 的 token 配额策略，捕获被拒请求指标，EventBridge 规则触发通知，CloudWatch 仪表盘看趋势。",
             "部署 SQS 死信队列处理失败请求，Lambda 分析 token 相关失败，CloudWatch Logs Insights 基于错误日志生成报告。",
-            "用 API Gateway 为所有 Bedrock 调用建代理，按预定义配额做请求限流，超限额直接拒绝。"
+            "在 Lambda 开发模型专属分词器，发请求前预估 token 用量，发布 CloudWatch 指标并在接近阈值时告警，详细用量存 DynamoDB 供成本报告。"
           ]
         }
       },
@@ -389,7 +389,7 @@
         "generatedAt": 1789598159751,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-171d6b7e",
+        "sourceHash": "fnv1a-65d83bde",
         "batch": "manual-bq",
         "model": "manual",
         "contentHash": "fnv1a-d07ce150",
@@ -413,10 +413,10 @@
           ],
           "question": "某金融公司经 Bedrock 用多个 FM，新法规要求对敏感金融数据做 token 管理：须在接近模型专属 token 上限时主动告警，支撑 >5000 请求/分钟，并留存 token 用量指标供业务单元分摊成本。哪种方案满足？（单选）",
           "options": [
-            "在 Lambda 开发模型专属分词器，发请求前预估 token 用量，发布 CloudWatch 指标并在接近阈值时告警，详细用量存 DynamoDB 供成本报告。",
+            "用 API Gateway 为所有 Bedrock 调用建代理，按预定义配额做请求限流，超限额直接拒绝。",
             "用 Bedrock Guardrails 的 token 配额策略，捕获被拒请求指标，EventBridge 规则触发通知，CloudWatch 仪表盘看趋势。",
             "部署 SQS 死信队列处理失败请求，Lambda 分析 token 相关失败，CloudWatch Logs Insights 基于错误日志生成报告。",
-            "用 API Gateway 为所有 Bedrock 调用建代理，按预定义配额做请求限流，超限额直接拒绝。"
+            "在 Lambda 开发模型专属分词器，发请求前预估 token 用量，发布 CloudWatch 指标并在接近阈值时告警，详细用量存 DynamoDB 供成本报告。"
           ]
         }
       }
@@ -442,7 +442,7 @@
         "generatedAt": 1789598159752,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-086d2d50",
+        "sourceHash": "fnv1a-2bb24c7e",
         "batch": "manual-bq",
         "model": "manual",
         "contentHash": "fnv1a-0f99e3a7",
@@ -465,10 +465,10 @@
           ],
           "question": "某 RAG 应用用 Bedrock 知识库做合规查询，调 RetrieveAndGenerateStream，知识库含 5 万+ 监管文档；因初始检索常返回语义相似但上下文无关文档，导致幻觉与错误指引。须以最低运维开销提升相关性。哪种方案满足？（单选）",
           "options": [
-            "部署 SageMaker 端点跑微调排序模型，API Gateway REST 路由重排结果。",
+            "在 Bedrock 知识库的重排配置中启用最新 reranker 模型，按上下文评估重排结果提升相关性。",
             "用 Comprehend 分类文档打相关分，集成 Textract 文档分析，Neptune 做图相关计算。",
             "用 Knowledge Bases Retrieve API 初检，调 Bedrock Rerank API 重排，再 InvokeModelWithResponseStream 生成。",
-            "在 Bedrock 知识库的重排配置中启用最新 reranker 模型，按上下文评估重排结果提升相关性。"
+            "部署 SageMaker 端点跑微调排序模型，API Gateway REST 路由重排结果。"
           ]
         }
       },
@@ -492,7 +492,7 @@
         "generatedAt": 1789598159752,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-086d2d50",
+        "sourceHash": "fnv1a-2bb24c7e",
         "batch": "manual-bq",
         "model": "manual",
         "contentHash": "fnv1a-3be36490",
@@ -515,10 +515,10 @@
           ],
           "question": "某 RAG 应用用 Bedrock 知识库做合规查询，调 RetrieveAndGenerateStream，知识库含 5 万+ 监管文档；因初始检索常返回语义相似但上下文无关文档，导致幻觉与错误指引。须以最低运维开销提升相关性。哪种方案满足？（单选）",
           "options": [
-            "部署 SageMaker 端点跑微调排序模型，API Gateway REST 路由重排结果。",
+            "在 Bedrock 知识库的重排配置中启用最新 reranker 模型，按上下文评估重排结果提升相关性。",
             "用 Comprehend 分类文档打相关分，集成 Textract 文档分析，Neptune 做图相关计算。",
             "用 Knowledge Bases Retrieve API 初检，调 Bedrock Rerank API 重排，再 InvokeModelWithResponseStream 生成。",
-            "在 Bedrock 知识库的重排配置中启用最新 reranker 模型，按上下文评估重排结果提升相关性。"
+            "部署 SageMaker 端点跑微调排序模型，API Gateway REST 路由重排结果。"
           ]
         }
       }
@@ -544,7 +544,7 @@
         "generatedAt": 1789598159753,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-55455bb8",
+        "sourceHash": "fnv1a-7c63986c",
         "batch": "manual-bq",
         "model": "manual",
         "contentHash": "fnv1a-e6781c32",
@@ -568,10 +568,10 @@
           ],
           "question": "某医疗公司用 Bedrock 建实时患者护理助手，回应临床/保险核验/预约/理赔等部门；欲用多智能体架构，须可扩展、能接入新功能、支撑数千并行交互，并确保领域专属响应。哪种方案满足？（单选）",
           "options": [
-            "每智能体用独立知识库隔离数据，IAM 过滤控访问；部署 supervisor 智能体做意图分类，将查询路由到专精 collaborator 智能体，各以本部门知识库做 RAG。",
+            "多独立 supervisor 并行回应各部门，各配 collaborator，所有智能体共用同一知识库，外部路由合并响应。",
             "每部门建独立 supervisor，各 collaborator 做意图分类，仅接本部门知识库，supervisor 间手工交接。",
             "每部门数据隔离在独立知识库，IAM 过滤；部署单一通用智能体，内部多 action group 做部门功能，规则路由。",
-            "多独立 supervisor 并行回应各部门，各配 collaborator，所有智能体共用同一知识库，外部路由合并响应。"
+            "每智能体用独立知识库隔离数据，IAM 过滤控访问；部署 supervisor 智能体做意图分类，将查询路由到专精 collaborator 智能体，各以本部门知识库做 RAG。"
           ]
         }
       },
@@ -595,7 +595,7 @@
         "generatedAt": 1789598159754,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-55455bb8",
+        "sourceHash": "fnv1a-7c63986c",
         "batch": "manual-bq",
         "model": "manual",
         "contentHash": "fnv1a-077848c3",
@@ -619,10 +619,10 @@
           ],
           "question": "某医疗公司用 Bedrock 建实时患者护理助手，回应临床/保险核验/预约/理赔等部门；欲用多智能体架构，须可扩展、能接入新功能、支撑数千并行交互，并确保领域专属响应。哪种方案满足？（单选）",
           "options": [
-            "每智能体用独立知识库隔离数据，IAM 过滤控访问；部署 supervisor 智能体做意图分类，将查询路由到专精 collaborator 智能体，各以本部门知识库做 RAG。",
+            "多独立 supervisor 并行回应各部门，各配 collaborator，所有智能体共用同一知识库，外部路由合并响应。",
             "每部门建独立 supervisor，各 collaborator 做意图分类，仅接本部门知识库，supervisor 间手工交接。",
             "每部门数据隔离在独立知识库，IAM 过滤；部署单一通用智能体，内部多 action group 做部门功能，规则路由。",
-            "多独立 supervisor 并行回应各部门，各配 collaborator，所有智能体共用同一知识库，外部路由合并响应。"
+            "每智能体用独立知识库隔离数据，IAM 过滤控访问；部署 supervisor 智能体做意图分类，将查询路由到专精 collaborator 智能体，各以本部门知识库做 RAG。"
           ]
         }
       }
@@ -648,7 +648,7 @@
         "generatedAt": 1789598159754,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-22d59df3",
+        "sourceHash": "fnv1a-196e72d3",
         "batch": "manual-bq",
         "model": "manual",
         "contentHash": "fnv1a-d2cea2d6",
@@ -671,8 +671,8 @@
           ],
           "question": "某应用实时分析客服通话并为人工坐席生成建议，峰值 50 万并发呼叫、每条建议端到端 <200ms；已有转写架构，须控制在月度计算预算内并保持自动伸缩。哪种方案满足？（单选）",
           "options": [
-            "在 Bedrock 部署大型推理模型，购预置吞吐并优化批处理。",
             "在 Bedrock 部署低延迟实时优化模型，购预置吞吐并设自动伸缩策略。",
+            "在 Bedrock 部署大型推理模型，购预置吞吐并优化批处理。",
             "在 SageMaker AI 实时端点部署 LLM（专用 GPU 实例）。",
             "在 SageMaker AI serverless 端点部署中型 LLM 并优化批处理。"
           ]
@@ -698,7 +698,7 @@
         "generatedAt": 1789598159755,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-22d59df3",
+        "sourceHash": "fnv1a-196e72d3",
         "batch": "manual-bq",
         "model": "manual",
         "contentHash": "fnv1a-b8f1e2c9",
@@ -721,8 +721,8 @@
           ],
           "question": "某应用实时分析客服通话并为人工坐席生成建议，峰值 50 万并发呼叫、每条建议端到端 <200ms；已有转写架构，须控制在月度计算预算内并保持自动伸缩。哪种方案满足？（单选）",
           "options": [
-            "在 Bedrock 部署大型推理模型，购预置吞吐并优化批处理。",
             "在 Bedrock 部署低延迟实时优化模型，购预置吞吐并设自动伸缩策略。",
+            "在 Bedrock 部署大型推理模型，购预置吞吐并优化批处理。",
             "在 SageMaker AI 实时端点部署 LLM（专用 GPU 实例）。",
             "在 SageMaker AI serverless 端点部署中型 LLM 并优化批处理。"
           ]
@@ -750,7 +750,7 @@
         "generatedAt": 1789598159755,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-bd630944",
+        "sourceHash": "fnv1a-f184592a",
         "batch": "manual-bq",
         "model": "manual",
         "contentHash": "fnv1a-cbb2a29b",
@@ -775,8 +775,8 @@
           "question": "某酒店公司想给遗留 Java PMS 加 AI 能力，用 Bedrock 知识库给员工房间可用性与酒店详情；须每家酒店独立访问控制、近实时房间可用性、峰值性能稳定。哪种方案满足？（单选）",
           "options": [
             "建单一知识库存所有酒店合并数据，Lambda 经 API 同步各 PMS，CloudTrail 按酒店过滤审计。",
-            "每酒店建 EventBridge 规则由 PMS 变更触发，发到管理账号集中知识库，资源策略做按酒店访问控制。",
             "多账号结构下每家酒店一个知识库，直接摄入提供实时房间可用性，非关键信息定时同步。",
+            "每酒店建 EventBridge 规则由 PMS 变更触发，发到管理账号集中知识库，资源策略做按酒店访问控制。",
             "建集中 Bedrock 智能体用多个知识库，IAM Identity Center 按酒店权限集控员工访问。"
           ]
         }
@@ -801,7 +801,7 @@
         "generatedAt": 1789598159756,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-bd630944",
+        "sourceHash": "fnv1a-f184592a",
         "batch": "manual-bq",
         "model": "manual",
         "contentHash": "fnv1a-354d0dbd",
@@ -826,8 +826,8 @@
           "question": "某酒店公司想给遗留 Java PMS 加 AI 能力，用 Bedrock 知识库给员工房间可用性与酒店详情；须每家酒店独立访问控制、近实时房间可用性、峰值性能稳定。哪种方案满足？（单选）",
           "options": [
             "建单一知识库存所有酒店合并数据，Lambda 经 API 同步各 PMS，CloudTrail 按酒店过滤审计。",
-            "每酒店建 EventBridge 规则由 PMS 变更触发，发到管理账号集中知识库，资源策略做按酒店访问控制。",
             "多账号结构下每家酒店一个知识库，直接摄入提供实时房间可用性，非关键信息定时同步。",
+            "每酒店建 EventBridge 规则由 PMS 变更触发，发到管理账号集中知识库，资源策略做按酒店访问控制。",
             "建集中 Bedrock 智能体用多个知识库，IAM Identity Center 按酒店权限集控员工访问。"
           ]
         }
@@ -854,7 +854,7 @@
         "generatedAt": 1789598159756,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-d5157789",
+        "sourceHash": "fnv1a-a559a991",
         "batch": "manual-bq",
         "model": "manual",
         "contentHash": "fnv1a-afe85c75",
@@ -878,9 +878,9 @@
           ],
           "question": "某金融 RAG 应用用 Bedrock 生成市场活动摘要，依赖存小规模专有数据集、索引量少的向量库；须做相似度搜索且模型响应最大化准确度并保持高性能。须配置向量库并集成。哪种方案满足？（单选）",
           "options": [
-            "启 Amazon MemoryDB 集群，用 Flat 算法建索引，按性能指标配水平伸缩策略。",
-            "启 Amazon MemoryDB 集群，用 HNSW 算法建索引，按性能指标配垂直伸缩策略。",
             "启 Amazon Aurora PostgreSQL 集群，用 IVFFlat 算法建索引，负载升高时升实例规格。",
+            "启 Amazon MemoryDB 集群，用 HNSW 算法建索引，按性能指标配垂直伸缩策略。",
+            "启 Amazon MemoryDB 集群，用 Flat 算法建索引，按性能指标配水平伸缩策略。",
             "启 Amazon DocumentDB 集群（IVFFlat 索引、高 probe 值），以副本集连接并将读分发到副本。"
           ]
         }
@@ -905,7 +905,7 @@
         "generatedAt": 1789598159757,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-d5157789",
+        "sourceHash": "fnv1a-a559a991",
         "batch": "manual-bq",
         "model": "manual",
         "contentHash": "fnv1a-753c58dd",
@@ -929,9 +929,9 @@
           ],
           "question": "某金融 RAG 应用用 Bedrock 生成市场活动摘要，依赖存小规模专有数据集、索引量少的向量库；须做相似度搜索且模型响应最大化准确度并保持高性能。须配置向量库并集成。哪种方案满足？（单选）",
           "options": [
-            "启 Amazon MemoryDB 集群，用 Flat 算法建索引，按性能指标配水平伸缩策略。",
-            "启 Amazon MemoryDB 集群，用 HNSW 算法建索引，按性能指标配垂直伸缩策略。",
             "启 Amazon Aurora PostgreSQL 集群，用 IVFFlat 算法建索引，负载升高时升实例规格。",
+            "启 Amazon MemoryDB 集群，用 HNSW 算法建索引，按性能指标配垂直伸缩策略。",
+            "启 Amazon MemoryDB 集群，用 Flat 算法建索引，按性能指标配水平伸缩策略。",
             "启 Amazon DocumentDB 集群（IVFFlat 索引、高 probe 值），以副本集连接并将读分发到副本。"
           ]
         }
@@ -958,7 +958,7 @@
         "generatedAt": 1789598159757,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-da38518f",
+        "sourceHash": "fnv1a-cd70b5d1",
         "batch": "manual-bq",
         "model": "manual",
         "contentHash": "fnv1a-b8c9bc4c",
@@ -978,9 +978,9 @@
           "question": "输出校验发现回答包含未经证实的金融事实时，生产系统最合理的行为是什么？（单选）",
           "options": [
             "仍返回原回答，只在日志里记录告警",
-            "定义阻断、受限回复或人工升级等明确 fallback",
+            "让用户自己判断事实是否可信",
             "自动提高 temperature 直到出现更自信的答案",
-            "让用户自己判断事实是否可信"
+            "定义阻断、受限回复或人工升级等明确 fallback"
           ]
         }
       },
@@ -1004,7 +1004,7 @@
         "generatedAt": 1789598159757,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-da38518f",
+        "sourceHash": "fnv1a-cd70b5d1",
         "batch": "manual-bq",
         "model": "manual",
         "contentHash": "fnv1a-c1a26267",
@@ -1024,9 +1024,9 @@
           "question": "输出校验发现回答包含未经证实的金融事实时，生产系统最合理的行为是什么？（单选）",
           "options": [
             "仍返回原回答，只在日志里记录告警",
-            "定义阻断、受限回复或人工升级等明确 fallback",
+            "让用户自己判断事实是否可信",
             "自动提高 temperature 直到出现更自信的答案",
-            "让用户自己判断事实是否可信"
+            "定义阻断、受限回复或人工升级等明确 fallback"
           ]
         }
       }

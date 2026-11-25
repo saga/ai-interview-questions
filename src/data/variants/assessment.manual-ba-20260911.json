@@ -280,55 +280,6 @@
         "contentHash": "fnv1a-88e518c4"
       }
     ],
-    "llm-arch-hybrid-recurrent-attention-01": [
-      {
-        "id": "llm-arch-hybrid-recurrent-attention-01__context-options__manual-ba__0",
-        "kind": "context-options",
-        "question": "为 3:1 Hybrid（DeltaNet:GQA）模型设计推理服务时，关于显存规划与算子管理，哪些成立？",
-        "options": [
-          "只有约 1/4 层存 KV Cache，其余循环层只维护固定隐状态，serving 显存可按 KV 层数精打细算。",
-          "生成保持逐 Token O(1)，长距离对齐靠周期性 GQA 层兜底，批调度可按此假设建模延迟。",
-          "DeltaNet 自带时序感知，可删掉全部 RoPE，下游 GQA 层直接沿用相对位置即可。",
-          "部署须同时维护循环状态更新与注意力两套算子，以及 KV 与隐状态两种内存形态，运维面翻倍。"
-        ],
-        "angle": "system-design",
-        "cognitiveTask": "design",
-        "assessment": {
-          "target": "能为 Hybrid 架构规划 serving 显存与算子运维面，兼顾 KV 层占比与双状态逻辑",
-          "reasoningGoal": "先拆出 KV 层与循环层的显存形态差异；再确认 KV 占比规划、O(1) 延迟建模、双算子运维三项成立；并排除删掉全部 RoPE。"
-        },
-        "generatedAt": 1789166353338,
-        "generator": "offline",
-        "promptVersion": "v1",
-        "sourceHash": "fnv1a-665e9398",
-        "batch": "manual-ba",
-        "model": "manual",
-        "sourceSnapshot": {
-          "id": "llm-arch-hybrid-recurrent-attention-01",
-          "topic": "hybrid-attention",
-          "subtopic": "混合 Recurrent-Attention 架构",
-          "angle": "mechanism",
-          "difficulty": "hard",
-          "cognitiveTask": "evaluate",
-          "tags": [
-            "hybrid-architecture",
-            "gated-deltanet",
-            "gqa",
-            "kv-cache",
-            "recurrent",
-            "mechanism"
-          ],
-          "question": "在现代超大语言模型设计中，常将线性循环层（如 Gated DeltaNet）与传统 Grouped-Query Attention (GQA) 按比例交替混合堆叠（例如 3:1），构成 Hybrid 架构。关于该设计在生产部署与性能上的取舍，下列哪些陈述是正确的？（请选择以下 3 个正确选项）",
-          "options": [
-            "显著降低自回归生成阶段的 KV Cache 显存占用，因为线性循环层在推理时仅维护固定大小的隐状态向量",
-            "保持循环层 O(1) 的逐 Token 生成时间复杂度，同时利用周期性注意力层维持全局长距离上下文对齐能力",
-            "完全消除对位置编码（如 RoPE）的依赖，因为 DeltaNet 的状态更新公式天然具备绝对时间顺序的感知能力",
-            "相比纯 Transformer 架构，混合架构在系统实现与部署时需要同时管理两套不同的状态更新逻辑与算子优化"
-          ]
-        },
-        "contentHash": "fnv1a-d8083032"
-      }
-    ],
     "llm-arch-preserved-thinking-01": [
       {
         "id": "llm-arch-preserved-thinking-01__context-options__manual-ba__0",
@@ -721,7 +672,7 @@
         "generatedAt": 1789166353338,
         "generator": "offline",
         "promptVersion": "v1",
-        "sourceHash": "fnv1a-ed743283",
+        "sourceHash": "fnv1a-9c38ab57",
         "batch": "manual-ba",
         "model": "manual",
         "sourceSnapshot": {
@@ -738,9 +689,9 @@
           "question": "设计一个“公司内部知识库 Agent”：可以搜索内部文档并回答员工问题。请给出核心组件、检索设计与防幻觉措施。",
           "options": [
             "在系统提示词中提醒模型不得泄露敏感文档、不得编造内容，检索层无需感知权限信息即可满足合规要求。",
-            "采用混合检索并在检索层按部门与权限元数据过滤结果，答案强制附带来源引用，检索不到相关内容时明确告知无法作答而非补全。",
+            "防幻觉的核心是把生成温度调低并选用更大的模型，来源引用仅作为前端可选的展示增强功能。",
             "为避免生硬拒答影响体验，检索不到相关内容时允许模型结合自身通用知识补全答案，并统一标注“仅供参考”。",
-            "防幻觉的核心是把生成温度调低并选用更大的模型，来源引用仅作为前端可选的展示增强功能。"
+            "采用混合检索并在检索层按部门与权限元数据过滤结果，答案强制附带来源引用，检索不到相关内容时明确告知无法作答而非补全。"
           ]
         },
         "contentHash": "fnv1a-fbfc35db"
@@ -766,7 +717,7 @@
         "generatedAt": 1789166353338,
         "generator": "offline",
         "promptVersion": "v1",
-        "sourceHash": "fnv1a-3a34aab3",
+        "sourceHash": "fnv1a-5d0d0241",
         "batch": "manual-ba",
         "model": "manual",
         "sourceSnapshot": {
@@ -783,10 +734,10 @@
           ],
           "question": "Agent 应该用一个强模型贯穿始终，还是多个弱模型协作？给出决策依据。",
           "options": [
-            "应始终用一个最强模型贯穿所有步骤，任何级联方案都会不可避免地劣化最终质量，因为模型能力是决定输出的唯一因素",
+            "采用级联路由并用 A/B 实测对比级联与全强的成功率与成本曲线：格式化、初筛等简单步骤用便宜的小模型，错误会被下游放大的关键推理节点保留强模型。",
             "多个弱模型协作没有任何代价，链条越长误差越会被相互抵消从而提升整体准确率，因此应把流程拆成更多更细的环节",
             "模型选择只需比较单价高低，与该环节的错误代价和任务难度无关，选最便宜的模型即可实现最优的成本收益",
-            "采用级联路由并用 A/B 实测对比级联与全强的成功率与成本曲线：格式化、初筛等简单步骤用便宜的小模型，错误会被下游放大的关键推理节点保留强模型。"
+            "应始终用一个最强模型贯穿所有步骤，任何级联方案都会不可避免地劣化最终质量，因为模型能力是决定输出的唯一因素"
           ]
         },
         "contentHash": "fnv1a-035d24d1"
@@ -858,7 +809,7 @@
         "generatedAt": 1789166353338,
         "generator": "offline",
         "promptVersion": "v1",
-        "sourceHash": "fnv1a-b7dcdd58",
+        "sourceHash": "fnv1a-9558bad4",
         "batch": "manual-ba",
         "model": "manual",
         "sourceSnapshot": {
@@ -874,10 +825,10 @@
           ],
           "question": "对于“怎么处理 connection pool exhausted”这样的查询，query expansion 与直接把原始 query 做 embedding 的主要区别是什么？",
           "options": [
-            "query expansion 可以扩大词面覆盖，而 embedding 主要依赖已有语义表示",
+            "两者都只作用于 reranking 阶段，不影响候选召回",
             "query expansion 一定会降低召回，而 embedding 一定只返回精确匹配",
             "query expansion 会直接替代索引，而 embedding 不需要候选集合",
-            "两者都只作用于 reranking 阶段，不影响候选召回"
+            "query expansion 可以扩大词面覆盖，而 embedding 主要依赖已有语义表示"
           ]
         },
         "contentHash": "fnv1a-31543d05"
@@ -903,7 +854,7 @@
         "generatedAt": 1789166353338,
         "generator": "offline",
         "promptVersion": "v1",
-        "sourceHash": "fnv1a-f657bfb9",
+        "sourceHash": "fnv1a-b7611c15",
         "batch": "manual-ba",
         "model": "manual",
         "sourceSnapshot": {
@@ -919,10 +870,10 @@
           ],
           "question": "一个 Agent 同时可以访问企业文档搜索、SQL 数据库和实时 Web Search。对于“昨天订单量是多少”这类查询，最合理的检索策略是什么？",
           "options": [
-            "优先调用实时订单数据库查询工具，再根据需要补充其他来源",
+            "同时对所有数据源进行全文检索并让模型自行挑选数字",
             "首先对整个企业文档库执行 dense retrieval",
             "先搜索 Web，再让模型猜测企业内部订单量",
-            "同时对所有数据源进行全文检索并让模型自行挑选数字"
+            "优先调用实时订单数据库查询工具，再根据需要补充其他来源"
           ]
         },
         "contentHash": "fnv1a-e755c273"

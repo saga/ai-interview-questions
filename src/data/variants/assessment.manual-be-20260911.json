@@ -722,7 +722,7 @@
         "generatedAt": 1789168214013,
         "generator": "offline",
         "promptVersion": "v1",
-        "sourceHash": "fnv1a-7903931d",
+        "sourceHash": "fnv1a-654471dd",
         "batch": "manual-be",
         "model": "manual",
         "sourceSnapshot": {
@@ -738,9 +738,9 @@
           ],
           "question": "在监督学习中，过拟合（overfitting）最典型的表现是？",
           "options": [
-            "训练集误差很低，但验证集误差很高",
-            "训练集和验证集误差都很高",
             "训练集误差很高，验证集误差很低",
+            "训练集和验证集误差都很高",
+            "训练集误差很低，但验证集误差很高",
             "模型在训练集上无法收敛"
           ]
         },
@@ -767,7 +767,7 @@
         "generatedAt": 1789168214013,
         "generator": "offline",
         "promptVersion": "v1",
-        "sourceHash": "fnv1a-76e3cfa8",
+        "sourceHash": "fnv1a-904b18e6",
         "batch": "manual-be",
         "model": "manual",
         "sourceSnapshot": {
@@ -784,8 +784,8 @@
           ],
           "question": "银行希望用生成式模型直接批准或拒绝贷款申请。哪种架构边界更稳妥？（单选）",
           "options": [
-            "让模型直接输出 approve 或 reject，概率最高即自动执行",
             "让模型辅助提取和解释，最终决策由受治理的决策系统和必要人工复核承担",
+            "让模型直接输出 approve 或 reject，概率最高即自动执行",
             "只要给模型更多历史贷款数据就能自动满足监管要求",
             "隐藏拒绝理由以避免用户利用规则"
           ]
@@ -813,7 +813,7 @@
         "generatedAt": 1789168214013,
         "generator": "offline",
         "promptVersion": "v1",
-        "sourceHash": "fnv1a-3b21ad6f",
+        "sourceHash": "fnv1a-2c1a93f3",
         "batch": "manual-be",
         "model": "manual",
         "sourceSnapshot": {
@@ -830,10 +830,10 @@
           ],
           "question": "某模型的架构说明描述其 LatentMoE 设计：先把 hidden representation 经 down projection 映射到低维 latent space，在其中执行专家（MoE）计算，再经 up projection 还原回原维度。基于这一机制，为什么它可能降低推理成本？",
           "options": [
-            "专家内部的大型线性变换被搬到低维 latent space 中执行：专家参数量与 FLOPs 随 latent 维度而非 hidden size 缩放，两次投影本身远小于被替换的原层",
+            "它用 latent attention 替代了全部专家 FFN，使 MoE 层不再需要维护任何专家权重",
             "它减少了专家数量并简化了 router 结构，token 路由的开销随之大幅下降，因为更少的专家意味着路由网络可学习更简单的映射关系",
             "它把 token-level 路由改成了 sequence-level 路由，每个序列只需激活一次专家网络",
-            "它用 latent attention 替代了全部专家 FFN，使 MoE 层不再需要维护任何专家权重"
+            "专家内部的大型线性变换被搬到低维 latent space 中执行：专家参数量与 FLOPs 随 latent 维度而非 hidden size 缩放，两次投影本身远小于被替换的原层"
           ]
         },
         "contentHash": "fnv1a-744e77b2"
@@ -859,7 +859,7 @@
         "generatedAt": 1789168214013,
         "generator": "offline",
         "promptVersion": "v1",
-        "sourceHash": "fnv1a-aedaea1d",
+        "sourceHash": "fnv1a-a9584c6f",
         "batch": "manual-be",
         "model": "manual",
         "sourceSnapshot": {
@@ -876,10 +876,10 @@
           ],
           "question": "传统 RNN 在长序列建模中易出现梯度消失，而 LSTM/GRU 通过门控机制缓解该问题。门控的核心作用是什么？",
           "options": [
-            "通过门控动态控制信息的写入、保留与输出，使梯度以加性传播缓解消失并保留长程依赖",
+            "通过固定遗忘率为 0.5 来确保所有历史信息等权重保留",
             "通过增加隐藏层维度来暴力扩大记忆容量，与门控无关",
             "通过将所有时间步的输入直接拼接为超长向量来避免循环",
-            "通过固定遗忘率为 0.5 来确保所有历史信息等权重保留"
+            "通过门控动态控制信息的写入、保留与输出，使梯度以加性传播缓解消失并保留长程依赖"
           ]
         },
         "contentHash": "fnv1a-c68a68de"
@@ -905,7 +905,7 @@
         "generatedAt": 1789168214013,
         "generator": "offline",
         "promptVersion": "v1",
-        "sourceHash": "fnv1a-ea217188",
+        "sourceHash": "fnv1a-0572393c",
         "batch": "manual-be",
         "model": "manual",
         "sourceSnapshot": {
@@ -921,9 +921,9 @@
           ],
           "question": "LoRA 为什么可以用很低的成本完成 Fine-tuning？请解释它的核心假设。",
           "options": [
-            "LoRA 假设微调引起的权重变化 ΔW 具有低秩结构，可分解为两个小矩阵的乘积 BA；冻结原权重只训 A/B，推理前可合并回 W 而不增加延迟",
-            "LoRA 假设原权重矩阵高度稀疏，先剪掉不重要的连接再训练剩余部分，因为预训练权重里大部分参数对下游任务没有贡献，剪枝后才便于微调",
             "LoRA 把权重矩阵量化到更低精度，靠牺牲数值精度来换取显存节省，因为半精度或低精度训练本身就能起到正则化与压缩的双重作用",
+            "LoRA 假设原权重矩阵高度稀疏，先剪掉不重要的连接再训练剩余部分，因为预训练权重里大部分参数对下游任务没有贡献，剪枝后才便于微调",
+            "LoRA 假设微调引起的权重变化 ΔW 具有低秩结构，可分解为两个小矩阵的乘积 BA；冻结原权重只训 A/B，推理前可合并回 W 而不增加延迟",
             "LoRA 为每一层维护一份全尺寸可训练副本，训练结束后取平均替换原权重，因为多副本可以取平均来抑制单份更新的方差、提升稳定性"
           ]
         },

@@ -24,7 +24,7 @@
         "generatedAt": 1789722005271,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-761d55ca",
+        "sourceHash": "fnv1a-0a6146ea",
         "batch": "manual-ca",
         "model": "manual",
         "contentHash": "fnv1a-c5509447",
@@ -41,8 +41,8 @@
           ],
           "question": "Reflection / Self-Critique 与普通 retry 的本质区别是？",
           "options": [
-            "retry 只是换个随机性重跑相同输入；Reflection 先分析失败原因，带着修正策略与新信息再试",
             "Reflection 就是把同一份任务反复 retry 很多次后再取多数结果，用投票聚合的方式人为抬高最终答案的稳定性",
+            "retry 只是换个随机性重跑相同输入；Reflection 先分析失败原因，带着修正策略与新信息再试",
             "Reflection 仅适用于代码生成任务，在问答、摘要、对话等自然语言场景里根本没有用武之地",
             "两者没有本质区别，只是不同团队对同一机制起了不同名字，实际工程效果也完全相同而已"
           ]
@@ -70,7 +70,7 @@
         "generatedAt": 1789722005273,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-5ce06aa2",
+        "sourceHash": "fnv1a-66622c2c",
         "batch": "manual-ca",
         "model": "manual",
         "contentHash": "fnv1a-23541bc9",
@@ -88,9 +88,9 @@
           "question": "一个系统同时接入多个闭源与开源大模型。你会根据哪些因素设计 Model Routing？",
           "options": [
             "按报价从低到高排序，始终发给最便宜的可用模型，成本最低即全局最优，质量差异可忽略",
-            "多维分流：任务难度、质量要求、成本延迟、特殊能力、合规与健康度；规则起步，配评测灰度，随数据动态化",
+            "路由只需模型参数量这一个变量，规模即能力，大模型全面碾压小模型，多维加权纯属过度工程",
             "全部请求固定路由到单一最强模型，分流只会扩大故障面，质量一票否决成本考量",
-            "路由只需模型参数量这一个变量，规模即能力，大模型全面碾压小模型，多维加权纯属过度工程"
+            "多维分流：任务难度、质量要求、成本延迟、特殊能力、合规与健康度；规则起步，配评测灰度，随数据动态化"
           ]
         }
       }
@@ -116,7 +116,7 @@
         "generatedAt": 1789722005274,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-52d516c2",
+        "sourceHash": "fnv1a-fa9eb834",
         "batch": "manual-ca",
         "model": "manual",
         "contentHash": "fnv1a-935b0369",
@@ -134,10 +134,10 @@
           ],
           "question": "向量数据库的 ANN 索引有多种实现，关于 HNSW、IVF、PQ 三类索引的原理与取舍，下列说法正确的是？",
           "options": [
-            "HNSW 多层图实现高召回低延迟但内存占用高；IVF 聚簇只搜部分（nprobe 控权衡）；PQ 压缩省内存损精度，常组合 IVF-PQ 用于超大规模",
+            "三种索引的召回率只取决于向量维度本身，与 ef_search、nprobe、M 等运行时调参完全无关，因此优化参数毫无意义",
             "HNSW 精度最低但速度最快，只适合离线批量导入场景；而 IVF 与 PQ 都是精确检索算法，只是内部遍历顺序有所不同",
             "PQ 通过保留全部原始向量实现完全无损的压缩，因此可以在不损失任何召回的前提下把内存稳定降到四分之一左右",
-            "三种索引的召回率只取决于向量维度本身，与 ef_search、nprobe、M 等运行时调参完全无关，因此优化参数毫无意义"
+            "HNSW 多层图实现高召回低延迟但内存占用高；IVF 聚簇只搜部分（nprobe 控权衡）；PQ 压缩省内存损精度，常组合 IVF-PQ 用于超大规模"
           ]
         }
       }
@@ -163,7 +163,7 @@
         "generatedAt": 1789722005275,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-2bec7f75",
+        "sourceHash": "fnv1a-1ed19a9f",
         "batch": "manual-ca",
         "model": "manual",
         "contentHash": "fnv1a-505a901b",
@@ -180,10 +180,10 @@
           ],
           "question": "你需要让一个通用 LLM 学会公司内部的固定回答风格。你会优先选择 Prompt Engineering、RAG 还是 Fine-tuning？请说明决策依据和实施顺序。",
           "options": [
-            "prompt 仍是首选起点；漂移膨胀触界时升级为 LoRA 行为定型；RAG 注入知识不对口。",
+            "三种方案都能落地，选型看团队熟悉度与交付速度；漂移与维护是二期问题，先交付。",
             "风格一致性要求高时应直接微调，prompt 受窗口与噪声限制；运行时方案只作过渡。",
             "风格指南检索精准时 RAG 即够，权重改动风险高；先检索后微调，分步走。",
-            "三种方案都能落地，选型看团队熟悉度与交付速度；漂移与维护是二期问题，先交付。"
+            "prompt 仍是首选起点；漂移膨胀触界时升级为 LoRA 行为定型；RAG 注入知识不对口。"
           ]
         }
       }
@@ -209,7 +209,7 @@
         "generatedAt": 1789722005275,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-9a4fb1bb",
+        "sourceHash": "fnv1a-1e4a36a7",
         "batch": "manual-ca",
         "model": "manual",
         "contentHash": "fnv1a-855d1808",
@@ -227,9 +227,9 @@
           "question": "为什么 Pre-training 需要如此大量的训练数据？",
           "options": [
             "数据越多过拟合风险越高，大规模语料主要起正则化作用而非提供知识",
-            "大参数量需要充足的训练信号，知识覆盖与数据多样性支撑泛化；但存在边际递减，质量比单纯的数量更重要",
+            "scaling laws 要求固定数据量不变，只需同步扩大模型参数即可达到最优配比",
             "对同一批高质量语料反复采样，就能持续获得与新增数据同等的性能提升",
-            "scaling laws 要求固定数据量不变，只需同步扩大模型参数即可达到最优配比"
+            "大参数量需要充足的训练信号，知识覆盖与数据多样性支撑泛化；但存在边际递减，质量比单纯的数量更重要"
           ]
         }
       }
@@ -255,7 +255,7 @@
         "generatedAt": 1789722005276,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-8bb3b4b4",
+        "sourceHash": "fnv1a-ff404282",
         "batch": "manual-ca",
         "model": "manual",
         "contentHash": "fnv1a-93438e30",
@@ -272,9 +272,9 @@
           "question": "SFT（Supervised Fine-Tuning）是什么？它是如何改变模型行为的？",
           "options": [
             "SFT 先用人类对多个回答的偏好排序训练奖励模型，再用 PPO 优化策略，因为标准的有监督微调流程天然包含偏好建模这一步，两者是同一过程的先后阶段",
-            "SFT 用 instruction-response 对做监督学习，最小化与期望回复之间的 next-token cross-entropy，让模型模仿示范行为",
+            "SFT 通过构造对抗样本攻击模型，专门训练其识别并拒绝恶意输入的能力，因为安全对齐是微调阶段的主要目标，普通指令遵循只是附带的副产品",
             "SFT 在推理时检索相似示例拼入 context，全程不更新任何模型参数，因为把示范放在上下文里与写进权重里效果完全相同，只是实现位置不同",
-            "SFT 通过构造对抗样本攻击模型，专门训练其识别并拒绝恶意输入的能力，因为安全对齐是微调阶段的主要目标，普通指令遵循只是附带的副产品"
+            "SFT 用 instruction-response 对做监督学习，最小化与期望回复之间的 next-token cross-entropy，让模型模仿示范行为"
           ]
         }
       }
@@ -300,7 +300,7 @@
         "generatedAt": 1789722005277,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-bb4b1189",
+        "sourceHash": "fnv1a-2561fe31",
         "batch": "manual-ca",
         "model": "manual",
         "contentHash": "fnv1a-995179e3",
@@ -318,8 +318,8 @@
           "question": "Pre-training 和 SFT 在 loss 计算上有什么区别？为什么要这样设计？",
           "options": [
             "学习率设置过大导致模型记住了训练样本的表面模式，应下调学习率并增加数据增强，因为复读式过拟合几乎总是由优化器步长过大这唯一原因造成",
-            "SFT 数据构造时没有对 prompt 部分做 loss mask，监督信号被浪费在学习复述用户提问上；应改为只对 assistant 回复部分计算 loss",
             "训练数据规模太小导致模型欠拟合，应当先扩充十倍数据再观察指标变化，因为绝大多数 SFT 退化问题都能靠堆量解决，与数据格式无关",
+            "SFT 数据构造时没有对 prompt 部分做 loss mask，监督信号被浪费在学习复述用户提问上；应改为只对 assistant 回复部分计算 loss",
             "epoch 设置过多引发过拟合，模型背下了高频出现的指令模板，应减少训练轮数并启用早停，因为多余 epoch 对示范学习没有任何边际贡献"
           ]
         }
@@ -439,7 +439,7 @@
         "generatedAt": 1789722005279,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-a0ea9ba1",
+        "sourceHash": "fnv1a-b4a4fe91",
         "batch": "manual-ca",
         "model": "manual",
         "contentHash": "fnv1a-f69247f1",
@@ -457,8 +457,8 @@
           "question": "生产环境已经存储了 1000 万条 1536 维 embedding，现在准备切换到 3072 维 embedding。你会如何进行迁移，避免线上搜索中断？",
           "options": [
             "新旧模型同系列时向量空间近似兼容，可学一个线性映射把旧向量投影到新空间；映射矩阵小，以变换代空间即迁移。",
-            "新旧向量空间不兼容不能混存；应新建 3072 维索引离线全量重嵌入，期间旧索引照常服务，抽样评测达标后灰度切换，旧索引保留作回滚兜底后再下线",
             "迁移期间暂停所有写入并把线上流量切到只读缓存，等全部向量重嵌入完成后再一次性恢复搜索服务，用停写换强一致是最稳妥的做法",
+            "新旧向量空间不兼容不能混存；应新建 3072 维索引离线全量重嵌入，期间旧索引照常服务，抽样评测达标后灰度切换，旧索引保留作回滚兜底后再下线",
             "把新旧两套向量混存在同一索引中，查询时对两种维度分别计算相似度再融合排序，即可实现零中断平滑过渡，无需新建任何索引"
           ]
         }
@@ -485,7 +485,7 @@
         "generatedAt": 1789722005280,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-4604b8fe",
+        "sourceHash": "fnv1a-9d7f038a",
         "batch": "manual-ca",
         "model": "manual",
         "contentHash": "fnv1a-1c305a38",
@@ -502,8 +502,8 @@
           ],
           "question": "更换 Embedding Model 后，RAG 系统的 Recall 从 92% 降到 65%。你会如何定位问题？",
           "options": [
-            "第一嫌疑是空间不一致：query 侧或语义缓存仍在用旧模型产生向量，索引里也可能残留未重嵌的存量数据；可用金标集构造新旧编码组合矩阵快速锁定出错一侧，修复即全量重嵌并对齐两侧版本",
             "先检查距离度量与归一化配置，配置漂移是最常见的无声故障；命中即止，embedding 空间本身极少漂移，无需准备重嵌管线。",
+            "第一嫌疑是空间不一致：query 侧或语义缓存仍在用旧模型产生向量，索引里也可能残留未重嵌的存量数据；可用金标集构造新旧编码组合矩阵快速锁定出错一侧，修复即全量重嵌并对齐两侧版本",
             "问题一定出在距离度量配置上，cosine 被误改成内积是唯一可能的成因，修正度量参数后召回率必然自动恢复到原有水平，无需重嵌",
             "应调大 top-k 并放宽相似度阈值，用更大的候选窗口弥补模型切换造成的精度损失，保证送入下游的内容数量不变即可解决问题"
           ]
@@ -531,7 +531,7 @@
         "generatedAt": 1789722005281,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-9b99ace3",
+        "sourceHash": "fnv1a-75bf843f",
         "batch": "manual-ca",
         "model": "manual",
         "contentHash": "fnv1a-7f8ae09e",
@@ -548,10 +548,10 @@
           ],
           "question": "一个 Vector Database 已存储 1 亿条 embedding，内存成本越来越高。你有哪些降低成本的办法？会牺牲什么？",
           "options": [
-            "按阶梯推进：先做免费的数据治理（去重、过期数据淘汰），再下调 HNSW 的 M/ef 参数，最后评估 PQ/INT8 量化或磁盘索引——各级分别以召回率或查询延迟为代价，取舍由实测曲线决定",
+            "将所有向量从 FP32 转为 INT8 标量量化即可一步到位，标量量化经过校准后不会带来任何召回率损失，是最简单的降本手段",
             "首选扩容服务器内存维持全内存 HNSW 结构，因为量化、磁盘索引和数据治理都会造成不可接受的召回损失，不值得冒险去尝试",
             "把索引整体迁移到 SSD 磁盘（DiskANN 类方案）是唯一途径，它能在不增加查询延迟的情况下把内存成本降低一个数量级，别无选择",
-            "将所有向量从 FP32 转为 INT8 标量量化即可一步到位，标量量化经过校准后不会带来任何召回率损失，是最简单的降本手段"
+            "按阶梯推进：先做免费的数据治理（去重、过期数据淘汰），再下调 HNSW 的 M/ef 参数，最后评估 PQ/INT8 量化或磁盘索引——各级分别以召回率或查询延迟为代价，取舍由实测曲线决定"
           ]
         }
       }
@@ -671,7 +671,7 @@
         "generatedAt": 1789722005282,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-bc43ef3e",
+        "sourceHash": "fnv1a-43d56644",
         "batch": "manual-ca",
         "model": "manual",
         "contentHash": "fnv1a-37e7a7b5",
@@ -688,10 +688,10 @@
           ],
           "question": "简述 Transformer 中自注意力（self-attention）机制的计算过程，并说明它相比 RNN 的优势。",
           "options": [
-            "以 Q、K 点积衡量 token 间相关性，除以 sqrt(d_k) 缩放后经 softmax 得到权重，再对 V 加权求和，各位置可并行计算",
+            "用 Q 与 K 之间的余弦相似度构造权重矩阵，sqrt(d_k) 的作用是把序列长度归一到 0 到 1 之间",
             "以 Q、K 的逐元素相乘衡量相关性，结果不经任何归一化直接作为权重对 V 加权求和",
             "先对 V 做 softmax 归一化得到分布，再用它对 Q、K 加权，且必须沿时间步顺序串行计算",
-            "用 Q 与 K 之间的余弦相似度构造权重矩阵，sqrt(d_k) 的作用是把序列长度归一到 0 到 1 之间"
+            "以 Q、K 点积衡量 token 间相关性，除以 sqrt(d_k) 缩放后经 softmax 得到权重，再对 V 加权求和，各位置可并行计算"
           ]
         }
       }
@@ -859,7 +859,7 @@
         "generatedAt": 1789722005285,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-322e304f",
+        "sourceHash": "fnv1a-d85d9ea3",
         "batch": "manual-ca",
         "model": "manual",
         "contentHash": "fnv1a-7c2b5588",
@@ -877,10 +877,10 @@
           ],
           "question": "在 LLM 可观测性体系中，对全量 Trace 进行采样（Sampling）时，为什么需要采用“头采样（Head Sampling）+ 尾采样（Tail Sampling）”结合的策略，而非仅头采样？",
           "options": [
-            "头采样可能漏掉长尾异常，尾采样可在链路结束后基于错误/延迟信号决定保留，实现异常全量保留与正常高采样率控制的平衡",
+            "采样策略对 LLM 可观测性无影响，应全量存储所有 Trace，全量即真理",
             "头采样已足够，尾采样会显著增加存储成本且无任何额外价值，纯属浪费资源",
             "尾采样可完全替代头采样，因为它无需在入口做任何决定，入口零开销最优",
-            "采样策略对 LLM 可观测性无影响，应全量存储所有 Trace，全量即真理"
+            "头采样可能漏掉长尾异常，尾采样可在链路结束后基于错误/延迟信号决定保留，实现异常全量保留与正常高采样率控制的平衡"
           ]
         }
       }
@@ -906,7 +906,7 @@
         "generatedAt": 1789722005285,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-998ba64b",
+        "sourceHash": "fnv1a-8368b1eb",
         "batch": "manual-ca",
         "model": "manual",
         "contentHash": "fnv1a-670ad2aa",
@@ -923,9 +923,9 @@
           ],
           "question": "请解释 Self-Attention 中 Query、Key、Value 分别代表什么，以及 Attention 最终是如何计算出来的。",
           "options": [
-            "Q、K、V 由输入经三组不同的线性投影得到，attention 输出为 softmax(QK^T/sqrt(d_k))V，即用归一化后的权重对 V 进行加权求和",
-            "Q、K、V 是同一个输入矩阵的简单三份复制，attention 直接对原始输入序列做等价加权平均，完全跳过了任何独立的投影与归一化计算步骤",
             "Q 与 V 的点积经 sigmoid 归一化得到权重，再用该权重对 K 加权求和，且全程不引入任何缩放因子以保持数值简单",
+            "Q、K、V 是同一个输入矩阵的简单三份复制，attention 直接对原始输入序列做等价加权平均，完全跳过了任何独立的投影与归一化计算步骤",
+            "Q、K、V 由输入经三组不同的线性投影得到，attention 输出为 softmax(QK^T/sqrt(d_k))V，即用归一化后的权重对 V 进行加权求和",
             "Q 与 K 计算相似度后不做任何缩放直接取最大值索引，输出为对应的 V 向量，认为这样能够避免 softmax 带来的计算开销"
           ]
         }

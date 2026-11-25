@@ -24,7 +24,7 @@
         "generatedAt": 1789684982728,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-9c2c3725",
+        "sourceHash": "fnv1a-c267abd3",
         "batch": "manual-bz",
         "model": "manual",
         "contentHash": "fnv1a-a82871fb",
@@ -42,9 +42,9 @@
           "question": "对比 ReAct 与 Plan-and-Execute 两种 Agent 架构模式：各自的执行流程是什么？分别适合什么任务场景？",
           "options": [
             "ReAct 是先一次性生成完整多步计划、再顺序执行各步、并在失败处重规划的架构，因此最适合可预先分解的长任务场景",
-            "ReAct 每轮即时决策适应性强；Plan-and-Execute 先出全局计划再执行并在失败处重规划，适合可分解长任务",
+            "两者都在任务开始前生成完整计划，区别仅在于是否允许中途更换工具，规划模式本身并无实质不同",
             "Plan-and-Execute 每轮只依据上一步观察决定下一个动作，因缺乏全局视野而只适合处理短平快任务",
-            "两者都在任务开始前生成完整计划，区别仅在于是否允许中途更换工具，规划模式本身并无实质不同"
+            "ReAct 每轮即时决策适应性强；Plan-and-Execute 先出全局计划再执行并在失败处重规划，适合可分解长任务"
           ]
         }
       }
@@ -70,7 +70,7 @@
         "generatedAt": 1789684982730,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-559bdf1d",
+        "sourceHash": "fnv1a-490f2c95",
         "batch": "manual-bz",
         "model": "manual",
         "contentHash": "fnv1a-2a8d6696",
@@ -87,9 +87,9 @@
           ],
           "question": "Agent 的可用 Tool 应该完全交给 LLM 自由选择，还是由代码按任务阶段限定候选集？为什么？",
           "options": [
-            "工具应由 LLM 完全自由选择，候选集越大准确率越高，限制候选只会损害模型能力发挥",
-            "把全部工具常驻候选集最安全，动态装配会制造权限漂移，缩小候选集只会让模型缺工具而失败",
             "由代码按任务阶段动态限定候选集：最小权限缩小攻击面、选项少更准、裁剪省 token，并用评测集防收窄过度",
+            "把全部工具常驻候选集最安全，动态装配会制造权限漂移，缩小候选集只会让模型缺工具而失败",
+            "工具应由 LLM 完全自由选择，候选集越大准确率越高，限制候选只会损害模型能力发挥",
             "限定候选集的唯一目的是节省 token 成本，对选择质量与安全性没有影响。"
           ]
         }
@@ -116,7 +116,7 @@
         "generatedAt": 1789684982731,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-19b2711b",
+        "sourceHash": "fnv1a-00af2909",
         "batch": "manual-bz",
         "model": "manual",
         "contentHash": "fnv1a-a3d83563",
@@ -134,8 +134,8 @@
           "question": "一个企业 Agent 最终拥有 300 个 tools。把 300 个 tools 全部放进每次 LLM 请求的 tool definitions 中，会产生哪些问题？你会设计什么样的 tool routing 方案？",
           "options": [
             "维持全量注入：候选越丰富准确率越高，成本上升是必要开销，裁剪只会牺牲质量",
-            "建立分层 tool routing：先判相关 domain，再精选工具子集，每次仅暴露少量相关工具，并以评测持续迭代",
             "把三百个工具合并为一个万能工具，用巨型参数对象承载全部操作，从根本上消灭选择问题",
+            "建立分层 tool routing：先判相关 domain，再精选工具子集，每次仅暴露少量相关工具，并以评测持续迭代",
             "工具数量只带来少量线性 token 开销，误选与延迟属正常波动，无需做路由专项治理"
           ]
         }
@@ -162,7 +162,7 @@
         "generatedAt": 1789684982731,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-4e481340",
+        "sourceHash": "fnv1a-441e5964",
         "batch": "manual-bz",
         "model": "manual",
         "contentHash": "fnv1a-95eac222",
@@ -180,9 +180,9 @@
           ],
           "question": "什么时候应该采用 Plan-and-Execute，而不是让 Agent 每一步都重新决定下一步？这种架构有什么代价？",
           "options": [
-            "计划稳定、各步独立的任务适合 Plan-and-Execute：先出整体计划再依序执行，少重复规划。",
-            "Plan-and-Execute 适用于环境剧烈多变、每一步都要推翻重来的任务，在稳定可预期的任务场景下使用它纯属浪费资源",
             "计划一旦生成即冻结执行，重规划只会引入抖动；稳定性优先于适应性，冻结即可靠。",
+            "Plan-and-Execute 适用于环境剧烈多变、每一步都要推翻重来的任务，在稳定可预期的任务场景下使用它纯属浪费资源",
+            "计划稳定、各步独立的任务适合 Plan-and-Execute：先出整体计划再依序执行，少重复规划。",
             "Plan-and-Execute 把决策前置，运行时开销更低；成本敏感场景应默认采用，逐步决策只留给探索型任务。"
           ]
         }
@@ -255,7 +255,7 @@
         "generatedAt": 1789684982733,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-a3cee367",
+        "sourceHash": "fnv1a-07ebc5db",
         "batch": "manual-bz",
         "model": "manual",
         "contentHash": "fnv1a-42ae39c7",
@@ -272,10 +272,10 @@
           ],
           "question": "FlashAttention 主要优化了 Transformer 的什么问题？它为什么可以在保持 Attention 数学等价（公式语义不变；浮点求值顺序变化，不保证逐比特一致）的同时提升性能？",
           "options": [
-            "它优化的是 N×N 注意力矩阵的 HBM 访存瓶颈：Q/K/V 分块驻留 SRAM，online softmax 增量维护统计量；公式语义不变但不保证逐比特一致，HBM 占用从 O(N²) 降为 O(N)",
+            "它把 softmax 替换为线性注意力形式（如 kernel 近似），取消了归一化步骤从而节省显存占用，但这也从根本上改变了注意力的数学定义并可能损害长程建模能力",
             "它通过对注意力矩阵做低秩近似（例如对 Q、K、V 投影矩阵做 SVD 截断）来削减浮点计算量，代价是带来精度损失与下游任务表现下降，且无法保证训练时的梯度稳定",
             "它通过剪枝不重要的 token 来缩短有效上下文长度，牺牲部分长序列信息以换取更快的计算速度与更低的内存占用，但对关键依赖的识别并不稳定",
-            "它把 softmax 替换为线性注意力形式（如 kernel 近似），取消了归一化步骤从而节省显存占用，但这也从根本上改变了注意力的数学定义并可能损害长程建模能力"
+            "它优化的是 N×N 注意力矩阵的 HBM 访存瓶颈：Q/K/V 分块驻留 SRAM，online softmax 增量维护统计量；公式语义不变但不保证逐比特一致，HBM 占用从 O(N²) 降为 O(N)"
           ]
         }
       }
@@ -348,7 +348,7 @@
         "generatedAt": 1789684982734,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-e46c77b7",
+        "sourceHash": "fnv1a-d859e907",
         "batch": "manual-bz",
         "model": "manual",
         "contentHash": "fnv1a-3ed65bfd",
@@ -366,8 +366,8 @@
           "options": [
             "Pre-training 使用人工精标的任务数据，Fine-tuning 则完全不需要任何标注",
             "两者没有本质区别，Fine-tuning 只是 epoch 数设置得更多的 pre-training",
-            "Fine-tuning 同样从随机初始化开始训练，只是采用远小于 pre-training 的学习率",
-            "Pre-training 从随机初始化出发在大规模通用语料上学通用能力，Fine-tuning 从预训练权重出发用小规模任务数据调整行为，成本低得多"
+            "Pre-training 从随机初始化出发在大规模通用语料上学通用能力，Fine-tuning 从预训练权重出发用小规模任务数据调整行为，成本低得多",
+            "Fine-tuning 同样从随机初始化开始训练，只是采用远小于 pre-training 的学习率"
           ]
         }
       }
@@ -393,7 +393,7 @@
         "generatedAt": 1789684982735,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-58e4ed6e",
+        "sourceHash": "fnv1a-b5860a22",
         "batch": "manual-bz",
         "model": "manual",
         "contentHash": "fnv1a-3588dc05",
@@ -410,8 +410,8 @@
           ],
           "question": "RLHF 为什么需要一个单独的 Reward Model，而不是直接用人类反馈做强化学习？",
           "options": [
-            "人类偏好信号稀疏且昂贵，无法在线逐条实时打分；先用批量偏好数据训练 RM 学会打分，再作为 RL 可无限采样的奖励代理",
             "人类反馈可以在线实时低成本采集，单独训练 RM 只是为了省去偏好数据的收集环节",
+            "人类偏好信号稀疏且昂贵，无法在线逐条实时打分；先用批量偏好数据训练 RM 学会打分，再作为 RL 可无限采样的奖励代理",
             "RM 的职责是压缩策略网络的参数量，从而显著降低 RL 训练阶段的显存开销",
             "RLHF 要求奖励信号随训练进程不断变化，RM 负责动态改写人类的偏好标注"
           ]
@@ -439,7 +439,7 @@
         "generatedAt": 1789684982736,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-b4bfeee8",
+        "sourceHash": "fnv1a-56472fe8",
         "batch": "manual-bz",
         "model": "manual",
         "contentHash": "fnv1a-6abe9747",
@@ -456,9 +456,9 @@
           "question": "为什么大语言模型通常使用 next-token prediction 作为预训练目标？这种看似简单的训练方式为什么能学到语言、知识甚至一定程度的推理能力？",
           "options": [
             "next-token prediction 让模型直接优化事实正确性，因为损失函数里带有真伪标签信号，模型在预测下一个词时会被显式告知哪个才是事实正确的续写",
-            "这种目标的计算开销最小，其他任何训练目标都需要数量级更多的数据和算力，因为预测单个 token 的梯度比对比学习或重建任务轻得多，是工程上的唯一省时选择",
+            "要把下一 token 预测好，模型被迫隐式掌握续写所需的语法、事实与推理结构，海量语料使该目标成为对世界知识的压缩建模，且免标注、可无限扩展、易并行",
             "预测下一个 token 可以绕过语法和事实学习，模型只需死记硬背全部 n-gram 搭配即可完成生成，因为语言本质上是一串可枚举的局部共现组合，无需理解语义",
-            "要把下一 token 预测好，模型被迫隐式掌握续写所需的语法、事实与推理结构，海量语料使该目标成为对世界知识的压缩建模，且免标注、可无限扩展、易并行"
+            "这种目标的计算开销最小，其他任何训练目标都需要数量级更多的数据和算力，因为预测单个 token 的梯度比对比学习或重建任务轻得多，是工程上的唯一省时选择"
           ]
         }
       }
@@ -484,7 +484,7 @@
         "generatedAt": 1789684982736,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-6b89dc67",
+        "sourceHash": "fnv1a-68d2ab7f",
         "batch": "manual-bz",
         "model": "manual",
         "contentHash": "fnv1a-ab3f1be2",
@@ -500,8 +500,8 @@
           "question": "LLM 的 Tool Calling 和普通文本生成有什么本质区别？",
           "options": [
             "Tool Calling 生成的仍是供人阅读的普通文本，只是语气更像指令，本来就不会对外部世界产生真实影响",
-            "Tool Calling 输出的是交由外部环境真实执行的结构化调用意图，会产生现实副作用，由此引入参数可靠性、错误处理与安全管控等文本生成应用不存在的新问题，团队恰好欠下了这笔工程债",
             "Tool Calling 由模型直接执行代码并访问生产数据库，全过程不经任何外部执行环境，出错后无从介入",
+            "Tool Calling 输出的是交由外部环境真实执行的结构化调用意图，会产生现实副作用，由此引入参数可靠性、错误处理与安全管控等文本生成应用不存在的新问题，团队恰好欠下了这笔工程债",
             "Tool Calling 与文本生成的差异主要在输出格式，参数可靠性问题可通过格式约束的提示词模板解决；执行环境等重资产投入应后置。"
           ]
         }
@@ -717,7 +717,7 @@
         "generatedAt": 1789684982739,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-2582b2b7",
+        "sourceHash": "fnv1a-acf66e2f",
         "batch": "manual-bz",
         "model": "manual",
         "contentHash": "fnv1a-4977aef4",
@@ -735,10 +735,10 @@
           ],
           "question": "在构建图文多模态 RAG 系统时，系统需对文档中的图表、截图进行理解并回答“该季度营收同比增速是多少？”这类需跨模态对齐的问题。下列关于多模态检索与对齐的说法，正确的是？",
           "options": [
-            "将图像与文本通过统一编码器映射到共享嵌入空间进行图文对齐与互检索，并结合 OCR 与图文联合推理，必要时通过引用与校验缓解多模态幻觉",
+            "跨模态对齐仅需在推理时拼接图像与文本提示，无需任何训练期对齐，因为预训练语言模型已具备通用常识，拼接图像提示后自然就能理解视觉内容",
             "多模态 RAG 无需图像编码，仅需将图像文件名作为文本关键词进行 BM25 检索即可实现图文对齐，因为文件名已经包含足够的可检索语义，无需再进入视觉编码器",
             "多模态模型天然不存在幻觉，因其输入包含图像作为事实依据，因为看到图像就等同于掌握了全部事实，模型不可能在视觉事实之上产生任何虚构",
-            "跨模态对齐仅需在推理时拼接图像与文本提示，无需任何训练期对齐，因为预训练语言模型已具备通用常识，拼接图像提示后自然就能理解视觉内容"
+            "将图像与文本通过统一编码器映射到共享嵌入空间进行图文对齐与互检索，并结合 OCR 与图文联合推理，必要时通过引用与校验缓解多模态幻觉"
           ]
         }
       }
@@ -764,7 +764,7 @@
         "generatedAt": 1789684982740,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-6b28c26d",
+        "sourceHash": "fnv1a-77e741ab",
         "batch": "manual-bz",
         "model": "manual",
         "contentHash": "fnv1a-6666c31b",
@@ -781,8 +781,8 @@
           ],
           "question": "在防御提示注入（Prompt Injection）时，为什么需要对用户输入与外部检索内容进行严格的输入验证与边界隔离，而非仅依赖系统提示词（System Prompt）？",
           "options": [
-            "系统提示词可被注入内容覆盖，需通过输入验证与边界隔离防御",
             "系统提示词已足够强大，可完全免疫一切注入攻击，无需任何额外措施",
+            "系统提示词可被注入内容覆盖，需通过输入验证与边界隔离防御",
             "注入仅影响输出格式，不会对系统安全产生任何影响，不必过度担心",
             "防御注入只需不断增加模型参数量即可自然解决，大模型自带免疫力"
           ]
@@ -859,7 +859,7 @@
         "generatedAt": 1789684982741,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-50aaa2ba",
+        "sourceHash": "fnv1a-80758d22",
         "batch": "manual-bz",
         "model": "manual",
         "contentHash": "fnv1a-701c87d8",
@@ -875,10 +875,10 @@
           ],
           "question": "什么是 Post-training？它解决 Pre-training 解决不了的问题吗？",
           "options": [
-            "Post-training 指用更大规模的数据重新执行一遍 pre-training，以写入最新的世界知识",
+            "Post-training 是 pre-training 之后的所有训练阶段（如 SFT、偏好优化），把已有能力塑造成遵循指令、安全合规的行为",
             "Post-training 仅指推理阶段的 system prompt 设计，通过提示词在不改参数的情况下塑造行为",
             "Post-training 只负责量化、蒸馏等部署压缩工作，全程不涉及任何梯度更新",
-            "Post-training 是 pre-training 之后的所有训练阶段（如 SFT、偏好优化），把已有能力塑造成遵循指令、安全合规的行为"
+            "Post-training 指用更大规模的数据重新执行一遍 pre-training，以写入最新的世界知识"
           ]
         }
       }
@@ -904,7 +904,7 @@
         "generatedAt": 1789684982742,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-8d4e0853",
+        "sourceHash": "fnv1a-1e5d1157",
         "batch": "manual-bz",
         "model": "manual",
         "contentHash": "fnv1a-9962d091",
@@ -923,8 +923,8 @@
           "question": "在支持动态开启或关闭思考过程（Thinking Mode）的混合推理模型中，系统在训练与推理端如何实现这一开关？",
           "options": [
             "仅在推理阶段通过系统提示词进行软引导，无需在 SFT 或 RL 阶段进行特殊的数据混合训练",
-            "在 SFT 阶段引入多模态/多深度样本融合，推理阶段若要硬关闭思考，则在分词模板层强行插入空思考标签以跳过",
             "在 RL 阶段通过增加采样温度来控制思考深度，温度越高思考越深，因为高温采样会迫使模型探索更多推理路径，自然延长其思考链长度",
+            "在 SFT 阶段引入多模态/多深度样本融合，推理阶段若要硬关闭思考，则在分词模板层强行插入空思考标签以跳过",
             "通过在模型权重中增加额外的思考门控层来实现开关，因为新增的专用层能显式记住开/关状态，比在提示或模板层做文章更可控、更稳定"
           ]
         }

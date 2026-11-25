@@ -24,7 +24,7 @@
         "generatedAt": 1790120106124,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-81779f0b",
+        "sourceHash": "fnv1a-a2890ad3",
         "batch": "manual-ce",
         "model": "manual",
         "contentHash": "fnv1a-72236079",
@@ -43,9 +43,9 @@
           "question": "在 MoE 架构中，传统 SwiGLU 激活因门控与线性分支同向对齐易产生极值膨胀。如何通过平滑截断（Softcap）设计缓解该数值不稳定性？",
           "options": [
             "采用 Hard Clip 将门控与线性分支强制截断在 [−1, 1] 之间，这样既能压住数值上界又完全保留梯度连续性，因此在 MoE 中比 Softcap 更常用也更稳定",
-            "使用 SiTU 替换 SiLU，并对门控部分与线性分支均施加基于 softcap(x; β) = β·tanh(x/β) 的平滑截断",
+            "增大 SwiGLU 权重矩阵的 Weight Decay 以约束模长，这比任何激活替换都更直接地解决了数值不稳定问题",
             "在 SwiGLU 前后引入 LayerNorm 以强制归一化特征向量，这能从根本上消除极值膨胀而无需改动任何激活函数",
-            "增大 SwiGLU 权重矩阵的 Weight Decay 以约束模长，这比任何激活替换都更直接地解决了数值不稳定问题"
+            "使用 SiTU 替换 SiLU，并对门控部分与线性分支均施加基于 softcap(x; β) = β·tanh(x/β) 的平滑截断"
           ]
         }
       }
@@ -168,7 +168,7 @@
         "generatedAt": 1790120106124,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-2cf90937",
+        "sourceHash": "fnv1a-19d9f5d9",
         "batch": "manual-ce",
         "model": "manual",
         "contentHash": "fnv1a-73d27e26",
@@ -187,9 +187,9 @@
           "question": "在针对机器学习算法进行理论分析与系统设计时，传统计算机科学的“最坏情况分析（Worst-case Analysis）”常面临 NP-hard 的阻碍。为了为实践中的启发式算法（如 EM、NMF、非凸梯度下降）提供可证明的理论 guarantees，理论机器学习领域的核心解决思路是什么？",
           "options": [
             "完全放弃理论证明，仅依赖大规模真实数据集上的 Benchmark 经验评估来验证算法有效性。",
-            "引入对输入数据的合理概率模型或结构假设（如 Separability、平滑分析 Smoothed Analysis），绕开最坏情况障碍并给出可证明的理论保障。",
+            "仅针对一维简单数据分布求解解析解，并在高维场景下通过强行剪枝将最坏情况时间复杂度降至多项式级别。",
             "将所有非凸优化问题统一转化为高维凸优化松弛问题，从而确保在最坏情况下能够在多项式时间内找到全局最优解。",
-            "仅针对一维简单数据分布求解解析解，并在高维场景下通过强行剪枝将最坏情况时间复杂度降至多项式级别。"
+            "引入对输入数据的合理概率模型或结构假设（如 Separability、平滑分析 Smoothed Analysis），绕开最坏情况障碍并给出可证明的理论保障。"
           ]
         }
       }
@@ -215,7 +215,7 @@
         "generatedAt": 1790120106124,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-a67e1f0e",
+        "sourceHash": "fnv1a-2c5d942a",
         "batch": "manual-ce",
         "model": "manual",
         "contentHash": "fnv1a-05770ccd",
@@ -232,9 +232,9 @@
           ],
           "question": "LLM 语境中的 alignment 通常要解决什么问题？",
           "options": [
-            "让模型行为更符合人类或产品目标，包括有用性、指令遵循和安全性",
-            "只增加模型层数而不改变行为目标",
             "只优化推理吞吐，不关注输出内容",
+            "只增加模型层数而不改变行为目标",
+            "让模型行为更符合人类或产品目标，包括有用性、指令遵循和安全性",
             "把所有用户输入直接加入训练集"
           ]
         }
@@ -261,7 +261,7 @@
         "generatedAt": 1790120106124,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-1067a600",
+        "sourceHash": "fnv1a-8b7c4f10",
         "batch": "manual-ce",
         "model": "manual",
         "contentHash": "fnv1a-646db574",
@@ -279,8 +279,8 @@
           ],
           "question": "假设模型输入维度 d_model=512。方案一采用 h=8 的多头注意力每头 d_k=64；方案二采用单头注意力 d_k=512。关于两种方案在线性投影矩阵的参数量与计算复杂度对比下列说法正确的是？",
           "options": [
-            "方案一的投影参数总量和总 FLOPs 是方案二的 8 倍",
             "方案一与方案二的投影参数总量和总计算复杂度基本一致",
+            "方案一的投影参数总量和总 FLOPs 是方案二的 8 倍",
             "方案一参数量是方案二的 8 倍但由于多头可并行计算计算复杂度降为 1/8",
             "方案一省去了输出投影矩阵 W^O 因此参数量少于方案二"
           ]
@@ -354,7 +354,7 @@
         "generatedAt": 1790120106124,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-6328df6c",
+        "sourceHash": "fnv1a-2b66ab22",
         "batch": "manual-ce",
         "model": "manual",
         "contentHash": "fnv1a-5d207be0",
@@ -372,10 +372,10 @@
           ],
           "question": "在长上下文 LLM 架构中，为了最大化利用 Provider 的 Prefix Caching 机制降低 Token 计费与首帧延迟（TTFT），提示词（Prompt）结构的构建规范是怎样的？原理是什么？",
           "options": [
-            "将静态文档语料（Corpus）置于最前，动态提问（Question）置于最后；原理是 Prefix Caching 严格按从首字符开始的连续完全匹配来识别缓存",
+            "提示词顺序无影响，只要单个 Request 的总 Token 数保持不变，网关即会自动触发 KV Cache 命中",
             "将动态提问（Question）置于最前，静态文档语料（Corpus）置于最后；原理是注意力机制对 Prompt 头部赋予最高权重",
             "将语料与提问混合输入，通过设置 <cache> 标签标记语义关键块；原理是 LLM 自动识别跨请求的向量语义相似度",
-            "提示词顺序无影响，只要单个 Request 的总 Token 数保持不变，网关即会自动触发 KV Cache 命中"
+            "将静态文档语料（Corpus）置于最前，动态提问（Question）置于最后；原理是 Prefix Caching 严格按从首字符开始的连续完全匹配来识别缓存"
           ]
         }
       }
@@ -401,7 +401,7 @@
         "generatedAt": 1790120106124,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-9c1e3652",
+        "sourceHash": "fnv1a-ad1e55b6",
         "batch": "manual-ce",
         "model": "manual",
         "contentHash": "fnv1a-f4e20894",
@@ -418,10 +418,10 @@
           ],
           "question": "卷积神经网络中的卷积层主要利用了图像的什么特性？",
           "options": [
-            "局部连接和权重共享带来的空间结构利用",
+            "保证所有输入图像都具有相同的标签",
             "每个像素都使用一套完全独立的全连接参数",
             "只把图像转换成文本，不进行特征提取",
-            "保证所有输入图像都具有相同的标签"
+            "局部连接和权重共享带来的空间结构利用"
           ]
         }
       }
@@ -493,7 +493,7 @@
         "generatedAt": 1790120106124,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-5bb1069d",
+        "sourceHash": "fnv1a-9ddfb1d9",
         "batch": "manual-ce",
         "model": "manual",
         "contentHash": "fnv1a-19af3612",
@@ -510,9 +510,9 @@
           ],
           "question": "LLM 的上下文窗口通常指什么？",
           "options": [
-            "一次请求中模型可处理的输入与输出 token 容量上限",
-            "模型可永久记住所有用户的全部历史对话",
             "模型部署所需 GPU 显存容量的另一种名称",
+            "模型可永久记住所有用户的全部历史对话",
+            "一次请求中模型可处理的输入与输出 token 容量上限",
             "只限制单次输出长度而不限制输入上下文"
           ]
         }
@@ -564,53 +564,6 @@
         }
       }
     ],
-    "p0-cross-entropy-calculation-01": [
-      {
-        "id": "p0-cross-entropy-calculation-01__context-options__manual-ce__12",
-        "kind": "context-options",
-        "mode": "assessment",
-        "question": "新分类 head 抽查：真实类别概率仅 0.25（自然对数）。关于该样本 loss 与 perplexity，哪组数值正确？",
-        "options": [
-          "loss≈0.25，perplexity≈0.25",
-          "loss≈1.386，perplexity=4",
-          "loss=4，perplexity≈1.386",
-          "loss≈0.693，perplexity=2"
-        ],
-        "angle": "scenario",
-        "cognitiveTask": "apply",
-        "assessment": {
-          "reasoningGoal": "先确定 loss=−ln0.25、perplexity=exp(loss) 的关系；再据此确认 1.386 与 4 的组合成立；并排除自指组合、数值倒置与 0.693 组合。",
-          "target": "能从低概率抽查出发，判断交叉熵与困惑度的计算结论。"
-        },
-        "generatedAt": 1790120106124,
-        "generator": "offline",
-        "promptVersion": "v7",
-        "sourceHash": "fnv1a-b3ea4e4b",
-        "batch": "manual-ce",
-        "model": "manual",
-        "contentHash": "fnv1a-1b4a1dc7",
-        "sourceSnapshot": {
-          "id": "p0-cross-entropy-calculation-01",
-          "topic": "cross-entropy",
-          "angle": "calculation",
-          "difficulty": "medium",
-          "cognitiveTask": "infer",
-          "tags": [
-            "cross-entropy",
-            "loss",
-            "perplexity",
-            "calculation"
-          ],
-          "question": "一个分类模型对真实类别的预测概率为 0.25，使用自然对数计算交叉熵。该样本的 loss 和对应 perplexity 分别约为多少？",
-          "options": [
-            "loss ≈ 0.25，perplexity ≈ 0.25",
-            "loss ≈ 1.386，perplexity = 4",
-            "loss = 4，perplexity ≈ 1.386",
-            "loss ≈ 0.693，perplexity = 2"
-          ]
-        }
-      }
-    ],
     "eth-01": [
       {
         "id": "eth-01__context-options__manual-ce__13",
@@ -632,7 +585,7 @@
         "generatedAt": 1790120106124,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-f8b9d155",
+        "sourceHash": "fnv1a-f568cf17",
         "batch": "manual-ce",
         "model": "manual",
         "contentHash": "fnv1a-b33795e9",
@@ -649,10 +602,10 @@
           ],
           "question": "在 AI 应用中，训练数据包含个人隐私信息时，首要遵循的原则是？",
           "options": [
-            "在合规前提下遵循数据最小化原则：只保留评测必要的字段，先行脱敏或匿名化处理，并按最小权限原则控制数据访问范围",
+            "将全部工单对项目组全员开放明文查阅权限，方便大家协作排查 bad case 提升效率",
             "尽可能完整地收集原始字段以保证模型效果，合规问题留待产品正式上线前统一整改",
             "数据仅用于内部实验且不对外发布，因此无需任何脱敏或访问控制措施",
-            "将全部工单对项目组全员开放明文查阅权限，方便大家协作排查 bad case 提升效率"
+            "在合规前提下遵循数据最小化原则：只保留评测必要的字段，先行脱敏或匿名化处理，并按最小权限原则控制数据访问范围"
           ]
         }
       }
@@ -678,7 +631,7 @@
         "generatedAt": 1790120106124,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-c35058d2",
+        "sourceHash": "fnv1a-c3586ba8",
         "batch": "manual-ce",
         "model": "manual",
         "contentHash": "fnv1a-9813e4eb",
@@ -695,10 +648,10 @@
           ],
           "question": "在『先结构压缩再量化』的部署流水线中，为什么常规的 QAD 往往不够、需要 QAH 这类跨架构蒸馏？",
           "options": [
-            "结构压缩后已无同架构全精度教师，仅剩退化 bf16 检查点会锚定学生上限，故需原始模型为教师",
+            "因为 QAD 要求学生模型必须比教师更大，而它不支持小模型学大模型",
             "因为 QAD 只能用于 8-bit 以上精度，4-bit 必须用 QAH 才行",
             "因为 QAH 完全不需要 KL 散度，直接拷贝权重就能恢复精度",
-            "因为 QAD 要求学生模型必须比教师更大，而它不支持小模型学大模型"
+            "结构压缩后已无同架构全精度教师，仅剩退化 bf16 检查点会锚定学生上限，故需原始模型为教师"
           ]
         }
       }
@@ -771,7 +724,7 @@
         "generatedAt": 1790120106124,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-d1494f76",
+        "sourceHash": "fnv1a-4a7f4b06",
         "batch": "manual-ce",
         "model": "manual",
         "contentHash": "fnv1a-3ecd3c5b",
@@ -789,9 +742,9 @@
           ],
           "question": "团队需要在固定偏好数据集上快速完成对齐，并比较 DPO 与 PPO 的工程取舍。以下判断正确的是？",
           "options": [
-            "DPO 通常更适合固定偏好数据集，省去在线采样和显式奖励模型，但对动态多步反馈的优化自由度较低",
-            "DPO 与 PPO 都必须训练奖励模型并进行在线 rollout，区别只在 batch size",
             "PPO 不需要奖励模型，因为策略梯度可以直接从偏好标签计算",
+            "DPO 与 PPO 都必须训练奖励模型并进行在线 rollout，区别只在 batch size",
+            "DPO 通常更适合固定偏好数据集，省去在线采样和显式奖励模型，但对动态多步反馈的优化自由度较低",
             "DPO 一定比 PPO 事实准确率高，因此可以跳过独立评测和 KL 控制"
           ]
         }
@@ -818,7 +771,7 @@
         "generatedAt": 1790120106124,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-deabcf4b",
+        "sourceHash": "fnv1a-60133d87",
         "batch": "manual-ce",
         "model": "manual",
         "contentHash": "fnv1a-f6fa4636",
@@ -836,10 +789,10 @@
           ],
           "question": "一个模型训练集准确率持续上升而验证集准确率下降。提高 dropout 率可能带来什么效果，使用时最需要注意什么？",
           "options": [
-            "适度提高 dropout 可能缓解过拟合，但过高会导致欠拟合，且推理阶段应关闭 dropout",
+            "dropout 率越高越好，因为丢弃更多激活总能提升泛化能力",
             "提高 dropout 一定会提高训练准确率，推理阶段也应保持开启以获得同样正则化",
             "dropout 只改变数据集大小，不会改变神经元之间的共适应",
-            "dropout 率越高越好，因为丢弃更多激活总能提升泛化能力"
+            "适度提高 dropout 可能缓解过拟合，但过高会导致欠拟合，且推理阶段应关闭 dropout"
           ]
         }
       }
@@ -865,7 +818,7 @@
         "generatedAt": 1790120106124,
         "generator": "offline",
         "promptVersion": "v7",
-        "sourceHash": "fnv1a-6cfb6cb0",
+        "sourceHash": "fnv1a-b3f26b3c",
         "batch": "manual-ce",
         "model": "manual",
         "contentHash": "fnv1a-36e20657",
@@ -883,9 +836,9 @@
           "question": "在 Boosting 理论及 AdaBoost 算法机制中，关于弱可学习性（Weak Learnability）与强可学习性（Strong Learnability）的关系，下列哪项说法是正确的？",
           "options": [
             "AdaBoost 算法要求每个基学习器（Weak Learner）的训练误差都必须严格低于 25%，才能将弱学习器提升为强学习器",
-            "根据弱可学习与强可学习等价性定理，只要存在一个对所有数据分布都能取得略优于随机猜想（错误率低于 50%−γ，γ>0）的弱学习算法，就能通过 AdaBoost 构造出任意高精度的强学习器",
+            "AdaBoost 最终的组合决策规则是对所有基分类器进行等权重投票，因此训练后期的弱分类器与早期分类器的地位完全相同",
             "AdaBoost 算法在迭代过程中会持续降低此前被正确分类样本的权重，这导致算法在训练集经验风险降至 0 后会立即出现严重过拟合",
-            "AdaBoost 最终的组合决策规则是对所有基分类器进行等权重投票，因此训练后期的弱分类器与早期分类器的地位完全相同"
+            "根据弱可学习与强可学习等价性定理，只要存在一个对所有数据分布都能取得略优于随机猜想（错误率低于 50%−γ，γ>0）的弱学习算法，就能通过 AdaBoost 构造出任意高精度的强学习器"
           ]
         }
       }

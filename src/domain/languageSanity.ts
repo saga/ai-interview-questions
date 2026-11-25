@@ -241,9 +241,12 @@ export interface LanguageSanityInput {
 export interface LanguageSanityCanonical {
   /** canonical 题干，用于从句倒置比对。 */
   stem: string;
-  /** canonical 选项（按下标一一对应变体选项）。 */
+  /** canonical 选项（变体可重排选项顺序，比对时按内容对齐而非按下标）。 */
   options?: string[];
 }
+
+/** 选项对齐的最低字面相似度；低于此值没有足够证据判断从句顺序。 */
+const OPTION_MATCH_MIN = 35;
 
 /**
  * 对一条变体做确定性语言质量检查。
@@ -268,15 +271,26 @@ export function checkLanguageSanity(
     variant.options.forEach((o, i) => checkText(o ?? '', 'option', i, issues));
   }
 
-  // 从句倒置：逐个选项比对 canonical 对应选项，取最大值。
+  // 从句倒置：逐个选项比对最相似的 canonical 选项，取最大值。
   // 用 max 而非 avg：一个选项语序崩坏就足以让整条变体不可用（考生要读它）。
+  // 不能按同一 index 比：变体会刻意重排选项顺序，同 index 往往是另一个判断，
+  // 于是「内容相同但换了位置」会被误判为从句整块倒装。
   if (variant.options && canonical.options) {
     let worst = 0;
     let worstIndex = -1;
     for (let i = 0; i < variant.options.length; i++) {
-      const canonicalOpt = canonical.options[i];
-      if (canonicalOpt == null) continue;
-      const inv = clauseInversion(canonicalOpt, variant.options[i] ?? '');
+      const text = variant.options[i] ?? '';
+      let bestIndex = -1;
+      let bestScore = OPTION_MATCH_MIN - 1;
+      for (let j = 0; j < canonical.options.length; j++) {
+        const score = cjkDice(canonical.options[j] ?? '', text);
+        if (score > bestScore) {
+          bestScore = score;
+          bestIndex = j;
+        }
+      }
+      if (bestIndex < 0) continue;
+      const inv = clauseInversion(canonical.options[bestIndex] ?? '', text);
       if (inv > worst) {
         worst = inv;
         worstIndex = i;

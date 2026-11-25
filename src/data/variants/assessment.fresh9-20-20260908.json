@@ -181,96 +181,6 @@
         }
       }
     ],
-    "q-kd-specialist-c": [
-      {
-        "id": "q-kd-specialist-c__surface-options__assessmentfresh9__0",
-        "kind": "surface-options",
-        "question": "某 Specialist 没做 Logit 修正，推理系统性偏向专精类。定位这次遗漏，下列哪些判断成立？",
-        "options": [
-          "Generalist 预测协方差上跑聚类，划出易混淆专精类别集",
-          "非专精类别合并归为单一 Dustbin，显著缩小 Softmax 输出维度",
-          "专精类过采样到 50%，推理须加 log 修正 Dustbin",
-          "Dustbin 概率近 1 即不在专精域，可据此衰减融合"
-        ],
-        "angle": "debugging",
-        "cognitiveTask": "diagnose",
-        "assessment": {
-          "target": "能从没做修正致系统性偏向的遗漏定位校正环节",
-          "reasoningGoal": "先定位遗漏的环节（聚类、打包、修正三类）；再逐项验证各判断；并排除与机制不符的描述。"
-        },
-        "generatedAt": 1788874684731,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-2ad51cd6",
-        "batch": "assessmentfresh9",
-        "model": "manual",
-        "contentHash": "fnv1a-a5e9466f",
-        "sourceSnapshot": {
-          "id": "q-kd-specialist-c",
-          "topic": "kd-specialist-ensemble-dustbin-correction",
-          "angle": "design",
-          "difficulty": "hard",
-          "cognitiveTask": "design",
-          "tags": [
-            "Specialist Models",
-            "Dustbin Class",
-            "Logit Adjustment",
-            "海量类别"
-          ],
-          "question": "在海量分类任务（如上万种类别）中，为了降低大模型 Ensembles 的训练与推理开销，可以构建由通用模型（Generalist）和多个专家模型（Specialists）组成的分布式混合架构。关于 Specialist 模型的构建、训练及推理校正机制，下列哪些说法是正确的？",
-          "options": [
-            "可以在通用模型（Generalist）预测输出的协方差矩阵上运行聚类算法（如 K-means），将经常被同时混淆预测的类别聚类为特定专家模型（Specialist）的专精类别集。",
-            "为降低 Specialist 的计算开销，可以将该 Specialist 不关心的所有非专精类别合并归类为单一的‘垃圾桶类别’（Dustbin Class），显著缩小其 Softmax 输出维度。",
-            "由于 Specialist 训练集中专精类别被大幅过采样（如占比达到 50%），在推理阶段必须对 Dustbin Class 的 Logit 增加过采样比例的对数值（$\\log r_{\\text{oversample}}$）以矫正训练偏置。",
-            "若 Specialist 模型对某样本输出的 Dustbin Class 预测概率极高，表明该样本大概率不属于该 Specialist 的专精范畴，可以据此实现高效的推理融合与决策衰减。"
-          ]
-        }
-      },
-      {
-        "id": "q-kd-specialist-c__context-options__assessmentfresh9__1",
-        "kind": "context-options",
-        "question": "要在上万类任务上省 ensemble 开销，设计 Generalist 加 Specialist 混合架构。下列哪些应当纳入？",
-        "options": [
-          "Generalist 输出协方差矩阵聚类，混淆类别划给 Specialist",
-          "不关心的非专精类全并入 Dustbin Class，输出维度显著缩小",
-          "专精类过采样到 50%，推理须给 Dustbin 加 log 修正先验",
-          "Specialist 输出 Dustbin 概率近 1 即不在专精范畴，融合时衰减该路"
-        ],
-        "angle": "scenario",
-        "cognitiveTask": "design",
-        "assessment": {
-          "target": "能为上万类任务设计省开销的混合架构",
-          "reasoningGoal": "先拆出架构设计的目标与约束（开销与校正）；再逐项确认各设计；并排除与机制不符的描述。"
-        },
-        "generatedAt": 1788874684731,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-2ad51cd6",
-        "batch": "assessmentfresh9",
-        "model": "manual",
-        "contentHash": "fnv1a-0c19e24f",
-        "sourceSnapshot": {
-          "id": "q-kd-specialist-c",
-          "topic": "kd-specialist-ensemble-dustbin-correction",
-          "angle": "design",
-          "difficulty": "hard",
-          "cognitiveTask": "design",
-          "tags": [
-            "Specialist Models",
-            "Dustbin Class",
-            "Logit Adjustment",
-            "海量类别"
-          ],
-          "question": "在海量分类任务（如上万种类别）中，为了降低大模型 Ensembles 的训练与推理开销，可以构建由通用模型（Generalist）和多个专家模型（Specialists）组成的分布式混合架构。关于 Specialist 模型的构建、训练及推理校正机制，下列哪些说法是正确的？",
-          "options": [
-            "可以在通用模型（Generalist）预测输出的协方差矩阵上运行聚类算法（如 K-means），将经常被同时混淆预测的类别聚类为特定专家模型（Specialist）的专精类别集。",
-            "为降低 Specialist 的计算开销，可以将该 Specialist 不关心的所有非专精类别合并归类为单一的‘垃圾桶类别’（Dustbin Class），显著缩小其 Softmax 输出维度。",
-            "由于 Specialist 训练集中专精类别被大幅过采样（如占比达到 50%），在推理阶段必须对 Dustbin Class 的 Logit 增加过采样比例的对数值（$\\log r_{\\text{oversample}}$）以矫正训练偏置。",
-            "若 Specialist 模型对某样本输出的 Dustbin Class 预测概率极高，表明该样本大概率不属于该 Specialist 的专精范畴，可以据此实现高效的推理融合与决策衰减。"
-          ]
-        }
-      }
-    ],
     "llm-arch-yarn-01": [
       {
         "id": "llm-arch-yarn-01__surface-options__assessmentfresh9__0",
@@ -591,50 +501,6 @@
             "[CLS] Token 在整个网络训练过程中保持固定不变（Frozen），仅作为信息中转的静态占位符。"
           ]
         }
-      },
-      {
-        "id": "vit_cls_token_representation_canonical__context-options__assessmentfresh9__1",
-        "kind": "context-options",
-        "question": "某 ViT 把 [CLS] 冻结成静态占位符，分类头训不动。定位这次冻结失误，下列哪些判断成立？",
-        "options": [
-          "[CLS] 经多层自注意力可与所有 Patch 交互形成全局表征，但不保证无偏聚合。",
-          "独立 [CLS] 避免必须使用某个固定位置 Patch 作为分类输入，但模型仍可能学习位置偏差。",
-          "在标准 ViT 中，[CLS] 通常也会加上对应的位置编码。",
-          "训练期间把 [CLS] 参数完全冻结，让它始终作为静态占位符。"
-        ],
-        "angle": "debugging",
-        "cognitiveTask": "diagnose",
-        "assessment": {
-          "target": "能从冻结 CLS 致分类不收敛的失误定位可学习环节",
-          "reasoningGoal": "判断 [CLS] 与 Patch 的全局交互、位置编码和可学习参数；不要把全局表征误认为无偏保证，也不要认为独立 [CLS] 会完全消除位置偏差。"
-        },
-        "generatedAt": 1788874684733,
-        "generator": "offline",
-        "promptVersion": "v4",
-        "sourceHash": "fnv1a-67afe113",
-        "batch": "assessmentfresh9",
-        "model": "manual",
-        "contentHash": "fnv1a-2d922e4e",
-        "sourceSnapshot": {
-          "id": "vit_cls_token_representation_canonical",
-          "topic": "vit-cls-token-representation",
-          "angle": "mechanism",
-          "difficulty": "easy",
-          "cognitiveTask": "apply",
-          "tags": [
-            "Vision Transformer",
-            "Class Token",
-            "Architecture",
-            "Representation"
-          ],
-          "question": "ViT 借鉴了 NLP 中 BERT 的设计，在输入的图像 Patch Embedding 序列开头拼接了一个可学习的分类 Token（[CLS] Token）。关于 [CLS] Token 的作用机制与设计逻辑，以下哪些判断是正确的？",
-          "options": [
-            "经过多层 Self-Attention 后，[CLS] Token 可聚合所有图像 Patch 的上下文，形成全局表征；但不保证无偏聚合。",
-            "独立的 [CLS] Token 避免必须选定某个固定 Patch 作为分类输入，但模型仍可能学习到位置偏差。",
-            "在 Transformer 编码器的第一层输入前，[CLS] Token 同样需要加算对应的可学习位置编码（Position Embedding）。",
-            "[CLS] Token 在整个网络训练过程中保持固定不变（Frozen），仅作为信息中转的静态占位符。"
-          ]
-        }
       }
     ],
     "cnn-01": [
@@ -657,7 +523,7 @@
         "generatedAt": 1788874684733,
         "generator": "offline",
         "promptVersion": "v4",
-        "sourceHash": "fnv1a-0adf7b1b",
+        "sourceHash": "fnv1a-e8c76f85",
         "batch": "assessmentfresh9",
         "model": "manual",
         "contentHash": "fnv1a-0ce7f55a",
@@ -675,10 +541,10 @@
           ],
           "question": "在卷积神经网络（CNN）中，卷积层的“局部连接 + 权值共享”与池化层共同实现了什么核心能力？",
           "options": [
-            "通过局部感知与权值共享实现平移不变的层次化特征提取，池化扩大感受野并增强不变性",
+            "通过随机丢弃卷积核来防止过拟合，与池化无关，因为丢弃部分卷积核等价于隐式集成，比显式的池化操作更能保留位置敏感信息",
             "通过全连接实现全局特征融合，使每个神经元感知整张图像的所有像素，因为全连接能最大化信息交互，是比卷积更通用的特征提取方式",
             "通过增加参数量来 brute-force 记忆训练集中所有图像的精确位置，因为参数量越大模型越能精确拟合每个像素的对应关系",
-            "通过随机丢弃卷积核来防止过拟合，与池化无关，因为丢弃部分卷积核等价于隐式集成，比显式的池化操作更能保留位置敏感信息"
+            "通过局部感知与权值共享实现平移不变的层次化特征提取，池化扩大感受野并增强不变性"
           ]
         }
       },
@@ -701,7 +567,7 @@
         "generatedAt": 1788874684734,
         "generator": "offline",
         "promptVersion": "v4",
-        "sourceHash": "fnv1a-0adf7b1b",
+        "sourceHash": "fnv1a-e8c76f85",
         "batch": "assessmentfresh9",
         "model": "manual",
         "contentHash": "fnv1a-0726292b",
@@ -719,10 +585,10 @@
           ],
           "question": "在卷积神经网络（CNN）中，卷积层的“局部连接 + 权值共享”与池化层共同实现了什么核心能力？",
           "options": [
-            "通过局部感知与权值共享实现平移不变的层次化特征提取，池化扩大感受野并增强不变性",
+            "通过随机丢弃卷积核来防止过拟合，与池化无关，因为丢弃部分卷积核等价于隐式集成，比显式的池化操作更能保留位置敏感信息",
             "通过全连接实现全局特征融合，使每个神经元感知整张图像的所有像素，因为全连接能最大化信息交互，是比卷积更通用的特征提取方式",
             "通过增加参数量来 brute-force 记忆训练集中所有图像的精确位置，因为参数量越大模型越能精确拟合每个像素的对应关系",
-            "通过随机丢弃卷积核来防止过拟合，与池化无关，因为丢弃部分卷积核等价于隐式集成，比显式的池化操作更能保留位置敏感信息"
+            "通过局部感知与权值共享实现平移不变的层次化特征提取，池化扩大感受野并增强不变性"
           ]
         }
       }
@@ -747,7 +613,7 @@
         "generatedAt": 1788874684734,
         "generator": "offline",
         "promptVersion": "v4",
-        "sourceHash": "fnv1a-987e2a19",
+        "sourceHash": "fnv1a-376099fb",
         "batch": "assessmentfresh9",
         "model": "manual",
         "contentHash": "fnv1a-80d0b811",
@@ -765,9 +631,9 @@
           "question": "ReLU 激活函数相比 Sigmoid 的主要优势是？",
           "options": [
             "输出范围在 0 到 1 之间，便于概率解释",
-            "缓解梯度消失问题，计算简单",
+            "对输入做了归一化处理",
             "一定能保证模型收敛到全局最优",
-            "对输入做了归一化处理"
+            "缓解梯度消失问题，计算简单"
           ]
         }
       },
@@ -790,7 +656,7 @@
         "generatedAt": 1788874684734,
         "generator": "offline",
         "promptVersion": "v4",
-        "sourceHash": "fnv1a-987e2a19",
+        "sourceHash": "fnv1a-376099fb",
         "batch": "assessmentfresh9",
         "model": "manual",
         "contentHash": "fnv1a-38c3cc90",
@@ -808,9 +674,9 @@
           "question": "ReLU 激活函数相比 Sigmoid 的主要优势是？",
           "options": [
             "输出范围在 0 到 1 之间，便于概率解释",
-            "缓解梯度消失问题，计算简单",
+            "对输入做了归一化处理",
             "一定能保证模型收敛到全局最优",
-            "对输入做了归一化处理"
+            "缓解梯度消失问题，计算简单"
           ]
         }
       }
@@ -835,7 +701,7 @@
         "generatedAt": 1788874684734,
         "generator": "offline",
         "promptVersion": "v4",
-        "sourceHash": "fnv1a-f73df39d",
+        "sourceHash": "fnv1a-80b1ad55",
         "batch": "assessmentfresh9",
         "model": "manual",
         "contentHash": "fnv1a-c99f4329",
@@ -853,8 +719,8 @@
           ],
           "question": "在 LLM 流式预训练中，真实目标分布 p 无法预先统计（语料以采样形式到达）。若希望损失 L(p,q) 能通过采样估计（即写成 E_{i~p}[S(q,i)] 的形式），L 对 p 需满足什么数学约束？",
           "options": [
-            "L(p, q) 关于预测分布 q 必须满足严格凸（Strictly Convex）条件",
             "L(p, q) 关于目标分布 p 必须满足线性（Linear）约束",
+            "L(p, q) 关于预测分布 q 必须满足严格凸（Strictly Convex）条件",
             "L(p, q) 在 p = q 处的二阶导数矩阵必须正定",
             "预测概率分布 q 必须采用 Softmax 函数进行归一化"
           ]
@@ -879,7 +745,7 @@
         "generatedAt": 1788874684735,
         "generator": "offline",
         "promptVersion": "v4",
-        "sourceHash": "fnv1a-f73df39d",
+        "sourceHash": "fnv1a-80b1ad55",
         "batch": "assessmentfresh9",
         "model": "manual",
         "contentHash": "fnv1a-142d9e3b",
@@ -897,8 +763,8 @@
           ],
           "question": "在 LLM 流式预训练中，真实目标分布 p 无法预先统计（语料以采样形式到达）。若希望损失 L(p,q) 能通过采样估计（即写成 E_{i~p}[S(q,i)] 的形式），L 对 p 需满足什么数学约束？",
           "options": [
-            "L(p, q) 关于预测分布 q 必须满足严格凸（Strictly Convex）条件",
             "L(p, q) 关于目标分布 p 必须满足线性（Linear）约束",
+            "L(p, q) 关于预测分布 q 必须满足严格凸（Strictly Convex）条件",
             "L(p, q) 在 p = q 处的二阶导数矩阵必须正定",
             "预测概率分布 q 必须采用 Softmax 函数进行归一化"
           ]
