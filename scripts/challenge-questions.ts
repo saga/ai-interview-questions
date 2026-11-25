@@ -28,9 +28,8 @@ import { writeFileSync, mkdirSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { questionBank } from '../src/data/questionBank';
 import type { Question } from '../src/schemas/question';
-import type { ProviderEntry } from '../src/schemas/ai-config';
 import { challengeQuestion, summarizeChallenges, type ChallengeOutcome, type ChallengeSummary } from '../src/ai/questionChallenger';
-import { callLLM } from '../src/ai/pi';
+import { CodeBuddySdkRuntime } from '../src/ai/codebuddySdkRuntime';
 
 interface Options {
   ids: string[];
@@ -78,15 +77,8 @@ function selectQuestions(opts: Options): Question[] {
   return picked.slice(0, opts.limit);
 }
 
-function buildEntry(): ProviderEntry {
-  const id = (process.env.CHALLENGER_PROVIDER ?? 'deepseek').trim();
-  const model = (process.env.CHALLENGER_MODEL ?? '').trim();
-  const apiKey = (process.env.CHALLENGER_API_KEY ?? process.env[`${id.toUpperCase()}_API_KEY`] ?? '').trim();
-  const baseUrl = process.env.CHALLENGER_BASE_URL?.trim();
-  if (!model) throw new Error('缺少 CHALLENGER_MODEL（例：deepseek-chat）');
-  if (!apiKey) throw new Error(`缺少密钥：设置 CHALLENGER_API_KEY 或 ${id.toUpperCase()}_API_KEY`);
-  return { id: id as ProviderEntry['id'], enabled: true, model, apiKey, ...(baseUrl ? { baseUrl } : {}) };
-}
+const CHALLENGER_MODEL = process.env.CHALLENGER_MODEL?.trim() || 'hy4flash-free';
+const CODEBUDDY_TIMEOUT_MS = 120_000;
 
 /** 并发受限的 map：质询是网络 IO，串行太慢；无上限又会打爆限流。 */
 async function mapLimit<T, R>(items: T[], limit: number, fn: (item: T, index: number) => Promise<R>): Promise<R[]> {
@@ -143,12 +135,19 @@ async function main(): Promise<void> {
     return;
   }
 
-  const entry = buildEntry();
+  const runtime = new CodeBuddySdkRuntime();
+  console.log(`质询引擎：CodeBuddy Agent SDK / ${CHALLENGER_MODEL}`);
   const outcomes = await mapLimit(targets, opts.concurrency, async (q): Promise<ChallengeOutcome> => {
     try {
-      const challenge = await challengeQuestion(q, (system, user) =>
-        callLLM(entry, system, user, { jsonMode: true, temperature: 0 }),
-      );
+      const challenge = await challengeQuestion(q, async (system, user) => {
+        const result = await runtime.run({
+          model: CHALLENGER_MODEL,
+          systemPrompt: system,
+          prompt: user,
+          timeoutMs: CODEBUDDY_TIMEOUT_MS,
+        });
+        return result.text;
+      });
       return { id: q.id, challenge };
     } catch (error) {
       return { id: q.id, error: error instanceof Error ? error.message : String(error) };
