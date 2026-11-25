@@ -58,6 +58,7 @@ const PRIORITY_RANK: Record<string, number> = { P0: 0, P1: 1, P2: 2 };
 interface ChecklistRow {
   node: KnowledgeNode;
   learned: boolean;
+  topicAttempted: boolean;
   mastery: number;
   avgScore: number;
   weak: boolean;
@@ -76,15 +77,16 @@ export default function ProgressPage({ profile, nodes, courseId, onGoTrain, cove
       const s = knowledgeStats[n.id];
       const attempts = s?.attempts ?? 0;
       const learned = attempts > 0;
+      const topicAttempted = (topicStats[n.topic]?.attempts ?? 0) > 0;
       const mastery = s?.mastery ?? 0;
       const avgScore = s?.avgScore ?? 0;
       const mastered = learned && (mastery >= WEAK_MASTERY || avgScore >= WEAK_AVG);
-      return { node: n, learned, mastery, avgScore, weak: learned && mastery < WEAK_MASTERY && avgScore < 50, attempts };
+      return { node: n, learned, topicAttempted, mastery, avgScore, weak: learned && mastery < WEAK_MASTERY && avgScore < 50, attempts };
     });
   }, [knowledgeStats, nodes]);
 
   const learnedCount = rows.filter((r) => r.learned).length;
-  const unlearnedCount = rows.length - learnedCount;
+  const unassessedCount = rows.length - learnedCount;
 
   const filteredRows = useMemo<ChecklistRow[]>(() => {
     let list = rows;
@@ -146,7 +148,7 @@ export default function ProgressPage({ profile, nodes, courseId, onGoTrain, cove
       key: 'status',
       width: 100,
       render: (_v, r) =>
-        r.learned ? <Tag color="green">已学</Tag> : <Tag color="default">未学</Tag>,
+        r.learned ? <Tag color="green">已评估</Tag> : r.topicAttempted ? <Tag color="processing">未评估</Tag> : <Tag color="default">未学</Tag>,
     },
     {
       title: '掌握度',
@@ -338,8 +340,8 @@ export default function ProgressPage({ profile, nodes, courseId, onGoTrain, cove
     <div>
       <Space size="large" style={{ marginBottom: 12 }} wrap>
         <Statistic title="知识点总数" value={rows.length} />
-        <Statistic title="已学" value={learnedCount} valueStyle={{ color: '#52c41a' }} />
-        <Statistic title="未学" value={unlearnedCount} valueStyle={{ color: '#ff4d4f' }} />
+        <Statistic title="已评估" value={learnedCount} valueStyle={{ color: '#52c41a' }} />
+        <Statistic title="未评估" value={unassessedCount} valueStyle={{ color: '#ff4d4f' }} />
       </Space>
       <Space style={{ marginBottom: 12 }} wrap>
         <Segmented
@@ -347,8 +349,8 @@ export default function ProgressPage({ profile, nodes, courseId, onGoTrain, cove
           onChange={(v) => setStatusFilter(v as 'all' | 'learned' | 'unlearned')}
           options={[
             { label: `全部 (${rows.length})`, value: 'all' },
-            { label: `已学 (${learnedCount})`, value: 'learned' },
-            { label: `未学 (${unlearnedCount})`, value: 'unlearned' },
+            { label: `已评估 (${learnedCount})`, value: 'learned' },
+            { label: `未评估 (${unassessedCount})`, value: 'unlearned' },
           ]}
         />
         <Select
@@ -372,7 +374,7 @@ export default function ProgressPage({ profile, nodes, courseId, onGoTrain, cove
         scroll={{ x: 860 }}
       />
       <Typography.Paragraph type="secondary" style={{ fontSize: 12, marginTop: 8 }}>
-        状态由当前学习体系内的主题练习记录决定；课程间分别统计。新用户会看到当前课程的全部知识点为「未学」。
+        状态由知识点级答题证据决定。同一主题下其他知识点的作答不会自动计入本知识点；主题练过但无法归属到具体知识点时显示「未评估」，没有主题练习记录时显示「未学」。
       </Typography.Paragraph>
     </div>
   );
