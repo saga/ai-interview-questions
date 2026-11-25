@@ -18,26 +18,29 @@ Vite + React 19 + TypeScript + Ant Design 单页应用（五个页面：训练 /
 
 ```bash
 npm install
-npm run dev                # 本地开发，http://localhost:5173
-npm run build              # 类型检查 + 生产构建（tsc -b && vite build）
-npm run preview            # 预览构建产物
-npm run test               # Vitest 单元测试（见 AGENTS.md 原则 2）
-npm run test:mutation      # 变异测试脚手架：逐条把 bug 塞回去，验证测试真的会变红（见 ADR-090）
-npm run question:coverage  # 题库覆盖矩阵（topic × angle）+ 补题建议清单（ADR-032）
-npm run question:blueprint # 把缺口格输出为题目蓝图 JSON（含变体候选），如 -- 10
-npm run question:audit    # Python 结构/分布/覆盖率审计
-npm run question:analysis # Python 统计、近重复、TF-IDF 聚类、难度分类、图分析
+npm run dev                 # 启动前后端开发服务
+npm run build               # 类型检查 + 生产构建
+npm run preview             # 预览构建产物
+npm run test                # 运行单元测试
+npm run check               # 类型检查 + 单元测试
+npm run verify              # 完整验证：check + 题库审计 + 变异测试
+npm run deploy              # 部署 Workers + Assets
+npm run deploy -- pages     # 部署到 Cloudflare Pages
 ```
 
-Python 分析工具使用 `uv` 管理（工程清单在 `analysis/pyproject.toml`），首次运行前执行 `uv sync --project analysis --extra analysis`。`question:analysis` 默认不会加载语义模型；需要语义去重时显式运行：
+题库维护统一使用一个入口，不再为每项操作单独设置 npm script：
 
 ```bash
-uv run --project analysis --extra analysis python analysis/question_analysis.py --json
-uv run --project analysis --extra analysis python analysis/question_analysis.py --semantic --json
+npm run content             # 列出可用任务
+npm run content -- audit    # 执行完整题库审计
+npm run content -- coverage # 题库覆盖矩阵
+npm run content -- blueprint -- 10
+npm run content -- analysis --semantic --json
+npm run content -- add
+npm run content -- review
 ```
 
-报告中的 `pandas.topicCounts` 对应 `df.groupby("topic").size()`，`pandas.topicAngleCounts` 对应 `df.groupby(["topic", "angle"]).size()`。TF-IDF/KMeans、embedding 聚类和难度分类是质量信号，不是题目正确性的证明；`--semantic` 使用本地字符级 TF-IDF 向量同时发现近重复题和题簇：不下载模型、不访问网络，是词汇近似信号而非神经语义嵌入。仓库不再存放模型权重，也不依赖 Git LFS、ONNX Runtime 或 Sentence Transformers。Python 只负责离线分析，题目运行时契约仍由 TypeScript/Zod 校验。
-
+其他维护任务（校验、质量检查、题目变体、知识覆盖、数据回填等）也通过 `npm run content -- <task>` 调用。具体任务名以 `npm run content` 输出为准。Python 分析工具仍使用 `uv` 管理，首次运行前执行 `uv sync --project analysis --extra analysis`。
 ## 文档
 - [SAP IT Service Consultant 学习路线](docs/sap-it-service-consultant-roadmap.md)：面向大学毕业生和实习生，按无正式项目经验设计；覆盖 59 个主题和 920 道情境题，其中 200 道亚太客户沟通与项目协作题、40 道 SAP Business AI 题、280 道 Technical Service Manager（TSM）专项题（含本轮新增 200 道初/中级技术运维题），另有 200 道对齐 Coursera 课程的初中级题目。\n- [SAP TSM 技术运维深化题覆盖矩阵](docs/sap-tsm-technical-operations-coverage-200.md)：新增 10 个技术知识节点、200 道题的知识映射、难度/题型分布、岗位能力边界与 SAP 官方参考资料。
 - [SAP 顾问课程研究与官方资料](docs/sap-it-service-consultant-research.md)：课程范围、SAP 官方 Learning Journeys、Cloud ALM 与题目来源边界。
@@ -82,7 +85,7 @@ uv run --project analysis --extra analysis python analysis/question_analysis.py 
 
 题库按 topic 拆分为 `src/data/questions/<topic>.json`（启动时自动合并，无需改代码）。新增题目：追加到对应 topic 文件；新增 topic：在 `src/data/taxonomy.ts` 登记骨架与中文标签，再建同名 JSON 文件。
 
-补题前先跑 `npm run question:coverage` 看覆盖矩阵——优先补「知识点 × 角度」缺口格，而不是盲目堆题量。`"angle"` 是**必填**字段（`questionAngleSchema`，共 19 个：`definition / fundamental / mechanism / comparison / calculation / tradeoff / scenario / debugging / system-design / design / causal / diagnosis / prediction / architecture / boundary / misconception / quantitative / implementation / synthesis`，注意只有前 10 个进 `nodes.test.ts` 的覆盖白名单，其余为存量兼容值）：
+补题前先跑 `npm run content -- coverage` 看覆盖矩阵——优先补「知识点 × 角度」缺口格，而不是盲目堆题量。`"angle"` 是**必填**字段（`questionAngleSchema`，共 19 个：`definition / fundamental / mechanism / comparison / calculation / tradeoff / scenario / debugging / system-design / design / causal / diagnosis / prediction / architecture / boundary / misconception / quantitative / implementation / synthesis`，注意只有前 10 个进 `nodes.test.ts` 的覆盖白名单，其余为存量兼容值）：
 
 ```json
 {
