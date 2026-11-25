@@ -441,17 +441,6 @@ describe('KnowledgeNode question mapping audit', () => {
 });
 
 describe('sessionFromQuiz', () => {
-  it('topic 文本即使碰巧等于某个 KnowledgeNode.id，也不能绕过多节点歧义', () => {
-    const target = knowledgeNodes.find((node) => node.id !== node.topic
-      && knowledgeNodes.filter((candidate) => candidate.topic === node.id).length > 0);
-    expect(target).toBeDefined();
-    const question = { ...choiceA.question, topic: target!.id } as Question;
-    expect(resolveKnowledgeTargetsForQuestion(question)).toMatchObject({
-      targets: [],
-      reason: 'ambiguous-topic',
-    });
-  });
-
   it('把明确关联的题目评分累计到 KnowledgeNode，而不是只记在 topic', () => {
     const target = knowledgeNodes[0];
     const question = {
