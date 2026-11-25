@@ -14,25 +14,25 @@ describe('SAP IT Service Consultant course', () => {
   it('registers as an independent learning track', () => {
     const track = LEARNING_TRACKS.find((item) => item.id === courseId);
     expect(track?.topicCount).toBe(SAP_IT_SERVICE_COURSE_TOPICS.length + SAP_COURSERA_COURSE_TOPICS.length + SAP_JUNIOR_PRACTICE_TOPICS.length);
-    expect(SAP_IT_SERVICE_COURSE_TOPICS).toHaveLength(29);
+    expect(SAP_IT_SERVICE_COURSE_TOPICS).toHaveLength(39);
     expect(SAP_COURSERA_COURSE_TOPICS).toHaveLength(10);
     expect(SAP_JUNIOR_PRACTICE_TOPICS).toHaveLength(10);
-    expect(new Set(SAP_IT_SERVICE_COURSE_TOPICS.map((topic) => topic.id)).size).toBe(29);
-    expect(knowledgeForTrack(knowledgeNodes, courseId)).toHaveLength(49);
-    expect(questionBankForTrack(questionBank, courseId, knowledgeNodes).questions).toHaveLength(720);
+    expect(new Set(SAP_IT_SERVICE_COURSE_TOPICS.map((topic) => topic.id)).size).toBe(39);
+    expect(knowledgeForTrack(knowledgeNodes, courseId)).toHaveLength(59);
+    expect(questionBankForTrack(questionBank, courseId, knowledgeNodes).questions).toHaveLength(920);
   });
 
   it('has valid source-linked knowledge nodes and questions for every topic', () => {
-    expect(nodes).toHaveLength(49);
-    expect(questions).toHaveLength(720);
+    expect(nodes).toHaveLength(59);
+    expect(questions).toHaveLength(920);
     expect(nodes.every((node) => knowledgeNodeSchema.safeParse(node).success && node.area === 'sap-consulting')).toBe(true);
     expect(questions.every((question) => questionSchema.safeParse(question).success)).toBe(true);
     for (const node of nodes) {
       const nodeQuestions = questions.filter((question) => question.topic === node.id);
       expect(nodeQuestions.length).toBeGreaterThanOrEqual(10);
-      expect(nodeQuestions.every((question) => question.knowledgeId === node.id && ['sap-official-learning-and-product-documentation', 'coursera-sap-technology-consultant-professional-certificate', 'sap-apac-junior-consultant-practice-cases', 'sap-business-ai-official-documentation', 'sap-tsm-graduate-role-and-sap-technical-operations-learning', 'sap-tsm-graduate-role-and-sap-cloud-lifecycle-learning', 'sap-tsm-graduate-role-and-sap-cloud-alm-learning'].includes(question.source?.materialId ?? ''))).toBe(true);
+      expect(nodeQuestions.every((question) => question.knowledgeId === node.id && ['sap-official-learning-and-product-documentation', 'coursera-sap-technology-consultant-professional-certificate', 'sap-apac-junior-consultant-practice-cases', 'sap-business-ai-official-documentation', 'sap-tsm-graduate-role-and-sap-technical-operations-learning', 'sap-tsm-graduate-role-and-sap-cloud-lifecycle-learning', 'sap-tsm-graduate-role-and-sap-cloud-alm-learning', 'sap-tsm-graduate-role-and-technical-operations-deepening'].includes(question.source?.materialId ?? ''))).toBe(true);
     }
-    expect(new Set(questions.map((question) => question.id)).size).toBe(720);
+    expect(new Set(questions.map((question) => question.id)).size).toBe(920);
     const juniorPractice = questions.filter((question) => Number(question.id.slice(-3)) >= 601 && Number(question.id.slice(-3)) <= 800);
     expect(juniorPractice).toHaveLength(200);
     expect(juniorPractice.filter((question) => question.difficulty === 'easy')).toHaveLength(80);
@@ -48,9 +48,37 @@ describe('SAP IT Service Consultant course', () => {
     expect(new Set(businessAi.map((question) => question.formats.choice?.answer?.[0])).size).toBe(4);
     expect(businessAi.every((question) => question.source?.materialId === 'sap-business-ai-official-documentation')).toBe(true);
     const tsmQuestions = questions.filter((question) => question.id.startsWith('sap-tsm-'));
-    expect(tsmQuestions).toHaveLength(80);
-    expect(tsmQuestions.filter((question) => question.formats.choice?.type === 'multiple')).toHaveLength(60);
-    expect(tsmQuestions.filter((question) => question.formats.choice?.type === 'single')).toHaveLength(20);
+    expect(tsmQuestions).toHaveLength(280);
+    expect(tsmQuestions.filter((question) => question.formats.choice?.type === 'multiple')).toHaveLength(200);
+    expect(tsmQuestions.filter((question) => question.formats.choice?.type === 'single')).toHaveLength(80);
+    const newTsmQuestions = tsmQuestions.filter((question) => {
+      const sequence = Number(question.id.slice(-3));
+      return sequence >= 81 && sequence <= 280;
+    });
+    expect(newTsmQuestions).toHaveLength(200);
+    expect(newTsmQuestions.filter((question) => question.difficulty === 'easy')).toHaveLength(80);
+    expect(newTsmQuestions.filter((question) => question.difficulty === 'medium')).toHaveLength(120);
+    expect(newTsmQuestions.filter((question) => question.formats.choice?.type === 'single')).toHaveLength(60);
+    expect(newTsmQuestions.filter((question) => question.formats.choice?.type === 'multiple')).toHaveLength(140);
+    const newTsmTopics = [
+      'sap-tsm-linux-operations',
+      'sap-tsm-network-connectivity',
+      'sap-tsm-abap-runtime',
+      'sap-tsm-backup-recovery',
+      'sap-tsm-migration-tools',
+      'sap-tsm-integration-operations',
+      'sap-tsm-identity-security',
+      'sap-tsm-cloud-infrastructure',
+      'sap-tsm-itsm-service-management',
+      'sap-tsm-capacity-performance',
+    ];
+    expect(nodes.filter((node) => newTsmTopics.includes(node.id))).toHaveLength(10);
+    for (const topic of newTsmTopics) {
+      expect(newTsmQuestions.filter((question) => question.topic === topic)).toHaveLength(20);
+      expect(newTsmQuestions.filter((question) => question.topic === topic).every((question) => question.knowledgeId === topic)).toBe(true);
+    }
+    expect(newTsmQuestions.every((question) => question.source?.materialId === 'sap-tsm-graduate-role-and-technical-operations-deepening')).toBe(true);
+
     const reportingPilot = questions.filter((question) => /^sap-itc-17[1-9]$|^sap-itc-180$/.test(question.id));
     expect(reportingPilot).toHaveLength(10);
     expect(reportingPilot.filter((question) => question.formats.choice?.type === 'multiple')).toHaveLength(7);
