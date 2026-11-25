@@ -1918,4 +1918,4 @@
   4. AI 分支按 TAXONOMY 六域；Snowflake、SAP、Security Architecture、校招按各自独立目录分支。没有被目录列出的新增 topic 进入“其他知识主题”，不静默丢失。
   5. G6Lite 固定版本 UMD 延迟加载，不增加 npm/lockfile 依赖；CDN 或 WebGL 不可用时显示降级提示并保留分支列表。图形化是学习导航视图，不是关系图写入或学习证据来源。
   6. 点击“进入训练”仍使用原有课程训练与导航锁；查看地图不写入 Learner Profile。
-- 验证：待本次 CI 执行 typecheck、unit tests、question validation 和 build 后更新。
+- 验证：2026-11-25 GitHub Actions Run 665 全绿：TypeScript typecheck 通过；60 个测试文件 / 754 项单元测试通过；题库校验通过（5434 道题 / 444 个知识节点）；选项长度检查、题目审计、Question Identity Gate 和 Variant 发布门禁通过；生产 Build 成功。该次工作流的 Pages deploy job 被跳过（非部署失败）。G6Lite 浏览器实际渲染仍需在可访问 jsDelivr 且支持 WebGL 的浏览器环境做手动验收；CDN 或 WebGL 不可用时保留分支列表降级视图。
