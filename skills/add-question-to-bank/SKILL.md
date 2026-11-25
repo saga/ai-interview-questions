@@ -19,7 +19,7 @@ description: "写新题并落库。用户要求新增面试题、起草题目或
 ## 添加前
 
 1. 阅读 `AGENTS.md`、`README.md`、`src/schemas/question.ts`、`src/domain/knowledge/documents.ts`、目标题库 JSON 和 `src/data/knowledge/` 中对应知识节点。
-2. 先运行 `npm run question:coverage`，确认新增题解决真实的 topic × angle 缺口，而不是重复堆积已有题型；如果还没确定要补哪些缺口，转 **fill-coverage-gap** skill 先出蓝图和优先级，再回到本 skill 写题。
+2. 先运行 `npm run questions:manage -- coverage`，确认新增题解决真实的 topic × angle 缺口，而不是重复堆积已有题型；如果还没确定要补哪些缺口，转 **fill-coverage-gap** skill 先出蓝图和优先级，再回到本 skill 写题。
 3. **不要只看 `question:coverage` 的"缺口数"**：它按知识节点自身声明的 `angles` 计算，加题后缺口数不变，既不代表白加、也不代表填上了缺口。必须直接数目标 (topic, angle) 格子的现有题量：
 
    ```
@@ -104,29 +104,29 @@ description: "写新题并落库。用户要求新增面试题、起草题目或
 
 ## 修改与验证
 
-1. 先将草稿保存为 JSON 数组，运行 `npm run question:add -- --file draft.json --check`。
+1. 先将草稿保存为 JSON 数组，运行 `npm run questions:manage -- add -- --file draft.json --check`。
    该命令已内置**题型门禁**（AGENTS.md §4.2，实现见 `scripts/add-question.ts`）：本批选择题 ≥ 3 道且单选占比 > 1/3 时**直接报错退出**，并打印单选/多选分布。被拦住时应改写为多选，不要想办法绕过门禁；少于 3 道选择题的小批量自动豁免。
    手工查看分布：
    ```
    python3 -c "import json,collections;d=json.load(open('draft.json',encoding='utf-8'));c=collections.Counter(q['formats']['choice']['type'] for q in d if q['formats'].get('choice'));print(dict(c))"
    ```
-2. 检查通过且人工确认后，使用 `npm run question:add -- --file draft.json --write --output src/data/questions/<batch>.json` 写入；目标文件不能覆盖已有文件。
+2. 检查通过且人工确认后，使用 `npm run questions:manage -- add -- --file draft.json --write --output src/data/questions/<batch>.json` 写入；目标文件不能覆盖已有文件。
 3. 直接修改题库时使用 `apply_patch`，保持现有格式和排序风格。
 4. 运行：
-   - `npm run validate:questions`
+   - `npm run questions`
    - `npx vitest run src/data/bank.test.ts`
    - `npx vitest run src/domain/knowledge/retrieve.test.ts src/application/conversation/knowledgeCapability.test.ts`
      数据改动会直接影响检索：这两组用例守住投影、混合评分、graph 扩展与四种答案安全模式。
-   - `npm run lint:bias`
-   - `npm run lint:length -- --changed`（检查新增/修改题目对象；新题草稿仍须先通过 `question:add --check`）
-   - `npm run question:quality` —— 内容质量只读审计（软信号，非门禁）。新题若命中，
+   - `npm run questions:manage -- lint-bias`
+   - `npm run questions:manage -- lint-length -- --changed`（检查新增/修改题目对象；新题草稿仍须先通过 `question:add --check`）
+   - `npm run questions` —— 内容质量只读审计（软信号，非门禁）。新题若命中，
      先判断是不是真问题：命中的是**词汇/统计嫌疑**，不是语义判定。
    - **目标格子计数 +1**：重跑"添加前"第 3 步的计数命令，确认目标 (topic, angle) 确实 +1。
      注意这不是覆盖审计——`question:coverage` 的缺口数按节点声明的 `angles` 算，
      加题后缺口数不变是正常的，别拿它当验收标准。全库覆盖审计转 **check-question-bank-quality**。
    - `uv run --project analysis --extra analysis python analysis/question_analysis.py --semantic --json`
      使用本地字符级 TF-IDF 向量检查近重复题（完全离线）；这是人工复核信号，不替代 TypeScript/Zod 契约校验。
-5. 再运行 `npm run typecheck` 和 `npm run test`。
+5. 再运行 `npm run build` 和 `npm run test`。
 6. 运行 `git diff --check`，确认没有意外改动。
 7. 最终说明新增题的 id、覆盖的知识缺口、语义重复候选、验证结果、检索可见性确认（"遮住正确项后题干仍成立"、hint 模式不漏题）和仍需人工复核的事实。
 
