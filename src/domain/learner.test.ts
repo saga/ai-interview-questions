@@ -20,6 +20,7 @@ import {
   recommendationText,
   sessionFromQuiz,
   knowledgeTargetsForQuestion,
+  resolveKnowledgeTargetsForQuestion,
   expandWithPrerequisites,
   suggestNextTopics,
   topMisconceptionsOf,
@@ -30,6 +31,7 @@ import { pickPrioritized } from './quiz';
 import type { LearnerProfile, QuestionResult, SessionRecord } from '../schemas/learner';
 import type { Question } from '../schemas/question';
 import { knowledgeNodes } from '../data/knowledgeMap';
+import { questionBank } from '../data/questionBank';
 
 function profileWith(stats: Record<string, { attempts: number; avgScore: number; mastery?: number }>): LearnerProfile {
   const p = emptyProfile();
@@ -371,6 +373,70 @@ describe('recommendationText', () => {  it('有薄弱主题时给出优先练习
     const text = recommendationText(p);
     expect(text).toContain('仍低于掌握线');
     expect(text).toContain('暂不集中重复');
+  });
+});
+
+describe('KnowledgeNode question mapping audit', () => {
+  it('all explicit knowledgeId values resolve to a real node in the same topic/course', () => {
+    const explicit = questionBank.questions.filter((question) => question.knowledgeId);
+    expect(explicit.length).toBeGreaterThan(0);
+    for (const question of explicit) {
+      const resolution = resolveKnowledgeTargetsForQuestion(question);
+      expect(resolution.source, question.id).toBe('knowledgeId');
+      expect(resolution.targets).toEqual([{ knowledgeId: question.knowledgeId, weight: 1 }]);
+    }
+  });
+
+  it('reports ambiguous multi-node topics instead of assigning every node', () => {
+    const multiNodeTopic = knowledgeNodes.find((node) =>
+      knowledgeNodes.filter((candidate) => candidate.topic === node.topic).length > 1,
+    );
+    expect(multiNodeTopic).toBeDefined();
+    const question = {
+      ...choiceA.question,
+      topic: multiNodeTopic!.topic,
+      subtopic: undefined,
+      concepts: undefined,
+      knowledgeId: undefined,
+      courseId: multiNodeTopic!.courseId,
+    } as Question;
+    const resolution = resolveKnowledgeTargetsForQuestion(question);
+    expect(resolution.targets).toEqual([]);
+    expect(resolution.reason).toBe('ambiguous-topic');
+  });
+
+  it('does not silently fall back when an explicit knowledgeId is invalid', () => {
+    const question = {
+      ...choiceA.question,
+      topic: knowledgeNodes[0].topic,
+      knowledgeId: '__missing_knowledge_node__',
+    } as Question;
+    expect(resolveKnowledgeTargetsForQuestion(question)).toMatchObject({
+      targets: [],
+      source: 'unmapped',
+      reason: 'invalid-knowledge-id',
+    });
+  });
+
+  it('maps exact subtopic and concepts to their KnowledgeNode ids', () => {
+    const node = knowledgeNodes.find((item) =>
+      knowledgeNodes.filter((candidate) => candidate.topic === item.topic).length > 1,
+    );
+    expect(node).toBeDefined();
+    const base = { ...choiceA.question, topic: node!.topic, courseId: node!.courseId } as Question;
+    expect(knowledgeTargetsForQuestion({ ...base, subtopic: node!.id })).toEqual([{ knowledgeId: node!.id, weight: 1 }]);
+    expect(knowledgeTargetsForQuestion({
+      ...base,
+      concepts: { core: node!.id, supporting: [] },
+    })).toEqual([{ knowledgeId: node!.id, weight: 1 }]);
+  });
+
+  it('audits the complete question bank and exposes unresolved questions by reason', () => {
+    const resolutions = questionBank.questions.map((question) => resolveKnowledgeTargetsForQuestion(question));
+    expect(resolutions).toHaveLength(questionBank.questions.length);
+    expect(resolutions.every((resolution) => resolution.targets.every((target) =>
+      knowledgeNodes.some((node) => node.id === target.knowledgeId),
+    ))).toBe(true);
   });
 });
 
