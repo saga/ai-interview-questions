@@ -95,13 +95,13 @@ describe('知识节点与 taxonomy 对齐', () => {
     expect(questions.filter((question) => question.formats.choice?.type === 'multiple')).toHaveLength(230);
   });
 
-  it('SAP IT Service Consultant 知识节点与 640 道题独立归属，并覆盖全部 41 个主题', () => {
+  it('SAP IT Service Consultant 知识节点与 720 道题独立归属，并覆盖全部 49 个主题', () => {
     const nodes = knowledgeNodes.filter((node) => node.courseId === 'sap-it-service-consultant');
     const questions = questionBank.questions.filter((question) => question.courseId === 'sap-it-service-consultant');
     const themeIds = new Set([...SAP_IT_SERVICE_COURSE_TOPICS, ...SAP_COURSERA_COURSE_TOPICS, ...SAP_JUNIOR_PRACTICE_TOPICS].map((topic) => topic.id));
-    expect(nodes).toHaveLength(41);
+    expect(nodes).toHaveLength(49);
     expect(nodes.every((node) => node.area === 'sap-consulting' && themeIds.has(node.topic))).toBe(true);
-    expect(questions).toHaveLength(640);
+    expect(questions).toHaveLength(720);
     for (const node of nodes) {
       const nodeQuestions = questions.filter((question) => question.topic === node.id);
       expect(nodeQuestions.length).toBeGreaterThanOrEqual(10);
