@@ -99,6 +99,15 @@ const SECURITY_BRANCHES: BranchDefinition[] = [
   { id: 'security-platform-operations', label: '平台、供应链与安全运营', topicIds: ['security-cloud-platform', 'security-supply-chain', 'security-resilience-operations', 'security-financial-services'] },
 ];
 
+const COURSE_TOPIC_LABELS = new Map<string, string>([
+  ...SNOWFLAKE_COURSE_TOPICS,
+  ...SECURITY_ARCHITECTURE_COURSE_TOPICS,
+  ...CAMPUS_EMPLOYMENT_COURSE_TOPICS,
+  ...SAP_IT_SERVICE_COURSE_TOPICS,
+  ...SAP_COURSERA_COURSE_TOPICS,
+  ...SAP_JUNIOR_PRACTICE_TOPICS,
+].map((topic) => [topic.id, topic.label]));
+
 const CAMPUS_BRANCHES: BranchDefinition[] = [
   { id: 'career-direction', label: '岗位认知与职业规划', topicIds: ['career-motivation-position-fit', 'career-planning-offer'] },
   { id: 'experience-expression', label: '经历表达与面试沟通', topicIds: ['self-introduction-positioning', 'resume-project-storytelling', 'interview-communication', 'undergrad-grad-transition'] },
@@ -174,7 +183,7 @@ export function buildLearningMapReport(
     const priority = [...concepts].sort((a, b) => priorityRank[a.priority] - priorityRank[b.priority])[0]?.priority ?? 'P1';
     topicMap.set(topicId, {
       id: topicId,
-      label: topicLabel(topicId),
+      label: COURSE_TOPIC_LABELS.get(topicId) ?? topicLabel(topicId),
       priority,
       status: statusOf(attempts, mastery, avgScore),
       attempts,
