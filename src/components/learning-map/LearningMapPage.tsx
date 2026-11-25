@@ -115,10 +115,14 @@ function G6LiteCanvas({
   const containerRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const serializedData = useMemo(() => ({
-    nodes: data.nodes.filter((node) => node.data.kind !== 'topic'),
-    edges: data.edges,
-  }), [data]);
+  const serializedData = useMemo(() => {
+    const nodes = data.nodes.filter((node) => node.data.kind !== 'topic');
+    const nodeIds = new Set(nodes.map((node) => node.id));
+    return {
+      nodes,
+      edges: data.edges.filter((edge) => nodeIds.has(edge.source) && nodeIds.has(edge.target)),
+    };
+  }, [data]);
 
   useEffect(() => {
     let disposed = false;
