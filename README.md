@@ -22,25 +22,37 @@ npm run dev                 # 启动前后端开发服务
 npm run build               # 类型检查 + 生产构建
 npm run preview             # 预览构建产物
 npm run test                # 运行单元测试
-npm run check               # 类型检查 + 单元测试
-npm run verify              # 完整验证：check + 题库审计 + 变异测试
+npm run verify              # 完整验证：构建、测试、题库审计和变异测试
+npm run questions           # 题库完整审计
+npm run questions:analyze   # 题库统计与分析（支持 --semantic --json）
+npm run questions:manage    # 列出题库维护任务
 npm run deploy              # 部署 Workers + Assets
-npm run deploy -- pages     # 部署到 Cloudflare Pages
 ```
+
+题库维护通过统一入口调用，例如：
+
+```bash
+npm run questions:manage -- add
+npm run questions:manage -- review
+npm run questions:manage -- blueprint -- 10
+npm run questions:analyze -- --semantic --json
+```
+
+Python 分析工具使用 `uv` 管理，首次运行前执行 `uv sync --project analysis --extra analysis`。
 
 题库维护统一使用一个入口，不再为每项操作单独设置 npm script：
 
 ```bash
-npm run content             # 列出可用任务
-npm run content -- audit    # 执行完整题库审计
-npm run content -- coverage # 题库覆盖矩阵
-npm run content -- blueprint -- 10
-npm run content -- analysis --semantic --json
-npm run content -- add
-npm run content -- review
+npm run questions:manage             # 列出可用任务
+npm run questions:manage -- audit    # 执行完整题库审计
+npm run questions:manage -- coverage # 题库覆盖矩阵
+npm run questions:manage -- blueprint -- 10
+npm run questions:manage -- analysis --semantic --json
+npm run questions:manage -- add
+npm run questions:manage -- review
 ```
 
-其他维护任务（校验、质量检查、题目变体、知识覆盖、数据回填等）也通过 `npm run content -- <task>` 调用。具体任务名以 `npm run content` 输出为准。Python 分析工具仍使用 `uv` 管理，首次运行前执行 `uv sync --project analysis --extra analysis`。
+其他维护任务（校验、质量检查、题目变体、知识覆盖、数据回填等）也通过 `npm run questions:manage -- <task>` 调用。具体任务名以 `npm run questions:manage` 输出为准。Python 分析工具仍使用 `uv` 管理，首次运行前执行 `uv sync --project analysis --extra analysis`。
 ## 文档
 - [SAP IT Service Consultant 学习路线](docs/sap-it-service-consultant-roadmap.md)：面向大学毕业生和实习生，按无正式项目经验设计；覆盖 59 个主题和 920 道情境题，其中 200 道亚太客户沟通与项目协作题、40 道 SAP Business AI 题、280 道 Technical Service Manager（TSM）专项题（含本轮新增 200 道初/中级技术运维题），另有 200 道对齐 Coursera 课程的初中级题目。\n- [SAP TSM 技术运维深化题覆盖矩阵](docs/sap-tsm-technical-operations-coverage-200.md)：新增 10 个技术知识节点、200 道题的知识映射、难度/题型分布、岗位能力边界与 SAP 官方参考资料。
 - [SAP 顾问课程研究与官方资料](docs/sap-it-service-consultant-research.md)：课程范围、SAP 官方 Learning Journeys、Cloud ALM 与题目来源边界。
@@ -85,7 +97,7 @@ npm run content -- review
 
 题库按 topic 拆分为 `src/data/questions/<topic>.json`（启动时自动合并，无需改代码）。新增题目：追加到对应 topic 文件；新增 topic：在 `src/data/taxonomy.ts` 登记骨架与中文标签，再建同名 JSON 文件。
 
-补题前先跑 `npm run content -- coverage` 看覆盖矩阵——优先补「知识点 × 角度」缺口格，而不是盲目堆题量。`"angle"` 是**必填**字段（`questionAngleSchema`，共 19 个：`definition / fundamental / mechanism / comparison / calculation / tradeoff / scenario / debugging / system-design / design / causal / diagnosis / prediction / architecture / boundary / misconception / quantitative / implementation / synthesis`，注意只有前 10 个进 `nodes.test.ts` 的覆盖白名单，其余为存量兼容值）：
+补题前先跑 `npm run questions:manage -- coverage` 看覆盖矩阵——优先补「知识点 × 角度」缺口格，而不是盲目堆题量。`"angle"` 是**必填**字段（`questionAngleSchema`，共 19 个：`definition / fundamental / mechanism / comparison / calculation / tradeoff / scenario / debugging / system-design / design / causal / diagnosis / prediction / architecture / boundary / misconception / quantitative / implementation / synthesis`，注意只有前 10 个进 `nodes.test.ts` 的覆盖白名单，其余为存量兼容值）：
 
 ```json
 {
