@@ -121,6 +121,20 @@ describe('storage/learner (IndexedDB)', () => {
     expect(got.conceptEvidence?.['rag|ppo']?.label).toBe('PPO');
   });
 
+  it('save → load 往返保留 KnowledgeNode 掌握度聚合', async () => {
+    const profile = emptyProfile();
+    const target = knowledgeNodes[0];
+    profile.knowledgeStats = {
+      [target.id]: {
+        attempts: 4, practiceSessions: 3, avgScore: 88, lastScore: 92, mastery: 0.81,
+        positiveEvidence: 3, negativeEvidence: 1, trend: 'improving', scoreWeightTotal: 4, lastSeenAt: 1234,
+      },
+    };
+    await saveLearner(profile);
+    const loaded = await loadLearner();
+    expect(loaded.knowledgeStats?.[target.id]).toMatchObject({ attempts: 4, positiveEvidence: 3, negativeEvidence: 1, lastSeenAt: 1234 });
+  });
+
   it('save 不会把 sessions 写进 learner 表（画像与历史分离）', async () => {
     const profile = updateLearner(emptyProfile(), mkRecord());
     await saveLearner(profile);
