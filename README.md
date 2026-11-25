@@ -37,6 +37,8 @@ npm run questions:manage -- blueprint 10
 npm run questions:manage -- challenge --topic=rag --limit=20
 ```
 
+首次运行 Python 分析前执行 `uv sync --project analysis --extra analysis`。
+
 题目语义质询固定使用本机 CodeBuddy Agent SDK，默认模型为 `hy4flash-free`；需先完成 CodeBuddy CLI 登录。可通过 `CHALLENGER_MODEL` 覆盖模型，不读取应用设置页的 Provider 配置。
 
 ## 文档
