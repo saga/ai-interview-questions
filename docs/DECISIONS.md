@@ -1891,3 +1891,17 @@
   - Astro 的红利来自内容页/路由/SEO/静态生成——这些当前**一个都没有**。
   - 迁 Astro 若要藏 key，得把 LLM 调用从 client island 挪到 server route，是额外工作量而非免费升级。
 - 触发条件：当真正要做"开源平台 / 内容站 / SEO / 多主题落地页 / 可扩展题库方法论"时，重新评估迁 Astro（把 quiz 当 React island 嵌）。
+
+
+## ADR-096 · SAP 技术服务岗位内容质量与 TSM 毕业生专项知识体系
+
+- 状态：已采纳 · 2026-11-25
+- 背景：SAP 题库既有 41 个主题 / 640 道题，但基础内容偏通用顾问判断；对 SAP Technical Service Manager（TSM）毕业生岗位的技术要求覆盖不足。SAP Careers 的东京 TSM 职位（2026-11-05，Career Status: Graduate）明确列出 SAP Basis、Unix/Linux、SAP HANA/Sybase、S/4HANA 架构与迁移、HA/DR、网络/虚拟化、客户沟通和重大问题升级。
+- 决策：
+  1. 在 `docs/question-content-spec.md` 增加 SAP 场景题、岗位级别、产品/服务责任和专业答案要求；Part 1/Part 2 Prompt 显式引用该规范，避免只依赖人工记忆。
+  2. 保留现有 SAP IT Service Consultant 课程和题库运行时，在其知识体系中新增 8 个 TSM 专项节点，不另造运行时、题型或课程隔离机制。
+  3. TSM 专项覆盖 Basis/系统架构、基础设施、HANA 运维、HA/DR、RISE/ECS 服务模式、生命周期升级迁移、Cloud ALM Operations、客户技术治理。毕业生层级考察基础理解、证据收集和专家协作，不考无授权的生产级独立操作。
+  4. 原创题目必须基于 SAP 官方岗位/学习资料改写，不复制认证真题；部署形态、产品功能和责任边界应按当前官方资料限定。
+  5. 原有 SAP 报表/分析主题先做 10 道题的专业化场景改写试点，再按质量规范审查其余内容。
+- 预期：SAP 学习体系从 41 个主题扩展至 49 个主题，新增 8 个 TSM 专项知识节点及 80 道练习题；原有 SAP 课程数据与学习进度结构保持兼容。
+- 验证：待题目数据写入后执行 schema / 引用 / 题型比例 / 选项长度 / 构建与测试验证，并根据结果修正。
