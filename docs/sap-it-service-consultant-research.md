@@ -2,7 +2,7 @@
 
 研究日期：2026-11-24
 
-本课程面向企业 IT 服务、实施和应用支持顾问。当前课程包含 49 个主题、720 道初级和中级情境题；其中 40 道覆盖 SAP Business AI 产品与业务场景，另有 80 道面向 Graduate TSM 岗位的专项题。它不以单一 SAP 认证考试为范围，而是从顾问日常工作反推知识结构：理解业务流程、发现需求、判断标准能力与差异、协调配置和集成、验证数据与业务结果，并支持上线后的服务运行。
+本课程面向企业 IT 服务、实施和应用支持顾问。当前课程包含 59 个主题、920 道初级和中级情境题；其中 40 道覆盖 SAP Business AI 产品与业务场景，另有 280 道面向 Graduate TSM 岗位的专项题（原有 80 道概览题，加本轮 200 道技术运维深化题）。它不以单一 SAP 认证考试为范围，而是从顾问日常工作反推知识结构：理解业务流程、发现需求、判断标准能力与差异、协调配置和集成、验证数据与业务结果，并支持上线后的服务运行。
 
 ## 课程范围依据
 
@@ -98,7 +98,7 @@ SAP 官方 S/4HANA Cloud Public Edition 实施学习路径覆盖实施团队、�
 9. **变更管理、培训与 UAT**：理解系统上线不仅是技术部署，还涉及业务流程变化、用户准备、培训、UAT、反馈和采用情况。
 10. **实习生职业行为与团队协作**：面向无正式项目经验的毕业生和实习生，考察学习、求助、任务管理、保密、反馈、诚实表达和职业边界。
 
-本批亚太题目共 200 道，使用独立知识节点，题目 ID 为 `sap-itc-601` 至 `sap-itc-800`。随后新增 40 道 SAP Business AI 初中级题，ID 为 `sap-itc-801` 至 `sap-itc-840`。当前课程共 49 个主题、720 道题。
+本批亚太题目共 200 道，使用独立知识节点，题目 ID 为 `sap-itc-601` 至 `sap-itc-800`。随后新增 40 道 SAP Business AI 初中级题，ID 为 `sap-itc-801` 至 `sap-itc-840`。Graduate TSM 技术运维深化题新增 ID `sap-tsm-081` 至 `sap-tsm-280`。当前课程共 59 个主题、920 道题。
 
 
 ## SAP Technical Service Manager（TSM）毕业生岗位专项研究
@@ -121,7 +121,7 @@ SAP 官方 S/4HANA Cloud Public Edition 实施学习路径覆盖实施团队、�
 
 ### 课程覆盖补充
 
-在既有 41 个 SAP 主题基础上增加 8 个 TSM 专项知识节点：
+在既有 41 个 SAP 主题基础上，先增加 8 个 TSM 专项知识节点；本轮再增加 10 个更细的技术运维主题。课程现有 18 个 TSM 专项主题、280 道 TSM 题：
 
 1. SAP Basis 与技术系统架构；
 2. Linux、数据库、网络与云基础设施；
@@ -131,11 +131,26 @@ SAP 官方 S/4HANA Cloud Public Edition 实施学习路径覆盖实施团队、�
 6. SAP 技术生命周期、升级与迁移；
 7. SAP 运行监控、告警与可观测性；
 8. Technical Service Management 与客户技术治理。
+本轮新增的 10 个技术运维主题及考核重点：
+
+9. Linux 系统运行与资源诊断：进程、服务、文件系统、inode、CPU/内存/I/O、日志和权限。
+10. 网络连通性、DNS 与 TLS：TCP、路由、防火墙、代理、负载均衡、证书链和连接阶段诊断。
+11. AS ABAP 运行组件与工作进程：Dispatcher、Dialog/Background/Update/Spool Work Process、Message Server、Enqueue、Gateway、ICM 和 sapstartsrv。
+12. HANA / ASE 备份、恢复与数据保护：数据/日志备份、Backup Catalog、BACKINT、时间点恢复、ASE dump 与事务日志恢复顺序。
+13. S/4HANA 转换工具与技术准备：Readiness Check、Maintenance Planner、Simplification Item Check、Custom Code Analysis、SUM/DMO、Cutover 与回退限制。
+14. SAP 接口运行与集成故障：RFC、IDoc、OData/API、Cloud Integration 消息监控、Trace、重试、幂等和业务状态核对。
+15. SAP 身份、授权与技术安全：认证/授权、业务角色、组织范围、技术用户、SSO、证书、SoD 与审计。
+16. Hyperscaler 云基础与部署架构：Region/Zone、VM、网络、块/对象存储、负载均衡与共享责任。
+17. Incident、Problem、Change 与 SLA：优先级、重大事件沟通、紧急变更、RCA、SLA/SLO 和行动项闭环。
+18. 容量、性能基线与服务改进：响应时间、吞吐、P95、CPU/内存/I/O、HANA 工作负载、容量预测和云成本。
+
+新增题目共 200 道，每个主题 20 道；80 道初级、120 道中级；60 道单选、140 道多选。新增题 ID 为 `sap-tsm-081` 至 `sap-tsm-280`，与原有 80 道合计为 280 道 TSM 题。
+
 
 与原知识体系的关系：
 - 对既有“SAP S/4HANA 产品与架构”“SAP 集成”“安全、审计与合规”“SAP Cloud ALM”“ITSM”“故障诊断”进行 TSM 场景深化，不复制相同知识节点。
-- 新节点补足 Basis、Linux/网络/虚拟化、HANA 运维、HA/DR、托管服务责任、生命周期治理和客户技术服务计划等直接出现在 Graduate 职位要求中的内容。
-- TSM 专项题考察技术基础、问题证据和服务治理，不要求候选人未经授权执行生产级数据库/操作系统变更或独立设计灾难恢复架构。
+- 原有 8 个 TSM 节点保留系统架构、基础设施、HANA、HA/DR、RISE/ECS、生命周期、Cloud ALM 和客户治理的总体视角；本轮新增 10 个细分节点，把 Linux/网络、AS ABAP、备份恢复、迁移工具、集成、IAM、云基础设施、ITSM 和性能容量拆成可单独学习、追踪和考核的知识单元。
+- TSM 专项题考察技术基础、问题证据和服务治理，不要求候选人未经授权执行生产级数据库/操作系统变更或独立设计灾难恢复架构。毕业生的目标是理解组件、读懂监控和日志、整理时间线、判断业务影响、识别责任边界，并把需要生产操作的事项交给有授权的 Basis/DBA/网络/安全专家。
 
 ### 官方岗位与学习来源
 
@@ -150,4 +165,9 @@ SAP 官方 S/4HANA Cloud Public Edition 实施学习路径覆盖实施团队、�
 | [SAP Learning: Operating with SAP Cloud ALM](https://learning.sap.com/courses/operating-with-sap-cloud-alm) | Operations 监控、分析、业务服务管理、事件管理和集成 |
 | [SAP Learning: SAP Cloud ALM Business Service Management](https://learning.sap.com/courses/operating-with-sap-cloud-alm/business-service-management_eeca28b1-5ed0-40b5-8917-026a746f62b8) | 业务服务、状态事件、SLO 和服务等级观察 |
 | [SAP Help: S/4HANA Cloud Edition Offering Comparison](https://help.sap.com/docs/SAP_S4HANA_CLOUD_PE/b89b8b9026e1456bb2a1df7c0d59c937/1485d139460246d2a4b936c0bb0ca272.html) | Public/Private/On-Premise 在技术运维、升级和部署方面的区别 |
+| [SAP Help: SAP ASE Backup and Recovery](https://help.sap.com/docs/SAP_S4HANA_ON-PREMISE/b1c78119f8634ae1b933b60f02975a05/1495bd14c0564c19bf1fd94c01920c32.html?locale=en-US&state=PRODUCTION&version=2023.latest) | ASE database dump、transaction log dump 与恢复顺序 |
+| [SAP Help: Software Update Manager / DMO](https://help.sap.com/docs/SLTOOLSET/5399538756114983bbd2cc7a74f1d430/7ef3c766f02f45c7b218fed5b2b38157.html) | SUM、DMO 及转换执行前置条件 |
+| [SAP Learning: Managing User Access and Security](https://learning.sap.com/learning-journeys/managing-user-access-and-security-of-sap-s-4-hana-and-sap-s-4hana-cloud-public-edition) | SAP 身份、角色、授权与访问控制 |
+| [SAP Learning: Monitoring Messages Across All Systems](https://learning.sap.com/courses/integrating-sap-sales-and-service-cloud-version-2-with-sap-s-4hana-private-cloud/monitoring-messages-across-all-systems_e473699b-3be3-43de-a235-8be369a68f65) | Cloud Integration 消息状态与跨系统监控 |
+
 
