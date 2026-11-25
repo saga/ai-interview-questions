@@ -201,7 +201,7 @@ export function buildLearningMapReport(
       const evidence = trackProfile.knowledgeStats?.[node.id];
       const assessed = Boolean(evidence && evidence.attempts > 0);
       const status: LearningMapConcept['status'] = !assessed ? 'unassessed'
-        : evidence!.mastery >= WEAK_MASTERY || evidence!.avgScore >= WEAK_AVG ? 'mastered'
+        : evidence!.mastery >= WEAK_MASTERY ? 'mastered'
           : evidence!.avgScore >= 50 ? 'learning' : 'weak';
       return {
         ...node,
