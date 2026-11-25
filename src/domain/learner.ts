@@ -440,26 +440,34 @@ export function knowledgeTargetsForQuestion(question: SessionQuestion['question'
   const targets = new Map<string, number>();
   if (question.knowledgeId && knowledgeNodes.some((node) => node.id === question.knowledgeId && node.topic === question.topic)) {
     targets.set(question.knowledgeId, 1);
-  } else if (question.concepts) {
-    const resolve = (value: string) => {
+  } else {
+    const resolveUnique = (value: string) => {
+      const normalized = value.trim().toLowerCase();
       const matches = candidates.filter((node) =>
-        node.id.toLowerCase() === value.trim().toLowerCase() || node.name.trim().toLowerCase() === value.trim().toLowerCase(),
+        node.id.toLowerCase() === normalized || node.name.trim().toLowerCase() === normalized,
       );
       return matches.length === 1 ? matches[0] : undefined;
     };
-    const core = resolve(question.concepts.core);
-    if (core) targets.set(core.id, 1);
-    for (const value of question.concepts.supporting) {
-      const node = resolve(value);
-      if (node && !targets.has(node.id)) targets.set(node.id, 0.4);
+    if (question.concepts) {
+      const core = resolveUnique(question.concepts.core);
+      if (core) targets.set(core.id, 1);
+      for (const value of question.concepts.supporting) {
+        const node = resolveUnique(value);
+        if (node && !targets.has(node.id)) targets.set(node.id, 0.4);
+      }
     }
-  } else if (question.subtopic) {
-    const matches = candidates.filter((node) => node.id.toLowerCase() === question.subtopic!.trim().toLowerCase()
-      || node.name.trim().toLowerCase() === question.subtopic!.trim().toLowerCase());
-    if (matches.length === 1) targets.set(matches[0].id, 1);
+    if (targets.size === 0 && question.subtopic) {
+      const node = resolveUnique(question.subtopic);
+      if (node) targets.set(node.id, 1);
+    }
+    // When the topic itself is a KnowledgeNode id, it is a stable, explicit semantic match.
+    if (targets.size === 0) {
+      const topicNode = resolveUnique(question.topic);
+      if (topicNode) targets.set(topicNode.id, 1);
+    }
+    // A topic with exactly one KnowledgeNode is an unambiguous one-to-one mapping.
+    if (targets.size === 0 && candidates.length === 1) targets.set(candidates[0].id, 1);
   }
-  // A topic with exactly one KnowledgeNode is an unambiguous one-to-one mapping.
-  if (targets.size === 0 && candidates.length === 1) targets.set(candidates[0].id, 1);
   return [...targets].map(([knowledgeId, weight]) => ({ knowledgeId, weight }));
 }
 
