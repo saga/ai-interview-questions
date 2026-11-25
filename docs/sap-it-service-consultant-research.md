@@ -99,3 +99,55 @@ SAP 官方 S/4HANA Cloud Public Edition 实施学习路径覆盖实施团队、�
 10. **实习生职业行为与团队协作**：面向无正式项目经验的毕业生和实习生，考察学习、求助、任务管理、保密、反馈、诚实表达和职业边界。
 
 本批亚太题目共 200 道，使用独立知识节点，题目 ID 为 `sap-itc-601` 至 `sap-itc-800`。随后新增 40 道 SAP Business AI 初中级题，ID 为 `sap-itc-801` 至 `sap-itc-840`。当前课程共 41 个主题、640 道题。
+
+
+## SAP Technical Service Manager（TSM）毕业生岗位专项研究
+
+研究日期：2026-11-25。岗位样本采用 SAP Careers 于 2026-11-05 发布的东京 Technical Service Manager 职位（Requisition ID 450299，Career Status: Graduate），并与 SAP Global Cloud Operations / Enterprise Cloud Services 的其他 TSM 职责描述及 SAP 官方学习资料交叉核对。
+
+### 岗位样本与能力要求
+
+东京 Graduate 职位将 TSM 定位为面向客户的技术顾问和服务协调角色，明确要求或强调：
+
+- SAP 技术管理与运行基础，优先涉及 SAP Basis；
+- Unix/Linux 环境、SAP HANA 与 Sybase 数据库的工作知识；
+- SAP S/4HANA 架构、转换和迁移路径；
+- 高可用与灾难恢复、网络和虚拟化技术（如负载均衡、虚拟机）；
+- 客户沟通、重大问题降级处理和跨团队协作；
+- 了解 SAP 技术产品；AWS、Azure 或 GCP 认证属于加分项；
+- 根据客户业务目标识别技术问题，制定服务计划和行动项，并协调 SAP 内部团队落实。
+
+该职位虽标注 Graduate，仍明确写出 SAP 技术运维和客户沟通经验要求。因此课程不是“零技术背景培训”，也不能把职位描述解释为无需实践基础。学习目标应落在毕业生可建立的系统知识、初步操作认知、证据收集、技术沟通和专家协作能力；复杂生产变更、重大事故指挥及架构批准仍需授权人员负责。
+
+### 课程覆盖补充
+
+在既有 41 个 SAP 主题基础上增加 8 个 TSM 专项知识节点：
+
+1. SAP Basis 与技术系统架构；
+2. Linux、数据库、网络与云基础设施；
+3. SAP HANA 数据库运行与性能；
+4. 高可用、灾难恢复与业务连续性；
+5. SAP 云服务、RISE/ECS 与共享责任模型；
+6. SAP 技术生命周期、升级与迁移；
+7. SAP 运行监控、告警与可观测性；
+8. Technical Service Management 与客户技术治理。
+
+与原知识体系的关系：
+- 对既有“SAP S/4HANA 产品与架构”“SAP 集成”“安全、审计与合规”“SAP Cloud ALM”“ITSM”“故障诊断”进行 TSM 场景深化，不复制相同知识节点。
+- 新节点补足 Basis、Linux/网络/虚拟化、HANA 运维、HA/DR、托管服务责任、生命周期治理和客户技术服务计划等直接出现在 Graduate 职位要求中的内容。
+- TSM 专项题考察技术基础、问题证据和服务治理，不要求候选人未经授权执行生产级数据库/操作系统变更或独立设计灾难恢复架构。
+
+### 官方岗位与学习来源
+
+| 来源 | 用途 |
+|---|---|
+| [SAP Careers: Technical Service Manager, Tokyo（发布于 2026-11-05，Graduate）](https://careers.sap.com/job/Tokyo-Technical-Service-Manager-Toky-100-0004/1445010133/) | 直接岗位职责、任职条件与毕业生级别 |
+| [SAP Careers: Technical Service Manager, Tokyo](https://jobs.sap.com/en/jobs/744000162411984/technical-service-manager-tokyo-japan/) | 交叉核对云运营、客户技术顾问、服务计划与路线图职责 |
+| [SAP Learning: Technical Implementation and Operation I](https://learning.sap.com/courses/technical-implementation-and-operation-i-of-sap-s-4hana-and-sap-business-suite) | SAP 系统、内核、用户和授权、通信集成、监控、故障排查、启动停止、配置与 Fiori 基础 |
+| [SAP Learning: Installing and Administering SAP HANA](https://learning.sap.com/courses/installing-and-administering-sap-hana) | HANA 安装配置、Cockpit、监控、备份恢复、安全和用户授权 |
+| [SAP Learning: SAP HANA Monitoring and Performance Tuning](https://learning.sap.com/courses/sap-hana-monitoring-and-performance-tuning) | SQL/硬件性能分析、工作负载与主动监控 |
+| [SAP Learning: Implementing High Availability and Disaster Tolerance in SAP HANA](https://learning.sap.com/courses/implementing-high-availability-and-disaster-tolerance-in-sap-hana) | Scale-out、System Replication、容错、灾难容忍和 Tenant Replication |
+| [SAP Learning: Operating with SAP Cloud ALM](https://learning.sap.com/courses/operating-with-sap-cloud-alm) | Operations 监控、分析、业务服务管理、事件管理和集成 |
+| [SAP Learning: SAP Cloud ALM Business Service Management](https://learning.sap.com/courses/operating-with-sap-cloud-alm/business-service-management_eeca28b1-5ed0-40b5-8917-026a746f62b8) | 业务服务、状态事件、SLO 和服务等级观察 |
+| [SAP Help: S/4HANA Cloud Edition Offering Comparison](https://help.sap.com/docs/SAP_S4HANA_CLOUD_PE/b89b8b9026e1456bb2a1df7c0d59c937/1485d139460246d2a4b936c0bb0ca272.html) | Public/Private/On-Premise 在技术运维、升级和部署方面的区别 |
+
