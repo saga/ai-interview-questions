@@ -9,6 +9,7 @@ import {
   RobotOutlined,
   CheckCircleFilled,
   BookOutlined,
+  ApartmentOutlined,
 } from '@ant-design/icons';
 import { questionBank as bank } from './data/questionBank';
 import { knowledgeNodes } from './data/knowledgeMap';
@@ -27,6 +28,7 @@ import { useSettingsDraft } from './hooks/useSettingsDraft';
 import SettingsPanel from './components/settings/SettingsPanel';
 import TrainingHome from './components/home/TrainingHome';
 import ProgressPage from './components/progress/ProgressPage';
+import LearningMapPage from './components/learning-map/LearningMapPage';
 import InterviewPage from './components/interview/InterviewPage';
 import AgentInterviewPage from './components/agent/AgentInterviewPage';
 import QuestionCard from './components/quiz/QuestionCard';
@@ -39,7 +41,7 @@ import { devUsageLogger } from './ai/usageTelemetry';
 import { useIsMobile } from './hooks/useIsMobile';
 import { type Page, attemptNavigate, isTrainingSessionRunning } from './navigationGuard';
 
-const VALID_PAGES: Page[] = ['learn', 'train', 'progress', 'interview', 'settings', 'agent'];
+const VALID_PAGES: Page[] = ['learn', 'train', 'progress', 'map', 'interview', 'settings', 'agent'];
 /** 由 URL pathname 派生当前页面；未知路径回退训练首页。 */
 function pageFromPath(pathname: string): Page {
   const seg = pathname.split('/').filter(Boolean)[0] ?? '';
@@ -50,6 +52,7 @@ const NAV_ITEMS = [
   { key: 'learn', icon: <BookOutlined />, label: '学习体系' },
   { key: 'train', icon: <ThunderboltOutlined />, label: '课程训练' },
   { key: 'progress', icon: <BarChartOutlined />, label: '进度' },
+  { key: 'map', icon: <ApartmentOutlined />, label: '学习地图' },
   { key: 'interview', icon: <CommentOutlined />, label: '面试' },
   { key: 'agent', icon: <RobotOutlined />, label: 'Agent 面试' },
   { key: 'settings', icon: <SettingOutlined />, label: '设置' },
@@ -272,6 +275,22 @@ export default function App() {
             suggestions={suggestNextTopics(collectTopicRefs(trackBank.questions), trackProfile)}
             disabledCategories={config.disabledCategories ?? []}
             onToggleCategory={handleToggleCategory}
+          />
+        );
+      case 'map':
+        return (
+          <LearningMapPage
+            profile={p}
+            nodes={knowledgeNodes}
+            defaultTrackId={runtimeTrackId}
+            onGoTrain={(trackId) =>
+              attemptNavigate({
+                target: 'train',
+                phase,
+                navigate: () => navigate(`/train?track=${trackId}`),
+                warn: (warning) => message.warning(warning),
+              })
+            }
           />
         );
       case 'interview':
