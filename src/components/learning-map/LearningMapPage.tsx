@@ -205,8 +205,8 @@ function G6LiteCanvas({
         ref={containerRef}
         style={{
           width: '100%',
-          height: 760,
-          minHeight: 560,
+          height: 1520,
+          minHeight: 1000,
           border: '1px solid #f0f0f0',
           borderRadius: 8,
           background: '#fff',
