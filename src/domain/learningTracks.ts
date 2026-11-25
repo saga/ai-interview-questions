@@ -58,8 +58,9 @@ function sessionBelongsToTrack(
 
 /**
  * Project the global local-first learner profile onto one course.
- * Topic IDs are the aggregation keys; since course nodes have globally unique IDs, the per-topic evidence
- * remains independent. Session totals, recents and cross-topic evidence are projected separately.
+ * Learner evidence is keyed by KnowledgeNode.topic, not KnowledgeNode.id:
+ * several concept nodes may belong to one topic and must share one mastery record.
+ * Session totals, recents and cross-topic evidence are projected separately.
  */
 export function profileForTrack(
   profile: LearnerProfile,
@@ -67,7 +68,7 @@ export function profileForTrack(
   allNodes: KnowledgeNode[] = knowledgeNodes,
 ): LearnerProfile {
   const nodes = knowledgeForTrack(allNodes, trackId);
-  const topicIds = new Set(nodes.map((node) => node.id));
+  const topicIds = new Set(nodes.map((node) => node.topic));
   const sessions = profile.sessions.filter((session) => sessionBelongsToTrack(session, trackId, topicIds));
   const latestRated = sessions.filter((session) => session.questionResults.length > 0).slice(0, 10);
   const overallScore = latestRated.length
@@ -93,7 +94,7 @@ export function profileForTrack(
 }
 
 export function courseTopicIds(trackId: LearningTrackId): Set<string> {
-  return new Set(knowledgeForTrack(knowledgeNodes, trackId).map((node) => node.id));
+  return new Set(knowledgeForTrack(knowledgeNodes, trackId).map((node) => node.topic));
 }
 
 export function inferTrackForLegacySession(session: SessionRecord): LearningTrackId | null {
