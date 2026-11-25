@@ -519,7 +519,7 @@ export function sessionFromQuiz(
   // 避免把「没答/没评」误记为 0 分污染 topicStats / overallScore / 薄弱分析。
   const results: QuestionResult[] = session.questions
     .filter(({ question: q }) => grades[q.id] != null)
-    .map(({ question: q,  format }) => {
+    .map(({ question: q, format, tipsRequested }) => {
       const g = grades[q.id]!;
       return {
         questionId: q.id,
@@ -528,6 +528,7 @@ export function sessionFromQuiz(
         topic: q.topic,
         subtopic: q.subtopic ?? undefined,
         format,
+        tipsRequested: tipsRequested ?? false,
         angle: q.angle,
         cognitiveTask: q.cognitiveTask,
         knowledgeTargets: knowledgeTargetsForQuestion(q),
