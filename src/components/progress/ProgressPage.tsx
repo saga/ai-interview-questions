@@ -83,7 +83,7 @@ export default function ProgressPage({ profile, nodes, courseId, onGoTrain, cove
       const mastered = learned && (mastery >= WEAK_MASTERY || avgScore >= WEAK_AVG);
       return { node: n, learned, topicAttempted, mastery, avgScore, weak: learned && mastery < WEAK_MASTERY && avgScore < 50, attempts };
     });
-  }, [knowledgeStats, nodes]);
+  }, [knowledgeStats, topicStats, nodes]);
 
   const learnedCount = rows.filter((r) => r.learned).length;
   const unassessedCount = rows.length - learnedCount;
