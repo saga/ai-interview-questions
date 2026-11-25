@@ -14,7 +14,7 @@ import {
   CAMPUS_EMPLOYMENT_TOPIC_LABELS,
   SNOWFLAKE_ANGLE_WHITELIST,
   SNOWFLAKE_TOPIC_LABELS,
-} from './learningTracks';
+} from './learningTracks.ts';
 
 export interface TaxonomyTopic {
   id: string;
