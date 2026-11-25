@@ -293,7 +293,7 @@ export function updateLearner(
       const misconception = (result.misconceptionIds ?? []).some((value) =>
         node.misconceptions.some((known) => known.trim().toLowerCase() === value.trim().toLowerCase()),
       );
-      const score = missing || misconception ? Math.min(result.score, 49) : result.score;
+      const score = missing || misconception ? Math.min(result.score, 74) : result.score;
       const list = byKnowledge.get(target.knowledgeId) ?? [];
       list.push({ result, weight: target.weight * scoreWeight(result.format, config), score });
       byKnowledge.set(target.knowledgeId, list);
