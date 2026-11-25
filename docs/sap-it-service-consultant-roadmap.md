@@ -1,7 +1,7 @@
 # SAP IT Service Consultant 学习路线
 
 **课程 ID：** `sap-it-service-consultant`  
-**目标角色：** SAP IT Service Consultant、SAP Implementation Consultant、Application Support Consultant、Junior Solution Consultant  
+**目标角色：** SAP IT Service Consultant、SAP Technical Service Manager（Graduate）、SAP Implementation Consultant、Application Support Consultant、Junior Solution Consultant  
 **定位：** 面向客户交付与企业 IT 服务，不是 ABAP 开发培训，也不是某一个 SAP 模块的认证题集。
 
 ## 适用对象与题目设计基本规则
