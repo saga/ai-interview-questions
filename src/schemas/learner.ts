@@ -61,6 +61,29 @@ export const assessmentStatSchema = z.object({
 });
 export type AssessmentStat = z.infer<typeof assessmentStatSchema>;
 
+/** A question's explicit mapping to a stable KnowledgeNode id. */
+export const knowledgeTargetSchema = z.object({
+  knowledgeId: z.string().min(1),
+  weight: z.number().positive().max(1),
+});
+export type KnowledgeTarget = z.infer<typeof knowledgeTargetSchema>;
+
+/** Aggregated evidence for one KnowledgeNode. Scores remain separate from evidence volume. */
+export const knowledgeStatsSchema = z.object({
+  attempts: z.number().int().nonnegative(),
+  practiceSessions: z.number().int().nonnegative(),
+  avgScore: z.number().min(0).max(100),
+  lastScore: z.number().min(0).max(100),
+  mastery: z.number().min(0).max(1),
+  positiveEvidence: z.number().int().nonnegative(),
+  negativeEvidence: z.number().int().nonnegative(),
+  trend: trendSchema,
+  scoreWeightTotal: z.number().positive(),
+  lastSeenAt: z.number(),
+  evidence: z.array(evidenceSchema).optional(),
+});
+export type KnowledgeStats = z.infer<typeof knowledgeStatsSchema>;
+
 export const topicStatsSchema = z.object({
   attempts: z.number().int().nonnegative(),
   avgScore: z.number().min(0).max(100),
@@ -142,6 +165,8 @@ export const learnerProfileSchema = z.object({
   totalQuestions: z.number().int().nonnegative(),
   overallScore: z.number().min(0).max(100),
   topicStats: z.record(z.string(), topicStatsSchema),
+  /** KnowledgeNode-level evidence keyed by stable KnowledgeNode.id. Optional for legacy profile compatibility. */
+  knowledgeStats: z.record(z.string(), knowledgeStatsSchema).optional(),
   /** Concept×Angle 逐角度证据：key = `${topic}|${angle}`。可选以兼容历史画像。保留作粗粒度 dashboard 指标。 */
   angleCoverage: z.record(z.string(), angleStatSchema).optional(),
   /** Assessment-cell 证据：key = `${topic}|${angle}|${cognitiveTask}`（P0-1 / ADR-077）。
