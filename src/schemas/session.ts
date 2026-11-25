@@ -7,6 +7,8 @@ import { evaluationResultSchema } from './evaluation';
 export const sessionQuestionSchema = z.object({
   question: questionSchema,
   format: formatIdSchema,
+  /** 用户是否主动打开过面试官补充信息；仅记录行为，不参与评分。 */
+  tipsRequested: z.boolean().optional(),
 });
 
 export const interviewSessionSchema = z.object({
