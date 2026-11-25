@@ -16,6 +16,17 @@ import { WEAK_AVG, WEAK_MASTERY } from './learner';
 
 export type LearningMapStatus = 'unstarted' | 'weak' | 'mastered';
 
+export interface LearningMapConcept extends KnowledgeNode {
+  attempts: number;
+  avgScore: number;
+  mastery: number;
+  status: 'unassessed' | 'learning' | 'weak' | 'mastered';
+  positiveEvidence: number;
+  negativeEvidence: number;
+  practiceSessions: number;
+  lastSeenAt?: number;
+}
+
 export interface LearningMapTopic {
   id: string;
   label: string;
@@ -26,7 +37,9 @@ export interface LearningMapTopic {
   avgScore: number;
   mastery: number;
   conceptCount: number;
-  concepts: KnowledgeNode[];
+  assessedConcepts: number;
+  masteredConcepts: number;
+  concepts: LearningMapConcept[];
 }
 
 export interface LearningMapBranch {
@@ -184,6 +197,27 @@ export function buildLearningMapReport(
     const mastery = stat?.mastery ?? 0;
     const priorityRank: Record<KnowledgeNode['priority'], number> = { P0: 0, P1: 1, P2: 2 };
     const priority = [...concepts].sort((a, b) => priorityRank[a.priority] - priorityRank[b.priority])[0]?.priority ?? 'P1';
+    const conceptProgress: LearningMapConcept[] = concepts.map((node) => {
+      const evidence = trackProfile.knowledgeStats?.[node.id];
+      const assessed = Boolean(evidence && evidence.attempts > 0);
+      const status: LearningMapConcept['status'] = !assessed ? 'unassessed'
+        : evidence!.mastery >= WEAK_MASTERY || evidence!.avgScore >= WEAK_AVG ? 'mastered'
+          : evidence!.avgScore >= 50 ? 'learning' : 'weak';
+      return {
+        ...node,
+        attempts: evidence?.attempts ?? 0,
+        avgScore: evidence?.avgScore ?? 0,
+        mastery: evidence?.mastery ?? 0,
+        status,
+        positiveEvidence: evidence?.positiveEvidence ?? 0,
+        negativeEvidence: evidence?.negativeEvidence ?? 0,
+        practiceSessions: evidence?.practiceSessions ?? 0,
+        lastSeenAt: evidence?.lastSeenAt,
+      };
+    }).sort((a, b) => {
+      const rank: Record<LearningMapConcept['status'], number> = { weak: 0, learning: 1, unassessed: 2, mastered: 3 };
+      return rank[a.status] - rank[b.status] || a.name.localeCompare(b.name, 'zh-CN');
+    });
     topicMap.set(topicId, {
       id: topicId,
       label: COURSE_TOPIC_LABELS.get(topicId) ?? topicLabel(topicId),
@@ -193,7 +227,9 @@ export function buildLearningMapReport(
       avgScore,
       mastery,
       conceptCount: concepts.length,
-      concepts: [...concepts].sort((a, b) => a.name.localeCompare(b.name, 'zh-CN')),
+      assessedConcepts: conceptProgress.filter((node) => node.status !== 'unassessed').length,
+      masteredConcepts: conceptProgress.filter((node) => node.status === 'mastered').length,
+      concepts: conceptProgress,
     });
   }
 
