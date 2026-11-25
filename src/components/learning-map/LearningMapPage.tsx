@@ -18,7 +18,6 @@ import {
 import {
   ApartmentOutlined,
   BookOutlined,
-  CheckCircleOutlined,
   ExclamationCircleOutlined,
   PlayCircleOutlined,
 } from '@ant-design/icons';
