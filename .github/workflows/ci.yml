@@ -18,55 +18,22 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Typecheck
-        run: npm run typecheck
-      - name: Audit KnowledgeNode question mapping
-        run: npm run knowledge:coverage
-      - name: Unit tests
-        run: npm run test
-      - name: Validate questions
-        run: npm run validate:questions
-      - name: Lint option-length bias
-        run: npm run lint:bias
-      - name: Resolve question-change base commit
-        id: question-base
-        shell: bash
-        env:
-          EVENT_NAME: ${{ github.event_name }}
-          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          PUSH_BEFORE_SHA: ${{ github.event.before }}
-        run: |
-          if [[ "$EVENT_NAME" == "pull_request" ]]; then
-            base="$PR_BASE_SHA"
-          else
-            base="$PUSH_BEFORE_SHA"
-          fi
-          if [[ -z "$base" || "$base" =~ ^0+$ ]]; then
-            base="$(git rev-parse HEAD^)"
-          fi
-          git cat-file -e "${base}^{commit}"
-          echo "sha=$base" >> "$GITHUB_OUTPUT"
-      - name: Lint answer-length cues (new and modified questions)
-        env:
-          QUESTION_BASE_SHA: ${{ steps.question-base.outputs.sha }}
-        run: npm run lint:length -- --changed --base "$QUESTION_BASE_SHA"
-      - name: Audit question bank
-        run: npm run question:audit
-      - name: Question identity gate (incremental, PR/base only)
+      - name: Full verification
+        run: npm run check
+      - name: Question identity gate (incremental)
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            npm run question:identity -- --gate --since ${{ github.event.pull_request.base.sha }}
+            node scripts/check-question-identity.ts --gate --since ${{ github.event.pull_request.base.sha }}
           elif [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]; then
-            npm run question:identity -- --gate --since ${{ github.event.before }}
+            node scripts/check-question-identity.ts --gate --since ${{ github.event.before }}
           else
-            npm run question:identity -- --gate --since HEAD~1
+            node scripts/check-question-identity.ts --gate --since HEAD~1
           fi
-      - name: Validate variants (release gate)
-        run: npm run question:validate-variants
+      - name: Validate variants
+        run: npx vite-node scripts/validate-variants.ts
 
   deploy:
     needs: verify
-    # Job 级 if 不支持 secrets 上下文。先限制为 main push，再在 Deploy 步骤检查密钥。
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     permissions:
@@ -81,8 +48,6 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Build
-        run: npm run build
-      - name: Deploy to Cloudflare Pages (dist/ only)
+      - name: Deploy to Cloudflare Pages
         if: ${{ env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' }}
-        run: npm run cloudflare:deploy
+        run: npm run deploy -- pages
