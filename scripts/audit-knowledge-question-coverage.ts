@@ -2,13 +2,6 @@ import { questionBank } from '../src/data/questionBank.ts';
 import { knowledgeNodes } from '../src/data/knowledgeMap.ts';
 import { resolveKnowledgeTargetsForQuestion } from '../src/domain/learner.ts';
 
-const nodesByTopic = new Map<string, typeof knowledgeNodes>();
-for (const node of knowledgeNodes) {
-  const group = nodesByTopic.get(node.topic) ?? [];
-  group.push(node);
-  nodesByTopic.set(node.topic, group);
-}
-
 const bySource = new Map<string, number>();
 const byReason = new Map<string, number>();
 const unresolvedByTopic = new Map<string, { count: number; candidates: Set<string>; questionIds: string[] }>();
