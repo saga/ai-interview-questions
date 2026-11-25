@@ -338,3 +338,46 @@ Post-Implementation Review、业务收益评估、Lessons Learned、运维交接
 - [EU-Japan Centre: From Understanding to Navigating Japanese Business Culture](https://www.eu-japan.eu/sites/default/files/report_from_understanding_to_navigating_japanese_business_culture.pdf) — 强调避免刻板印象，讨论沟通、决策、信任和策略协作。
 - [SAP Learning: Utilizing the Implementation Project Methodology](https://learning.sap.com/courses/implementing-sap-business-one/utilizing-the-implementation-project-methodology) — 当前 SAP Learning 课程说明客户期望、项目角色、需求分析、阶段里程碑、培训准备和支持交接。\n- [SAP Business One Implementation Methodology](https://help.sap.com/doc/download_multimedia_ebooks_businessone90_tb1200_01_01_story_html/9.0/en-US/story_content/external_files/implementation%20Tools%20-%20Implementation%20Methodology.pdf) — 项目准备、客户期望、范围、风险、阶段里程碑和交接实践。该资料针对 SAP Business One 的 AIP 方法，作为项目管理实践参考，不代表所有 SAP 产品的当前实施方法。
 - [Atlassian: ITIL 4 Guiding Principles and Practices](https://www.atlassian.com/itsm/itil) — 服务价值、人员与组织、合作伙伴、流程和持续改进。
+
+
+## SAP Technical Service Manager（TSM）毕业生专项学习路径
+
+### 为什么单独补充 TSM 专项
+
+SAP 于 2026-11-05 发布的东京 Technical Service Manager 岗位明确标注 Career Status: Graduate。岗位职责包括客户技术沟通与重大问题升级、SAP 技术运维、S/4HANA 架构和迁移、HA/DR、网络与虚拟化、服务计划、技术行动项及跨团队协调。岗位同时要求相关技术和客户沟通经验，因此毕业生学习路径必须覆盖真正的系统技术基础，而不能只训练沟通技巧。
+
+TSM 与功能顾问的重点不同：它不仅要理解业务流程，还要理解承载 SAP 业务的技术系统、服务责任边界、运行状态和生命周期风险，并协调正确的专家完成问题解决。
+
+### TSM 专项能力模块
+
+| 新增主题 | 学习目标 | 毕业生应能完成的任务 |
+|---|---|---|
+| SAP Basis 与技术系统架构 | 理解 SAP 系统分层、实例、环境和 Basis 职责 | 读懂基础系统景观图，识别应用/数据库/前端依赖 |
+| Linux、数据库、网络与云基础设施 | 理解 OS、资源、DNS、网络、TLS、负载均衡和 VM | 收集 CPU/内存/磁盘/网络证据，识别应升级给哪个团队 |
+| SAP HANA 数据库运行与性能 | 认识 HANA Cockpit、资源监控、工作负载和慢 SQL | 归纳数据库状态、资源趋势和性能证据，不擅自修改生产参数 |
+| 高可用、灾难恢复与业务连续性 | 区分 HA/DR、RTO/RPO、复制、备份和恢复验证 | 检查恢复目标、备份/演练证据与端到端业务依赖 |
+| SAP 云服务、RISE 与共享责任 | 理解 Public/Private、RISE/ECS 和服务边界 | 根据合同、服务描述和 RACI 判断责任归属，不按产品名称猜测 |
+| SAP 技术生命周期、升级与迁移 | 理解升级、补丁、系统转换和迁移的准备条件 | 识别兼容性、停机、测试、切换和回退风险 |
+| SAP 运行监控、告警与可观测性 | 理解 Cloud ALM Operations 的监控和事件管理 | 将技术告警关联到业务服务、影响范围和行动项 |
+| TSM 客户技术治理 | 理解服务计划、技术评审、升级、路线图和客户价值 | 准备评审资料、更新行动项、跟踪依赖并及时升级 |
+
+### 学习层级与岗位边界
+
+**入职准备层（毕业生）**：掌握系统/数据库/网络基础和 SAP 技术词汇；理解云服务责任、系统监控、变更/事件流程；能够收集证据、制作系统依赖清单、准备服务评审材料、跟踪行动项并与客户清楚沟通。
+
+**岗位成长层（入职后在导师/专家指导下）**：参与 Basis/HANA 运维分析、性能趋势复核、升级迁移准备、HA/DR 演练、技术服务计划和月度运营评审；逐步承担限定范围的工作包。
+
+**成熟 TSM 能力（不是应届生默认前提）**：端到端拥有客户技术景观，指导复杂迁移和生命周期变更，牵头重大升级与恢复，提出架构路线图，作为客户重大技术问题的首要升级负责人。
+
+### 建议实践产出
+
+1. SAP 系统景观与责任边界图（S/4HANA、HANA、SAP Basis、网络、外部集成和云平台）。
+2. 一份系统健康检查记录，包含告警、性能、资源、业务影响和需升级事项。
+3. 一份 Incident 初始信息模板，包含时间、影响对象、业务服务、复现证据、依赖和当前缓解措施。
+4. 一份 RTO/RPO、备份、恢复演练与依赖服务核对清单。
+5. 一份 SAP 升级/迁移风险与准备清单。
+6. 一份月度技术服务评审材料，跟踪 SLA/SLO、Top issues、风险、路线图和行动项。
+
+### 岗位学习资料
+
+以上专项与 SAP 官方岗位描述和以下官方课程对齐：Technical Implementation and Operation I、Installing and Administering SAP HANA、SAP HANA Monitoring and Performance Tuning、Implementing High Availability and Disaster Tolerance in SAP HANA、Operating with SAP Cloud ALM。题目为原创训练题，不是 SAP 官方认证原题。
