@@ -19,6 +19,8 @@ export interface StoredLearner {
   totalQuestions: number;
   overallScore: number;
   topicStats: LearnerProfile['topicStats'];
+  /** KnowledgeNode-level mastery evidence; persisted separately from the bounded session history. */
+  knowledgeStats?: LearnerProfile['knowledgeStats'];
   /**
    * Concept×Angle 逐角度证据（`LearnerProfile.angleCoverage`）。
    * 运行时由 `toStoredLearner` 的对象展开写入 IndexedDB（Dexie 会保留未知字段，所以此前「碰巧能用」），
