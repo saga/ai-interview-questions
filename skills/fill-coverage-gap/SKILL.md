@@ -12,9 +12,9 @@ description: "补齐题库覆盖缺口。用户要求分析题库缺口、生成
 
 ## 流程
 
-1. 运行 `npm run question:coverage`，读取覆盖矩阵和补题建议（按 P0/P1/P2 优先级排序）。
+1. 运行 `npm run questions:manage -- coverage`，读取覆盖矩阵和补题建议（按 P0/P1/P2 优先级排序）。
 2. 与用户确认要处理的范围：哪些 topic、处理几条建议、只报告还是要实际补题。
-3. 运行 `npm run question:blueprint -- <limit>`，为选定数量的缺口生成蓝图 JSON。每条蓝图包含：
+3. 运行 `npm run questions:manage -- blueprint -- <limit>`，为选定数量的缺口生成蓝图 JSON。每条蓝图包含：
    - 对应知识节点的 `purpose` / `expectedConcepts`（约束这道题该考什么，见下方"expectedConcepts 的用法"）
    - `reuseCandidateIds`：同 topic 下已有题的 id，按角度梯度距离升序——**改写**成目标 angle 的候选
 4. 对每条蓝图，按优先级决策（**canonical 身份不可变**：`id` 绑定的是 assessment contract
@@ -26,9 +26,9 @@ description: "补齐题库覆盖缺口。用户要求分析题库缺口、生成
       里以 `questionId` 为键的历史证据（旧分代表旧能力）。
     - **不能 reuse 才从零新写 canonical 题**，遵守蓝图里的 `purpose` 和 `expectedConcepts` 约束，不要跑题。
    - 新 canonical 题写入成功后，若需要在**同一格内**扩充题量（减少重复感），
-     才走离线变体生成（`npm run question:variants`，见 ADR-069）。
+     才走离线变体生成（`npm run questions:manage -- variants`，见 ADR-069）。
 5. 起草完成后，交给 **add-question-to-bank** skill 的完整校验与写入流程（题目契约、去重、语义重复检查、typecheck、test）。本 skill 不重复实现写入逻辑。
-6. 补题后重新运行 `npm run question:coverage`，确认目标缺口确实被填上，且没有引入新的 topic × angle 失衡。
+6. 补题后重新运行 `npm run questions:manage -- coverage`，确认目标缺口确实被填上，且没有引入新的 topic × angle 失衡。
 
 > **变体不是补覆盖缺口的主要机制。** 变体继承 canonical 的 `topic` 与 `angle`
 > （`src/ai/variant.ts` 直接取 canonical，不重新推导），用它补洞等于把 A 格的题搬到 B 格——
@@ -63,7 +63,7 @@ description: "补齐题库覆盖缺口。用户要求分析题库缺口、生成
 起草时就把四个选项写成相近长度、句式和信息密度，不要等 lint 报警再返工。
 新题和修改题须满足 max/min ≤1.7、正确项/干扰项均长差绝对值 ≤8、单选正确项领先 ≤4；
 失衡时重写整组选项，禁止给干扰项补无关文字。导入前运行 `question:add --check`，
-本地修改后运行 `npm run lint:length -- --changed`。
+本地修改后运行 `npm run questions:manage -- lint-length -- --changed`。
 
 ## expectedConcepts 的用法
 
@@ -86,7 +86,7 @@ description: "补齐题库覆盖缺口。用户要求分析题库缺口、生成
 
 覆盖率缺口不等于"应当无限补题"：
 
-- 用 `npm run question:blueprint` 的 `reuseCandidateIds` 和 `question:coverage` 的格子计数确认目标 (topic, angle) 的现有题量。
+- 用 `npm run questions:manage -- blueprint` 的 `reuseCandidateIds` 和 `question:coverage` 的格子计数确认目标 (topic, angle) 的现有题量。
 - 若同一 (topic, angle) 已有 ≥ 3 题，新题必须证明自己带来了新的考察侧重、场景、典型 misconception 或难度层次；仅改写措辞、换例子而不改变所考能力的不算新增价值，应优先改写已有题或改补为 0 的格子。
 - 同一核心 Concept 不因"覆盖率数字"无限扩张：当该 Concept 在多个 angle 上已各有合格题时，继续加题的边际收益递减，应把补题额度让给真正为 0 的格子。
 - 题量控制与质量门槛并行：见 **add-question-to-bank** 的"结构质量门槛"与 `spec §1`。
