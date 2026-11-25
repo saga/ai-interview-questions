@@ -21,7 +21,6 @@ import {
   CheckCircleOutlined,
   ExclamationCircleOutlined,
   PlayCircleOutlined,
-  QuestionCircleOutlined,
 } from '@ant-design/icons';
 import type { KnowledgeNode } from '../../schemas/knowledge';
 import type { LearnerProfile } from '../../schemas/learner';
@@ -221,7 +220,6 @@ function G6LiteCanvas({
 }
 
 function TopicDetail({ topic, onGoTrain }: { topic: LearningMapTopic; onGoTrain: () => void }) {
-  const conceptsWithGaps = topic.concepts.filter((node) => node.required.length > 0);
   return (
     <Card
       size="small"
@@ -253,11 +251,9 @@ function TopicDetail({ topic, onGoTrain }: { topic: LearningMapTopic; onGoTrain:
               </List.Item>
             )}
           />
-          {conceptsWithGaps.length === 0 && (
-            <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-              详细知识点按课程定义列出；当前掌握度按整个主题的训练结果统计。
-            </Typography.Text>
-          )}
+          <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+            详细知识点按课程定义列出；掌握度按整个主题的训练结果统计，不会把主题下的知识点重复计数。
+          </Typography.Text>
         </div>
       )}
     </Card>
