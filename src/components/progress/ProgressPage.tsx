@@ -66,14 +66,14 @@ interface ChecklistRow {
 
 export default function ProgressPage({ profile, nodes, courseId, onGoTrain, coverage, suggestions, disabledCategories, onToggleCategory }: Props) {
   const [replay, setReplay] = useState<SessionRecord | null>(null);
-  const { sessions, topicStats, overallScore } = profile;
+  const { sessions, topicStats, knowledgeStats = {}, overallScore } = profile;
   const [statusFilter, setStatusFilter] = useState<'all' | 'learned' | 'unlearned'>('all');
   const [areaFilter, setAreaFilter] = useState<string>('all');
 
   // —— 知识点清单：把全量知识体系与画像对齐，逐节点标注学过 / 没学过 ——
   const rows = useMemo<ChecklistRow[]>(() => {
     return nodes.map((n) => {
-      const s = topicStats[n.topic];
+      const s = knowledgeStats[n.id];
       const attempts = s?.attempts ?? 0;
       const learned = attempts > 0;
       const mastery = s?.mastery ?? 0;
@@ -81,7 +81,7 @@ export default function ProgressPage({ profile, nodes, courseId, onGoTrain, cove
       const mastered = learned && (mastery >= WEAK_MASTERY || avgScore >= WEAK_AVG);
       return { node: n, learned, mastery, avgScore, weak: learned && !mastered, attempts };
     });
-  }, [topicStats, nodes]);
+  }, [knowledgeStats, nodes]);
 
   const learnedCount = rows.filter((r) => r.learned).length;
   const unlearnedCount = rows.length - learnedCount;
