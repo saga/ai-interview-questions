@@ -134,6 +134,8 @@ export const questionResultSchema = z.object({
   /** Stable KnowledgeNode ids resolved from question metadata at session creation. */
   knowledgeTargets: z.array(knowledgeTargetSchema).optional(),
   evaluation: evaluationResultSchema.optional(),
+  /** 本次训练是否主动查看过该题的补充背景信息；不影响掌握度。 */
+  tipsRequested: z.boolean().optional(),
 });
 
 export const sessionRecordSchema = z.object({
