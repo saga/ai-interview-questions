@@ -435,7 +435,7 @@ export function conceptGapsOf(profile: LearnerProfile, topic: string, required: 
 }
 
 /** Resolve question metadata to stable KnowledgeNode ids. Never fan a question out to every node in a topic. */
-export type KnowledgeTargetResolutionSource = 'knowledgeId' | 'concepts' | 'subtopic' | 'topic-id' | 'unique-topic' | 'unmapped';
+export type KnowledgeTargetResolutionSource = 'knowledgeId' | 'concepts' | 'subtopic' | 'unique-topic' | 'unmapped';
 
 export interface KnowledgeTargetResolution {
   targets: { knowledgeId: string; weight: number }[];
@@ -492,11 +492,8 @@ export function resolveKnowledgeTargetsForQuestion(question: SessionQuestion['qu
     if (node) return result(new Map([[node.id, 1]]), 'subtopic');
   }
 
-  // A topic that is itself a KnowledgeNode id is an exact stable reference.
-  const topicIdMatches = exactId(question.topic);
-  if (topicIdMatches.length === 1) return result(new Map([[topicIdMatches[0].id, 1]]), 'topic-id');
-
-  // A one-node topic is the only safe implicit fallback.
+  // Topic is a grouping field, not a KnowledgeNode reference. Even if its text happens to
+  // equal one node id, sibling nodes may share that topic; only a one-node topic is safe.
   if (candidates.length === 1) return result(new Map([[candidates[0].id, 1]]), 'unique-topic');
 
   return {
