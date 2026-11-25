@@ -46,7 +46,7 @@ description: "写新题并落库。用户要求新增面试题、起草题目或
 - 如果同时提供 open 形态，`referenceAnswer` 必须与 choice 正确答案一致。
 - 开放题参考答案应包含可检查的关键要点，而不只是重复题干。
 - `tags` 使用已有命名风格，避免创建同义或大小写重复标签。
-- `topic` 必须是 `src/data/knowledge/` 里已存在的**知识节点 id**（如 `caching`、`cost`、`system-design`），不是 taxonomy 的 topic；`bank.test.ts` 会强制校验，写错直接失败。
+- `topic` 是知识主题分组，不等于具体 KnowledgeNode。若该 topic 下只有一个节点，可由系统唯一映射；若有多个节点，必须填写稳定的 `knowledgeId`，或让 `concepts.core/supporting` / `subtopic` 精确匹配节点 ID/名称。`question:add --check` 会拒绝无法明确映射的新题，不允许靠模糊匹配。
 - `category` 通常与所在文件名一致；生产补题批次文件（如 `foundational-and-intermediate.json`）允许跨领域收录题目，加载时以题目自身 `category` 为准。
 - 目标题库文件普遍是 choice + open 双形态 100% 覆盖，新题应同时写两种形态。
 - `open.referenceAnswer` 若写成 `正确答案：B、C、D。`（全角冒号），`bank.test.ts` 的一致性正则**不会命中**（正则要求"正确答案"后紧跟空白+字母），因此需**人工核对**字母与 `answer` 索引一致。
