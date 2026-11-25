@@ -28,6 +28,7 @@ import {
 import { pickPrioritized } from './quiz';
 import type { LearnerProfile, QuestionResult, SessionRecord } from '../schemas/learner';
 import type { Question } from '../schemas/question';
+import { knowledgeNodes } from '../data/knowledgeMap';
 
 function profileWith(stats: Record<string, { attempts: number; avgScore: number; mastery?: number }>): LearnerProfile {
   const p = emptyProfile();
@@ -373,6 +374,29 @@ describe('recommendationText', () => {  it('有薄弱主题时给出优先练习
 });
 
 describe('sessionFromQuiz', () => {
+  it('把明确关联的题目评分累计到 KnowledgeNode，而不是只记在 topic', () => {
+    const target = knowledgeNodes[0];
+    const question = {
+      ...choiceA,
+      question: { ...choiceA.question, topic: target.topic, knowledgeId: target.id, courseId: target.courseId },
+    };
+    const grade = (overall: number) => ({
+      overall,
+      dimensions: { correctness: overall, completeness: overall, architecture: overall, communication: overall },
+      levels: { correctness: overall === 100 ? 4 : 0, completeness: overall === 100 ? 4 : 0, architecture: overall === 100 ? 4 : 0, communication: overall === 100 ? 4 : 0 },
+      evidence: { correctness: '', completeness: '', architecture: '', communication: '' },
+      strengths: [], gaps: [], missingConcepts: [], misconceptionIds: [], feedback: '',
+    });
+    const first = sessionFromQuiz({ questions: [question], startedAt: 100 }, { [question.question.id]: grade(100) as never });
+    expect(first.questionResults[0].knowledgeTargets).toEqual([{ knowledgeId: target.id, weight: 1 }]);
+    let profile = updateLearner(emptyProfile(), first);
+    expect(profile.knowledgeStats?.[target.id]).toMatchObject({ attempts: 1, positiveEvidence: 1, negativeEvidence: 0, lastScore: 100 });
+
+    const second = sessionFromQuiz({ questions: [question], startedAt: 200 }, { [question.question.id]: grade(0) as never });
+    profile = updateLearner(profile, second);
+    expect(profile.knowledgeStats?.[target.id]).toMatchObject({ attempts: 2, positiveEvidence: 1, negativeEvidence: 1, lastScore: 0 });
+  });
+
   it('选择题记录 correct 标志，开放题记录 gaps，overall 为各题均分', () => {
     const grades = {
       c1: { overall: 100, dimensions: { correctness: 100, completeness: 100, architecture: 100, communication: 100 }, strengths: [], gaps: [], feedback: '' },
