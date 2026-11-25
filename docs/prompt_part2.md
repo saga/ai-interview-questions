@@ -12,6 +12,8 @@
 
 **严格按照 Part 1 Blueprint 生成最终 Question JSON。**
 
+【强制内容规范】生成或修改 SAP 课程题目时，必须遵循仓库的 `docs/question-content-spec.md`，特别是 §1–§9 的知识边界、答案确定性、干扰项、长度平衡与题型规则，以及 §10–§12 的 SAP 场景完整性、岗位级别和产品/服务责任边界。不得用通用顾问话术替代对应 SAP 主题的专业知识。
+
 不要重新发现 Knowledge。
 
 不要偷偷新增 Knowledge。
