@@ -131,6 +131,8 @@ export const questionResultSchema = z.object({
    * 可选：旧记录没有该字段（ADR-002 例外——SessionRecord 属用户数据契约，只做向后兼容新增）。
    * 注意它**不参与** updateLearner 的任何聚合，纯回放数据。
    */
+  /** Stable KnowledgeNode ids resolved from question metadata at session creation. */
+  knowledgeTargets: z.array(knowledgeTargetSchema).optional(),
   evaluation: evaluationResultSchema.optional(),
 });
 
