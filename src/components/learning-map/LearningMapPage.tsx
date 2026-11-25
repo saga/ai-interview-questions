@@ -95,12 +95,6 @@ function statusColor(status: LearningMapStatus): string {
   return '#bfbfbf';
 }
 
-function statusLabel(status: LearningMapStatus): string {
-  if (status === 'mastered') return '已掌握';
-  if (status === 'weak') return '待加强';
-  return '未开始';
-}
-
 function statusTag(status: LearningMapStatus) {
   if (status === 'mastered') return <Tag color="success">已掌握</Tag>;
   if (status === 'weak') return <Tag color="warning">待加强</Tag>;
