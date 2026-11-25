@@ -28,7 +28,16 @@ export const SAP_IT_SERVICE_COURSE_TOPICS = [
   { id: 'sap-reporting-analytics', label: '报表、分析与业务指标' },
   { id: 'sap-project-delivery', label: '项目治理与客户交付' },
   { id: 'sap-troubleshooting', label: '故障诊断与服务恢复' },
-  { id: 'sap-business-ai', label: 'SAP Business AI、Joule 与企业业务应用', description: 'SAP Joule、Joule for Consultants、Joule Studio、SAP AI Core 和 Generative AI Hub；覆盖财务、采购、销售、供应链等真实业务场景，以及授权、审批、数据治理和结果核验。' }
+  { id: 'sap-business-ai', label: 'SAP Business AI、Joule 与企业业务应用', description: 'SAP Joule、Joule for Consultants、Joule Studio、SAP AI Core 和 Generative AI Hub；覆盖财务、采购、销售、供应链等真实业务场景，以及授权、审批、数据治理和结果核验。' },
+
+  { id: 'sap-tsm-basis-architecture', label: 'TSM · SAP Basis 与技术系统架构' },
+  { id: 'sap-tsm-infrastructure-foundations', label: 'TSM · Linux、数据库、网络与云基础设施' },
+  { id: 'sap-tsm-hana-operations', label: 'TSM · SAP HANA 数据库运行与性能基础' },
+  { id: 'sap-tsm-resilience-continuity', label: 'TSM · 高可用、灾难恢复与业务连续性' },
+  { id: 'sap-tsm-cloud-service-model', label: 'TSM · SAP 云服务、RISE 与共享责任模型' },
+  { id: 'sap-tsm-lifecycle-management', label: 'TSM · SAP 技术生命周期、升级与迁移' },
+  { id: 'sap-tsm-operational-monitoring', label: 'TSM · SAP 运行监控、告警与可观测性' },
+  { id: 'sap-tsm-customer-service-governance', label: 'TSM · Technical Service Management 与客户技术治理' }
 ] as const;
 
 
@@ -126,9 +135,9 @@ export const LEARNING_TRACKS = [
     id: 'sap-it-service-consultant',
     title: 'SAP IT Service Consultant',
     shortTitle: 'SAP',
-    description: '面向大学毕业生和实习生的 SAP 入门课程。题干直接描述工作场景，不重复标注考生身份；以基础概念、业务流程、信息收集、按流程执行、准确记录和及时求助为主，不要求没有工作经验的学习者独立设计方案、主持客户决策或承担交付责任。',
+    description: '面向大学毕业生和实习生的 SAP 入门课程，包含 IT Service Consultant、SAP Technology Consultant 及 SAP Technical Service Manager（TSM）岗位专项学习。TSM 专项覆盖 SAP Basis、基础设施、HANA、HA/DR、RISE/ECS、生命周期、运行监控和客户技术治理；以基础知识、证据收集、跨团队协作和正确升级为主，不要求毕业生独立承担生产运维或客户架构决策。',
     actionLabel: '进入 SAP 顾问学习',
-    topicCount: 41,
+    topicCount: 49,
     learningPathUrl: 'https://github.com/saga/ai-interview-questions/blob/main/docs/sap-it-service-consultant-roadmap.md',
   },
   {
