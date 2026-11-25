@@ -80,7 +80,6 @@ export default function ProgressPage({ profile, nodes, courseId, onGoTrain, cove
       const topicAttempted = (topicStats[n.topic]?.attempts ?? 0) > 0;
       const mastery = s?.mastery ?? 0;
       const avgScore = s?.avgScore ?? 0;
-      const mastered = learned && (mastery >= WEAK_MASTERY || avgScore >= WEAK_AVG);
       return { node: n, learned, topicAttempted, mastery, avgScore, weak: learned && mastery < WEAK_MASTERY && avgScore < 50, attempts };
     });
   }, [knowledgeStats, topicStats, nodes]);
