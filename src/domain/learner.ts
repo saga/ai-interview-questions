@@ -454,9 +454,9 @@ export function knowledgeTargetsForQuestion(question: SessionQuestion['question'
       if (node && !targets.has(node.id)) targets.set(node.id, 0.4);
     }
   } else if (question.subtopic) {
-    const match = candidates.find((node) => node.id.toLowerCase() === question.subtopic!.trim().toLowerCase()
+    const matches = candidates.filter((node) => node.id.toLowerCase() === question.subtopic!.trim().toLowerCase()
       || node.name.trim().toLowerCase() === question.subtopic!.trim().toLowerCase());
-    if (match) targets.set(match.id, 1);
+    if (matches.length === 1) targets.set(matches[0].id, 1);
   }
   // A topic with exactly one KnowledgeNode is an unambiguous one-to-one mapping.
   if (targets.size === 0 && candidates.length === 1) targets.set(candidates[0].id, 1);
