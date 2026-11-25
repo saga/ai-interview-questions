@@ -115,7 +115,10 @@ function G6LiteCanvas({
   const containerRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const serializedData = useMemo(() => data, [data]);
+  const serializedData = useMemo(() => ({
+    nodes: data.nodes.filter((node) => node.data.kind !== 'topic'),
+    edges: data.edges,
+  }), [data]);
 
   useEffect(() => {
     let disposed = false;
@@ -198,8 +201,8 @@ function G6LiteCanvas({
         ref={containerRef}
         style={{
           width: '100%',
-          height: 540,
-          minHeight: 360,
+          height: 760,
+          minHeight: 560,
           border: '1px solid #f0f0f0',
           borderRadius: 8,
           background: '#fff',
@@ -292,7 +295,7 @@ export default function LearningMapPage({ profile, nodes, defaultTrackId, onGoTr
   const recommendations = report.recommendations.slice(0, 6);
 
   return (
-    <div style={{ maxWidth: 1160, margin: '0 auto' }}>
+    <div style={{ width: '100%', maxWidth: 'none', margin: 0 }}>
       <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 12 }} wrap align="center">
         <div>
           <Typography.Title level={4} style={{ margin: 0 }}><ApartmentOutlined /> 学习地图</Typography.Title>
@@ -363,6 +366,38 @@ export default function LearningMapPage({ profile, nodes, defaultTrackId, onGoTr
         </Card>
       ) : (
         <Card size="small"><Empty description="当前学习体系还没有知识节点" /></Card>
+      )}
+
+      {selectedBranch && (
+        <Card
+          size="small"
+          title={`分支主题 · ${selectedBranch.label}`}
+          extra={<Typography.Text type="secondary">{selectedBranch.totalTopics} 个主题，选择后查看训练记录</Typography.Text>}
+          style={{ marginTop: 12 }}
+        >
+          <List
+            grid={{ gutter: 8, xs: 1, sm: 2, md: 3, lg: 4, xl: 4, xxl: 5 }}
+            dataSource={selectedBranch.topics}
+            renderItem={(topic) => (
+              <List.Item>
+                <Button
+                  block
+                  type={selectedTopicId === topic.id ? 'primary' : 'default'}
+                  onClick={() => setSelectedTopicId(topic.id)}
+                  style={{ height: 'auto', minHeight: 48, whiteSpace: 'normal', textAlign: 'left' }}
+                >
+                  <Space direction="vertical" size={2} style={{ width: '100%', alignItems: 'flex-start' }}>
+                    <Typography.Text strong style={{ color: 'inherit' }}>{topic.label}</Typography.Text>
+                    <Space size={4} wrap>
+                      {statusTag(topic.status)}
+                      {priorityTag(topic.priority)}
+                    </Space>
+                  </Space>
+                </Button>
+              </List.Item>
+            )}
+          />
+        </Card>
       )}
 
       <Card size="small" title={<Space><ExclamationCircleOutlined /> 建议优先补强</Space>} style={{ marginTop: 12 }}>
