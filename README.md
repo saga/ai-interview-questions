@@ -18,30 +18,25 @@ Vite + React 19 + TypeScript + Ant Design 单页应用（五个页面：训练 /
 
 ```bash
 npm install
-npm run dev                 # 启动前后端开发服务
-npm run build               # 类型检查 + 生产构建
-npm run preview             # 预览构建产物
-npm run test                # 运行单元测试
-npm run verify              # 完整验证：构建、测试、题库审计和变异测试
-npm run questions           # 题库完整审计
-npm run questions:analyze   # 题库统计与分析（支持 --semantic --json）
-npm run questions:manage    # 列出题库维护任务
-npm run deploy              # 部署 Workers + Assets
-npm run deploy -- pages      # 部署到 Cloudflare Pages
+npm run dev                 # 启动开发服务
+npm run build               # 类型检查与生产构建
+npm run test                # 单元测试
+npm run check               # 完整检查：构建、测试、题库审计、统计/语义分析、变异测试
+npm run questions:manage    # 查看题库维护操作
+npm run deploy              # 部署 Workers
+npm run deploy -- pages     # 部署 Cloudflare Pages
 ```
 
-题库维护通过统一入口调用，例如：
+题库维护统一从一个入口执行：
 
 ```bash
 npm run questions:manage -- add
 npm run questions:manage -- review
 npm run questions:manage -- coverage
 npm run questions:manage -- blueprint -- 10
-npm run questions:analyze -- --semantic --json
 ```
 
-Python 分析工具使用 `uv` 管理，首次运行前执行 `uv sync --project analysis --extra analysis`。
-
+首次运行 Python 分析前执行 `uv sync --project analysis --extra analysis`。
 
 ## 文档
 - [SAP IT Service Consultant 学习路线](docs/sap-it-service-consultant-roadmap.md)：面向大学毕业生和实习生，按无正式项目经验设计；覆盖 59 个主题和 920 道情境题，其中 200 道亚太客户沟通与项目协作题、40 道 SAP Business AI 题、280 道 Technical Service Manager（TSM）专项题（含本轮新增 200 道初/中级技术运维题），另有 200 道对齐 Coursera 课程的初中级题目。\n- [SAP TSM 技术运维深化题覆盖矩阵](docs/sap-tsm-technical-operations-coverage-200.md)：新增 10 个技术知识节点、200 道题的知识映射、难度/题型分布、岗位能力边界与 SAP 官方参考资料。
