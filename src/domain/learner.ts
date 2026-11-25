@@ -441,9 +441,12 @@ export function knowledgeTargetsForQuestion(question: SessionQuestion['question'
   if (question.knowledgeId && knowledgeNodes.some((node) => node.id === question.knowledgeId && node.topic === question.topic)) {
     targets.set(question.knowledgeId, 1);
   } else if (question.concepts) {
-    const resolve = (value: string) => candidates.find((node) =>
-      node.id.toLowerCase() === value.trim().toLowerCase() || node.name.trim().toLowerCase() === value.trim().toLowerCase(),
-    );
+    const resolve = (value: string) => {
+      const matches = candidates.filter((node) =>
+        node.id.toLowerCase() === value.trim().toLowerCase() || node.name.trim().toLowerCase() === value.trim().toLowerCase(),
+      );
+      return matches.length === 1 ? matches[0] : undefined;
+    };
     const core = resolve(question.concepts.core);
     if (core) targets.set(core.id, 1);
     for (const value of question.concepts.supporting) {
