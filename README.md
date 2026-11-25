@@ -88,7 +88,8 @@ uv run --project analysis --extra analysis python analysis/question_analysis.py 
 {
   "id": "ml-99",
   "category": "training",           // topic slug，与文件名一致（见 src/data/taxonomy.ts）
-  "topic": "regularization",        // 知识节点 id（见 src/data/knowledge/）
+  "topic": "regularization",        // 知识主题分组（见知识节点 topic 字段）
+  "knowledgeId": "regularization",  // 多节点主题必须明确指定；单节点主题可唯一回退
   "tags": ["可选", "标签"],
   "difficulty": "easy",             // easy | medium | hard
   "angle": "tradeoff",              // 必填：主考察角度（覆盖矩阵与自适应选题都依赖它）
