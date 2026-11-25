@@ -10,7 +10,7 @@
 import type { LearnerProfile, SessionRecord } from '../schemas/learner';
 import { learnerProfileSchema, questionResultSchema, sessionRecordSchema } from '../schemas/learner';
 import type { ProficiencyConfig } from '../schemas/ai-config';
-import { calculateProficiency, emptyProfile, recommendWeakTopics } from '../domain/learner';
+import { calculateProficiency, emptyProfile, knowledgeTargetsForQuestion, recommendWeakTopics, updateLearner } from '../domain/learner';
 import { db, topicsOfSession, type StoredLearner, type StoredSession } from './db';
 
 const SESSION_CAP = 50;
@@ -79,8 +79,24 @@ export async function loadLearner(config?: ProficiencyConfig): Promise<LearnerPr
     .map(parseSessionRow)
     .filter((s): s is SessionRecord => s !== null);
 
+  // Backfill KnowledgeNode associations for retained legacy sessions. Old snapshots already contain
+  // the original question metadata, so this is deterministic and does not require re-running an LLM.
+  const hydratedSessions = sessions.map((session) => {
+    if (!session.questions?.length) return session;
+    const questionsById = new Map(session.questions.map((item) => [item.question.id, item.question]));
+    let changed = false;
+    const questionResults = session.questionResults.map((result) => {
+      if (result.knowledgeTargets) return result;
+      const question = questionsById.get(result.questionId);
+      if (!question) return result;
+      changed = true;
+      return { ...result, knowledgeTargets: knowledgeTargetsForQuestion(question) };
+    });
+    return changed ? { ...session, questionResults } : session;
+  });
+
   const topicPracticeSessions = new Map<string, number>();
-  for (const session of sessions) {
+  for (const session of hydratedSessions) {
     for (const topic of new Set(session.questionResults.map((result) => result.topic))) {
       topicPracticeSessions.set(topic, (topicPracticeSessions.get(topic) ?? 0) + 1);
     }
@@ -95,11 +111,21 @@ export async function loadLearner(config?: ProficiencyConfig): Promise<LearnerPr
       }];
     }),
   );
+  let knowledgeStats = safe.knowledgeStats ?? {};
+  if (Object.keys(knowledgeStats).length === 0) {
+    // The aggregate did not exist in older profiles. Rebuild it from retained session snapshots;
+    // topic-level aggregates remain untouched and continue to use their full persisted history.
+    let rebuilt = emptyProfile();
+    for (const session of [...hydratedSessions].reverse()) rebuilt = updateLearner(rebuilt, session, config);
+    knowledgeStats = rebuilt.knowledgeStats ?? {};
+  }
+
   return {
     ...safe,
     topicStats,
+    knowledgeStats,
     // 与 updateLearner 保持一致：新在前、上限 SESSION_CAP
-    sessions: sessions.slice(0, SESSION_CAP),
+    sessions: hydratedSessions.slice(0, SESSION_CAP),
   };
 }
 
