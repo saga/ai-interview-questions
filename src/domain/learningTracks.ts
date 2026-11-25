@@ -85,6 +85,7 @@ export function profileForTrack(
     totalQuestions: sessions.reduce((sum, session) => sum + session.questionResults.length, 0),
     overallScore,
     topicStats: Object.fromEntries(Object.entries(profile.topicStats).filter(([topic]) => topicIds.has(topic))),
+    knowledgeStats: Object.fromEntries(Object.entries(profile.knowledgeStats ?? {}).filter(([knowledgeId]) => nodes.some((node) => node.id === knowledgeId))),
     angleCoverage: filterTopicKeys(profile.angleCoverage),
     assessmentCoverage: filterTopicKeys(profile.assessmentCoverage),
     conceptEvidence: filterTopicKeys(profile.conceptEvidence),
