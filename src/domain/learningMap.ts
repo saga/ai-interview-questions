@@ -247,7 +247,7 @@ export function buildLearningMapReport(
 
 export function buildLearningMapGraphData(report: LearningMapReport): LearningMapGraphData {
   const rootId = 'learning-map-root';
-  const rootLabel = `${getLearningTrack(report.trackId).shortTitle} · ${report.masteredTopics}/${report.totalTopics} 已掌握`;
+  const rootLabel = `${getLearningTrack(report.trackId).shortTitle} · ${report.masteredTopics}/${report.totalTopics} 已掌握（${report.masteryPercent}%）`;
   const nodes: LearningMapGraphNode[] = [{
     id: rootId,
     name: rootLabel,
