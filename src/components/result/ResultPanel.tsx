@@ -266,6 +266,7 @@ export default function ResultPanel({ questions, answers, grades, profile, maste
   const choiceCount = questions.filter((sq) => sq.format === 'choice').length;
   const openCount = total - choiceCount;
   const openGraded = questions.filter((sq) => sq.format !== 'choice' && grades[sq.question.id]).length;
+  const tipsRequestedCount = questions.filter((sq) => sq.tipsRequested).length;
 
   const { strengths, weaknesses } = collectSignals(questions, grades);
   const delta = prevOverall == null ? null : percent - prevOverall;
@@ -286,6 +287,7 @@ export default function ResultPanel({ questions, answers, grades, profile, maste
           )}
           <Tag>选择题 {choiceCount}</Tag>
           <Tag>开放/编程 {openCount}</Tag>
+          <Tag>已查看更多信息 {tipsRequestedCount} 题</Tag>
           {openCount > 0 && openGraded === 0 && <Tag color="default">开放题未评分</Tag>}
         </Space>
       </Card>
