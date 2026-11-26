@@ -91,10 +91,11 @@ describe('SAP IT Service Consultant course', () => {
     expect(questions.every((question) => question.formats.choice?.options.every((option) => !/[。！？]，(?:并|便于|同时|方便)/.test(option)))).toBe(true);
     expect(nodes.find((node) => node.id === 'sap-business-ai')?.required.join(' ')).toContain('Joule Studio');
     const juniorRoleNoise = /你是刚加入项目|毕业生实习生或 Junior Consultant|应届毕业生或实习生|对初级顾问而言|把资深顾问或项目负责人的决策职责误当成实习生应独立承担的工作/;
-    const questionPersonaNoise = /导师|实习生|校招生|应届生|毕业生 TSM|初级 TSM|初级成员|Junior Consultant|Graduate TSM|候选人被要求解释一个没有实际经验的 SAP 能力/;
+    const questionPersonaNoise = /导师|带教顾问|实习生|校招生|应届生|毕业生 TSM|初级 TSM|初级成员|Junior Consultant|Graduate TSM|候选人被要求解释一个没有实际经验的 SAP 能力/;
     expect(questions.every((question) => !juniorRoleNoise.test([
       question.question,
       question.assessment.target,
+      question.assessment.reasoningGoal,
       question.explanation,
       ...question.misconceptions,
     ].join(' ')) && !questionPersonaNoise.test([
