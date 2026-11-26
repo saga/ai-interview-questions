@@ -126,6 +126,7 @@ export default function App() {
     handleFinishEarly,
     doSubmit,
     handleAnswerChange,
+    handleTipsRequested,
     handleContinue,
     handleAgentComplete,
     handleRestart,
@@ -190,6 +191,7 @@ export default function App() {
                 onFinish={() => void handleFinishEarly()}
                 challengerEnabled={config.questionChallengerEnabled}
                 challengerProvider={challengerProvider}
+                onTipsRequested={handleTipsRequested}
               />
             </div>
           );
@@ -212,7 +214,7 @@ export default function App() {
       }
       // 非自适应：完整题目列表
       return (
-        <div>
+        <div className="training-quiz-content">
           <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 16 }} wrap>
             <Tag color="blue">共 {questions.length} 题</Tag>
             <span>
@@ -236,6 +238,8 @@ export default function App() {
               onChange={(v) => handleAnswerChange(sq.question.id, v)}
               challengerEnabled={config.questionChallengerEnabled}
               challengerProvider={challengerProvider}
+              tipsRequested={sq.tipsRequested ?? false}
+              onTipsRequested={handleTipsRequested}
             />
           ))}
           <Button type="primary" size="large" block disabled={busy != null} onClick={doSubmit}>
