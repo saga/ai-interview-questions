@@ -101,6 +101,7 @@ describe('SAP IT Service Consultant course', () => {
     ].join(' ')) && !questionPersonaNoise.test([
       question.question,
       question.assessment.target,
+      question.assessment.reasoningGoal,
       question.explanation,
       ...(question.formats.choice?.options ?? []),
       ...question.misconceptions,
