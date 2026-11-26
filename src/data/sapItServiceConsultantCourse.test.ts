@@ -112,6 +112,6 @@ describe('SAP IT Service Consultant course', () => {
       ...node.misconceptions,
     ].join(' ')))).toBe(true);
     const japanSilenceQuestion = juniorPractice.find((question) => question.id === 'sap-itc-636');
-    expect(japanSilenceQuestion?.question).toContain('日本客户会议中出现较长沉默，你准备继续讲完所有幻灯片。 下一步最合适的做法是什么？（单选题）');
+    expect(japanSilenceQuestion?.question).toContain('日本客户会议中出现较长沉默，你准备继续讲完所有幻灯片。下一步最合适的做法是什么？（单选题）');
   });
 });
