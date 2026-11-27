@@ -102,6 +102,16 @@ function ResultItem({
   grade?: EvaluationResult | null;
 }) {
   const q = sq.question;
+  const metadata = (
+    <Space wrap size={[6, 6]} style={{ marginBottom: 10 }}>
+      <Tag color="blue">{sq.format === 'choice' ? (q.formats.choice?.type === 'multiple' ? '多选题' : '单选题') : q.formats.open?.language ? `编程题 · ${q.formats.open.language}` : '问答题'}</Tag>
+      <Tag>{q.difficulty}</Tag>
+      <Tag>{categoryLabel(q.category)}</Tag>
+      {q.subtopic && <Tag color="geekblue">{q.subtopic}</Tag>}
+      {q.tags?.map((tag) => <Tag key={tag} color="cyan">{tag}</Tag>)}
+      {q.aiGenerated && <Tag color="purple">AI 变体</Tag>}
+    </Space>
+  );
 
   if (sq.format === 'choice') {
     const cf = q.formats.choice!;
@@ -124,9 +134,10 @@ function ResultItem({
         <Card
           size="small"
           style={{ width: '100%' }}
-          title={`第 ${index + 1} 题 · ${categoryLabel(q.category)} · ${cf.type === 'multiple' ? '多选' : '单选'}`}
+          title={`第 ${index + 1} 题`}
           extra={resultTag}
         >
+          {metadata}
           <RichText text={stem} strong />
           <Typography.Text type="secondary">你的选择：</Typography.Text>
           <Typography.Text>{letterList(sel)}</Typography.Text>
@@ -161,9 +172,10 @@ function ResultItem({
       <Card
         size="small"
         style={{ width: '100%' }}
-        title={`第 ${index + 1} 题 · ${categoryLabel(q.category)}${of.language ? ` · 编程（${of.language}）` : ''}`}
+        title={`第 ${index + 1} 题`}
         extra={resultTag}
       >
+        {metadata}
         <RichText text={q.question} strong />
 
         <Typography.Text type="secondary">你的回答：</Typography.Text>
