@@ -4,18 +4,11 @@ import { SafetyCertificateOutlined, QuestionCircleOutlined } from '@ant-design/i
 import type { AnswerValue } from '../../types';
 import type { FormatId } from '../../schemas/common';
 import type { Question } from '../../schemas/question';
-import { categoryLabel } from '../../domain/categories';
 import type { LLMProvider } from '../../types';
 import type { QuestionChallenge } from '../../ai/questionChallenger';
 import RichText from '../common/RichText';
 
 const LazyCodeEditor = lazy(() => import('../common/CodeEditor'));
-
-const DIFF_COLOR: Record<string, string> = {
-  easy: 'green',
-  medium: 'gold',
-  hard: 'red',
-};
 
 interface ShuffledOption {
   text: string;
@@ -68,14 +61,7 @@ export default function QuestionCard({ index, question, format, value, onChange,
 
   // 选择形态可携带场景化专属题干（cf.question），未给则与开放形态共用共享题干
   const stem = (format === 'choice' ? cf?.question : undefined) ?? question.question;
-  const typeLabel =
-    format === 'choice'
-      ? cf?.type === 'multiple'
-        ? '多选题'
-        : '单选题'
-      : of?.language
-        ? `编程题 · ${of.language}`
-        : '问答题';
+
 
   const runChallenge = async () => {
     setChallenging(true);
@@ -103,16 +89,16 @@ export default function QuestionCard({ index, question, format, value, onChange,
     <Card size="small" style={{ marginBottom: 16 }}>
       <Space wrap style={{ marginBottom: 14 }}>
         <Badge count={index + 1} showZero color="#1677ff" />
-        <Tag color="blue">{typeLabel}</Tag>
-        {question.subtopic && <Tag color="geekblue">{question.subtopic}</Tag>}
-        <Tag color={DIFF_COLOR[question.difficulty]}>{question.difficulty}</Tag>
-        <Tag>{categoryLabel(question.category)}</Tag>
-        {question.tags?.map((t) => (
-          <Tag key={t} color="cyan">
-            {t}
-          </Tag>
-        ))}
-        {question.aiGenerated && <Tag color="purple">AI 变体</Tag>}
+        {readOnly && (
+          <>
+            <Tag color="blue">{format === 'choice' ? (cf?.type === 'multiple' ? '多选题' : '单选题') : of?.language ? `编程题 · ${of.language}` : '问答题'}</Tag>
+            {question.subtopic && <Tag color="geekblue">{question.subtopic}</Tag>}
+            <Tag>{question.difficulty}</Tag>
+            <Tag>{question.category}</Tag>
+            {question.tags?.map((t) => <Tag key={t} color="cyan">{t}</Tag>)}
+            {question.aiGenerated && <Tag color="purple">AI 变体</Tag>}
+          </>
+        )}
       </Space>
       <div style={{ marginBottom: 18 }}>
         <RichText text={stem} strong />
