@@ -1350,7 +1350,10 @@ The repository now provides `npm run questions:manage -- verify` as the executab
 
 ```bash
 npm run questions:manage -- verify --ids=<id1,id2> --evidence-file=reports/question-evidence.json
+npm run questions:manage -- verify --knowledge-id=<KnowledgeNode-id> --evidence-file=reports/question-evidence.json --gate
 npm run questions:manage -- verify --ids=<id1,id2> --evidence-file=reports/question-evidence.json --gate
 ```
+
+Use `--knowledge-id` to select questions mapped to a KnowledgeNode. This filters by `question.knowledgeId`; legacy records without that field may fall back to `question.topic`. The older `--topic` selector remains available for topic-based worklists.
 
 The evidence file must contain actual source excerpts whose IDs match `source.materialId` or `source.relatedMaterials`. The first model call receives no stored answer or explanation. The second call verifies every option and the explanation against the supplied excerpts. Quote matching is deterministic; missing or unmatched evidence cannot yield `VERIFIED`. `--gate` returns a failure unless every target question is `VERIFIED`.
