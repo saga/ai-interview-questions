@@ -27,7 +27,7 @@ description: "补齐题库覆盖缺口。用户要求分析题库缺口、生成
     - **不能 reuse 才从零新写 canonical 题**，遵守蓝图里的 `purpose` 和 `expectedConcepts` 约束，不要跑题。
    - 新 canonical 题写入成功后，若需要在**同一格内**扩充题量（减少重复感），
      才走离线变体生成（`npm run questions:manage -- variants`，见 ADR-069）。
-5. 起草完成后，交给 **add-question-to-bank** skill 的完整校验与写入流程（题目契约、去重、语义重复检查、typecheck、test）。本 skill 不重复实现写入逻辑。
+5. 起草或 fork 出新 canonical 后，先应用 `skills/unslop/SKILL.md` 审查题干、选项和解析的中文表达；只做有依据的最小修改，不得改变蓝图的 Concept、angle、difficulty 和答案边界。之后交给 **add-question-to-bank** skill 的完整校验与写入流程（题目契约、去重、语义重复检查、typecheck、test）。本 skill 不重复实现写入逻辑。
 6. 补题后重新运行 `npm run questions:manage -- coverage`，确认目标缺口确实被填上，且没有引入新的 topic × angle 失衡。
 
 > **变体不是补覆盖缺口的主要机制。** 变体继承 canonical 的 `topic` 与 `angle`
