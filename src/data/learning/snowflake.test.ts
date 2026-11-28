@@ -101,7 +101,7 @@ describe('Snowflake integrated engineering tutorials', () => {
       expect(new Set(tutorial.linkedKnowledgeNodeIds).size).toBe(tutorial.linkedKnowledgeNodeIds.length);
       for (const nodeId of tutorial.linkedKnowledgeNodeIds) expect(knownNodeIds.has(nodeId), nodeId).toBe(true);
       expect(tutorial.references.length).toBeGreaterThan(0);
-      for (const reference of tutorial.references) expect(reference.url).toMatch(/^https:\\/\\//);
+      for (const reference of tutorial.references) expect(reference.url.startsWith('https://')).toBe(true);
     }
   });
 });

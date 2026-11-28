@@ -180,7 +180,7 @@ export const SNOWFLAKE_INTEGRATED_TUTORIALS: IntegratedLearningTutorial[] =
     if (typeof content !== 'string' || content.length < 1200) {
       throw new Error(`综合工程教程内容缺失或过短：${entry.file}`);
     }
-    if (entry.references.length === 0 || entry.references.some((reference) => !/^https:\\/\\//.test(reference.url))) {
+    if (entry.references.length === 0 || entry.references.some((reference) => !reference.url.startsWith('https://'))) {
       throw new Error(`综合工程教程参考资料无效：${entry.id}`);
     }
     return { ...entry, content };
