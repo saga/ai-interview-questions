@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { resolve } from 'node:path';
 
@@ -102,6 +102,28 @@ if (changed && targets.length === 0) {
 
 const structureProblems = [];
 const qualityProblems = [];
+const articleManifestChanged = !strict || changed.has('src/content/courses/snowflake/index.json');
+const integratedManifestChanged = !strict || changed.has('src/content/courses/snowflake/integrated/index.json');
+if (articleManifestChanged && manifest.nodes.length !== 194) {
+  structureProblems.push({ id: 'snowflake-course', path: 'src/content/courses/snowflake/index.json', problem: `KnowledgeNode 数量应为 194，实际为 ${manifest.nodes.length}` });
+}
+if (integratedManifestChanged && integratedManifest.tutorials.length !== 8) {
+  structureProblems.push({ id: 'snowflake-integrated-course', path: 'src/content/courses/snowflake/integrated/index.json', problem: `综合教程数量应为 8，实际为 ${integratedManifest.tutorials.length}` });
+}
+const mappedFiles = new Set(manifest.nodes.map((entry) => entry.file));
+const mappedIntegratedFiles = new Set(integratedManifest.tutorials.map((entry) => entry.file));
+for (const file of readdirSync(resolve(root, articleRoot)).filter((name) => name.endsWith('.md'))) {
+  const filePath = articleRoot + file;
+  if (!mappedFiles.has(file) && (!strict || changed.has(filePath))) {
+    structureProblems.push({ id: file, path: filePath, problem: '文章文件未映射到任何 KnowledgeNode' });
+  }
+}
+for (const file of readdirSync(resolve(root, integratedRoot)).filter((name) => name.endsWith('.md'))) {
+  const filePath = integratedRoot + file;
+  if (!mappedIntegratedFiles.has(file) && (!strict || changed.has(filePath))) {
+    structureProblems.push({ id: file, path: filePath, problem: '综合教程文件未映射到 integrated manifest' });
+  }
+}
 const paragraphIndex = new Map();
 const changedIds = new Set(targets.map((doc) => doc.id));
 const pendingSources = [];
