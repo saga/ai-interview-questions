@@ -242,18 +242,24 @@
     "area": "data-platform",
     "topic": "data-architecture",
     "priority": "P1",
-    "summary": "管理 SAP BDC 与 Snowflake 零拷贝连接器的前置条款、权限、连接状态、数据产品消费与发布流程。",
+    "summary": "管理 SAP BDC Connect for Snowflake Zero-Copy Connector 的组织条款、权限和异步状态；区分挂载 SAP 数据产品与反向发布 Iceberg 数据产品的流程，并按依赖顺序清理连接器。",
     "required": [
-      "组织层面需要由 ORGADMIN 一次性接受相应条款，Snowflake 角色还需具有目标 Schema 的连接器权限。",
-      "消费 SAP 数据产品与向 SAP BDC 发布 Snowflake 数据产品是不同工作流，需要不同权限与验收。",
-      "连接器状态变化包含异步阶段，只有处于正确连接状态才能执行后续挂载或发布操作。",
-      "断开连接前必须按生命周期约束处理共享发布状态与 Catalog-Linked Databases。"
+      "区分 SAP Snowflake 新账号与现有 Snowflake Account 的 BDC Connect 路径，完成非 Trial 账号、ORGADMIN 组织条款和 SAP 侧准备。",
+      "按 Schema CREATE ZEROCOPY CONNECTOR 与 Connector OPERATE/USAGE/MODIFY/MONITOR/OWNERSHIP 权限执行相应生命周期操作。",
+      "创建 Connector 并理解 NEW、CONNECTING、CONNECTED、CONNECT_ERROR、DISCONNECTING、DISCONNECTED、DISCONNECT_ERROR、DELETED 的异步状态和允许转换。",
+      "在 SAP BDC Catalog 分享数据产品，使用 SYSTEM$ZEROCOPY_CONNECTOR_LIST_SHARES 的 name 挂载 Catalog-Linked Database，理解 SNOWFLAKE$ Semantic Views、SYNC_INTERVAL_SECONDS 和 CSN PII masking。",
+      "反向发布前启用 SHARE_BACK，准备 Iceberg V3、Snowflake Catalog/Storage、Copy-on-Write、COMPATIBLE serialization 和 PK/CSN key 对齐的对象。",
+      "创建并授权 Snowflake Share，关联 Connector，使用 SYSTEM$SAP_PUBLISH_DATA_PRODUCT 发布，按 Catalog 侧验证结果。",
+      "断开前删除所有 Catalog-Linked Databases、关闭 Share-Back，并处理共享状态和 PrivateLink endpoint 生命周期。"
     ],
     "misconceptions": [
-      "认为接受条款、创建连接器和授予数据访问权限是同一步骤。",
-      "把异步 CONNECTING 状态当作连接已经可用。",
-      "混淆消费 SAP 共享数据产品和反向发布 Snowflake 数据产品。",
-      "断开或删除连接器时忽略 Catalog-Linked Databases 与 share-back 状态。"
+      "认为接受组织条款、创建 Connector 和授予数据访问权限是同一步骤",
+      "把 CONNECTING 当成连接已经可用",
+      "把 SAP 数据产品的显示名称直接当作 SHARE_NAME，而不是使用返回的 name",
+      "认为 Catalog-Linked Database 是普通本地数据库，或默认 PII 不会对 ACCOUNTADMIN 遮罩",
+      "把任意 Snowflake Table 放入 Share 就能发布到 SAP BDC",
+      "认为创建 Snowflake Share 就等于已向 SAP BDC 发布产品",
+      "断开 Connector 时忽略 Catalog-Linked Databases、SHARE_BACK 和 PrivateLink endpoint"
     ],
     "angles": [
       "scenario",
