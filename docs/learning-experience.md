@@ -34,14 +34,14 @@ Snowflake 的节点教程以 KnowledgeNode 为单位。教程自测用于阅读�
 
 1. 识别目标 KnowledgeNode 和需要测量的工程判断，先筛掉只有名词记忆价值的材料细节。
 2. 建立 Assessment Blueprint：明确核心 Concept、`knowledgeId`、`cognitiveTask`、考察角度、难度、assessment target、关键误区和答案边界。
-3. 从真实教学材料或官方资料生成自包含题目草稿，填写稳定的 `source.materialId`；不得猜测或编造来源 ID。
+3. 从真实教学材料或官方资料生成自包含题目草稿。课程题必须填写 `courseId` 和精确 `knowledgeId`；`topic` 仍是题库主题键，可以被多个节点共享。填写稳定的 `source.materialId`，并按课程要求记录 `section`、`page` 和 `relatedMaterials`；不得猜测或编造节点 ID、材料 ID 或官方来源 ID。
 4. 通过现有题目写入流程执行 Schema、题型、答案索引、去重、语义重复、表达质量和覆盖缺口检查。
 5. 独立解题并进行事实核验：先隐藏题库答案和解析，再逐项评估选项；使用来源摘录检查题干、选项、解析和开放题参考答案。
 6. 有冲突或证据不足时保留 REVIEW / NEEDS_EVIDENCE，不以模型置信度替代来源证据。
 
 现有生产入口为 `questions:manage -- blueprint`、`skills/article-to-questions/SKILL.md` 和 `skills/add-question-to-bank/SKILL.md`。事实核验入口为 `questions:manage -- verify --knowledge-id=<id> --evidence-file=<file> --gate`；按题目 ID 运行时使用 `--ids`。
 
-CI 对本次新增/修改题目执行 `cognitiveTask`、`source.materialId` 元数据门禁，并运行题库身份、结构、质量、覆盖和变体检查。**元数据门禁不等于事实核验**：需要真实来源摘录的逐项事实核验由上面的 verify 流程执行，未提供证据不能判为 VERIFIED。完整校验入口为 `npm run check`；题目专项审计可用 `npm run questions:manage -- validate`、`quality`、`coverage`、`verify`。
+CI 对本次新增/修改题目执行 `cognitiveTask`、`source.materialId` 门禁；课程题还检查 `courseId` 与 `knowledgeId`，Snowflake 题另外要求 `source.section` 和至少一个 `source.relatedMaterials`。题目转换器和 `question:add --check` 使用相同约束。CI 还运行题库身份、结构、质量、覆盖和变体检查。**这些元数据门禁不等于事实核验**：逐项事实核验会检查题目登记的主来源与补充来源是否提供了真实摘录、引用能否逐字匹配；未提供证据不能判为 VERIFIED。完整校验入口为 `npm run check`；题目专项审计可用 `npm run questions:manage -- validate`、`quality`、`coverage`、`verify`。
 
 ## 诊断能力边界
 
