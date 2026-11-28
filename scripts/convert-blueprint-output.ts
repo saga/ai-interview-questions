@@ -4,7 +4,7 @@
 //
 // 适配的 v7 落库字段（与 schema 对齐，避免 Zod 静默 strip）：
 //   - courseId / knowledgeId：课程题的精确课程与 KnowledgeNode 身份，必须保留到 Question。
-//   - blueprintKnowledgeId：Part 1 对账字段，与最终 knowledgeId 一致性校验；不能和共享 topic 比较。
+//   - blueprintKnowledgeId：Part 1 对账字段，与最终 knowledgeId 一致性校验；课程题还要求 topic === knowledgeId。
 //   - misconceptions：题目级误解数组 → Question.misconceptions。
 //   - misconceptionMap：Part2 以 option key 对齐的对象输出，此处转成 schema 要求的「按 option 索引的数组」。
 //   - source.materialId：溯源引用 → Question.source（此前被 Zod strip 丢失，复评 v6 P0 之一）。
@@ -131,7 +131,7 @@ function toMisconceptionMap(item: PromptItem, indices: number[]): (number | null
 }
 
 for (const item of items) {
-  // 课程题的 topic 可以是多个节点共用的主题键；精确节点归属由 knowledgeId 决定。
+  // 课程题的 topic 与 knowledgeId 都必须指向同一个 KnowledgeNode.id；共享分类属于 KnowledgeNode.topic。
   validateBlueprintKnowledgeIdentity(item).forEach((problem) => errors.push(problem));
   // 测量意图落库（P0-2）：target + reasoningGoal 必须齐备才构成完整 assessment。
   // 缺一半时只告警不落库——半截的测量意图比没有更容易误导后续 review。
