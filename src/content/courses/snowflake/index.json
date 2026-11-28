@@ -4236,16 +4236,61 @@
       "file": "cortex-search-index-refresh-security.md",
       "topic": "snowflake-genai",
       "priority": "P1",
-      "summary": "将源表变化、服务刷新、可搜索字段、过滤字段和访问策略纳入检索链路治理。",
+      "summary": "监控 Cortex Search 从源表提交到索引可查询的实际滞后，诊断 Indexing/Serving、刷新失败和增量重建，并按授权域隔离 Owner’s Rights 搜索或验证 Data Governance Policy Inheritance。",
       "references": [
         {
           "id": "cortex-search-index-refresh-security-ref-1",
           "type": "official",
-          "title": "Overview of access control",
-          "url": "https://docs.snowflake.com/en/user-guide/security-access-control-overview",
           "publisher": "Snowflake Documentation",
-          "relevance": "核对“Cortex Search 索引刷新、权限过滤与新鲜度”涉及的产品行为、配置边界或工程机制。",
-          "verifiedAt": "待核验"
+          "verifiedAt": "2026-11-28",
+          "title": "DESCRIBE CORTEX SEARCH SERVICE",
+          "url": "https://docs.snowflake.com/en/sql-reference/sql/desc-cortex-search",
+          "relevance": "核对 TARGET_LAG、DATA_TIMESTAMP、Indexing/Serving 状态、错误、主键和全量索引目标字段。"
+        },
+        {
+          "id": "cortex-search-index-refresh-security-ref-2",
+          "type": "official",
+          "publisher": "Snowflake Documentation",
+          "verifiedAt": "2026-11-28",
+          "title": "CORTEX_SEARCH_REFRESH_HISTORY",
+          "url": "https://docs.snowflake.com/en/sql-reference/functions/cortex_search_refresh_history",
+          "relevance": "核对刷新状态、DATA_TIMESTAMP、增量/全量动作、触发方式、预处理与索引耗时、Query ID 和错误。"
+        },
+        {
+          "id": "cortex-search-index-refresh-security-ref-3",
+          "type": "official",
+          "publisher": "Snowflake Documentation",
+          "verifiedAt": "2026-11-28",
+          "title": "ALTER CORTEX SEARCH SERVICE",
+          "url": "https://docs.snowflake.com/en/sql-reference/sql/alter-cortex-search",
+          "relevance": "核对 Indexing 与 Serving 的独立暂停/恢复、手动 REFRESH 和 Primary Key 修改后续刷新生效行为。"
+        },
+        {
+          "id": "cortex-search-index-refresh-security-ref-4",
+          "type": "official",
+          "publisher": "Snowflake Documentation",
+          "verifiedAt": "2026-11-28",
+          "title": "Data governance policy inheritance for Cortex Search",
+          "url": "https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-search/cortex-search-data-governance-inheritance",
+          "relevance": "核对 Owner's Rights 默认权限、Row Access/Masking Policy 继承的 Preview 条件、Primary Key 和 SQL-only 检索限制。"
+        },
+        {
+          "id": "cortex-search-index-refresh-security-ref-5",
+          "type": "official",
+          "publisher": "Snowflake Documentation",
+          "verifiedAt": "2026-11-28",
+          "title": "Cortex Search services Information Schema",
+          "url": "https://docs.snowflake.com/en/sql-reference/info-schema/cortex_search",
+          "relevance": "核对服务 Owner、源数据行数/字节、当前索引时间戳、Indexing/Serving 和计费服务数据规模字段。"
+        },
+        {
+          "id": "cortex-search-index-refresh-security-ref-6",
+          "type": "official",
+          "publisher": "Snowflake Documentation",
+          "verifiedAt": "2026-11-28",
+          "title": "Cortex Search overview",
+          "url": "https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-search/cortex-search-overview",
+          "relevance": "核对 Search Service 架构、索引构建、向量化与查询结果边界。"
         }
       ]
     },
