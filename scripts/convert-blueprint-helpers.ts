@@ -35,3 +35,29 @@ export function misconceptionMapsEqual(a: (number | null)[] | null, b: (number |
   if (!a || !b || a.length !== b.length) return false;
   return a.every((v, i) => v === b[i]);
 }
+
+export interface BlueprintKnowledgeIdentity {
+  id: string;
+  topic: string;
+  courseId?: string;
+  knowledgeId?: string;
+  blueprintKnowledgeId?: string;
+}
+
+/**
+ * Check the identity carried from Part 1 Blueprint through the Part 2 Question.
+ * A course topic may be shared by many KnowledgeNodes, so compare blueprintKnowledgeId
+ * with knowledgeId, never with topic.
+ */
+export function validateBlueprintKnowledgeIdentity(item: BlueprintKnowledgeIdentity): string[] {
+  const problems: string[] = [];
+  if (item.courseId && !item.knowledgeId) {
+    problems.push(`${item.id}: 课程题缺少精确 knowledgeId`);
+  }
+  if (item.blueprintKnowledgeId && item.knowledgeId && item.blueprintKnowledgeId !== item.knowledgeId) {
+    problems.push(
+      `${item.id}: blueprintKnowledgeId "${item.blueprintKnowledgeId}" 与 knowledgeId "${item.knowledgeId}" 不一致`,
+    );
+  }
+  return problems;
+}
