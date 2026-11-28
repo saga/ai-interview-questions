@@ -1,63 +1,101 @@
-# 最小权限角色与受控写入入口
+# Snowflake 最小权限：角色分层与受控写入
 
-## 本节要解决的问题
+## 服务只需要更新一列，为什么却拿到了整张库的 OWNERSHIP
 
-把服务权限限制在业务必需范围，降低凭证泄露和程序缺陷的影响
+一个订单处理服务每天只需把状态从 PENDING 更新为 APPROVED。为了减少权限配置工作，部署人员把 SYSADMIN 凭证放进自动化任务。凭证一旦泄露，攻击者就不止能更新状态，还可能删除对象、读取敏感数据或扩大授权。
 
-企业数据架构与治理。先定义业务实体、事实粒度、指标口径和访问责任，再决定物理模型、语义定义与权限策略。
+最小权限要把用户、服务、对象访问和业务操作分开设计，并让数据库约束每个入口。
 
-本教程只对应知识点 `snowflake-guide-least-privilege`。目标是理解其机制、适用边界和验证方法，不把相邻知识点合并成一个大章。
+## 将对象访问角色与功能角色分开
 
-## 核心知识
+对象访问角色只表达对某些 Database、Schema、表和 Warehouse 的权限；功能角色组合业务岗位需要的对象访问角色。后者授予用户或服务，前者则由平台团队维护。
 
-### 把服务权限限制在业务必需范围，降低凭证泄露和程序缺陷的影响
+~~~sql
+CREATE ROLE orders_read_role;
+CREATE ROLE order_processor_role;
 
-权限判断沿用户、当前激活角色、角色继承、对象权限和所有权追踪，并检查 Database、Schema 与目标对象的使用权限。
+GRANT USAGE ON DATABASE ANALYTICS_DB TO ROLE orders_read_role;
+GRANT USAGE ON SCHEMA ANALYTICS_DB.MART TO ROLE orders_read_role;
+GRANT SELECT ON TABLE ANALYTICS_DB.MART.ORDERS TO ROLE orders_read_role;
 
-### 为服务设独立受限角色，必要时以严格校验的 Owner Rights 过程封装窄写操作
+GRANT ROLE orders_read_role TO ROLE order_processor_role;
+~~~
 
-权限判断沿用户、当前激活角色、角色继承、对象权限和所有权追踪，并检查 Database、Schema 与目标对象的使用权限。
+示例只表达读取权限。Warehouse 的 USAGE/MONITOR 与表的 SELECT/UPDATE 应分别授予。自动化脚本不应以 ACCOUNTADMIN 运行；日常对象操作放在专用角色层级，账户级用户管理和全局授权管理由相应管理角色承担。
 
-### 限制可操作对象/参数、记录调用，避免服务长期使用 ACCOUNTADMIN
+## Future Grants 与 Managed Access Schema 解决不同问题
 
-权限判断沿用户、当前激活角色、角色继承、对象权限和所有权追踪，并检查 Database、Schema 与目标对象的使用权限。
+Future Grants 按对象类型授权未来对象：
 
-## 工程实施步骤
+~~~sql
+GRANT SELECT ON FUTURE TABLES IN SCHEMA ANALYTICS_DB.MART
+  TO ROLE ANALYST_READ_ROLE;
+~~~
 
-1. 写清业务实体、事实粒度、关系基数、指标口径、敏感级别和 owner。
-2. 将业务定义映射到物理模型、语义对象、角色授权和数据质量规则。
-3. 用 Golden Queries、允许/拒绝访问测试和变更审查验证结果。
+这条授权只覆盖未来 Table，不自动包含 View、Stage 或其他对象类型。已有对象要另行使用 ON ALL TABLES 等授权。普通 Schema 中对象 Owner 可以授予对象权限；Managed Access Schema 则将 Grant 决策集中到 Schema Owner 或拥有 MANAGE GRANTS 的角色。后者有利于集中治理，但团队必须接受由 Schema 层统一授权。
 
-## 场景分析
+## Owner's Rights Procedure 适合封装一个窄业务动作
 
-业务、财务和分析团队对同一个指标给出不同结果。请确认事实粒度、关系、过滤条件和时间口径，再决定模型与治理规则。
+当服务不应直接持有目标表 UPDATE 权限时，可以用专用 Owner Role 创建有限业务接口：
 
-将场景转换为明确输入、状态变化和预期输出。逐项检查本节核心要求，区分配置事实、运行证据和待验证假设。缺少权限、版本、数据样本或官方行为证据时，明确记录未知项，不用猜测补齐。
+~~~sql
+CREATE OR REPLACE PROCEDURE APP_API.SET_ORDER_STATUS(
+  P_ORDER_ID NUMBER,
+  P_STATUS VARCHAR
+)
+RETURNS VARCHAR
+LANGUAGE SQL
+EXECUTE AS OWNER
+AS
+$$
+BEGIN
+  IF (P_STATUS NOT IN ('APPROVED', 'REJECTED')) THEN
+    RETURN 'INVALID_STATUS';
+  END IF;
 
-## 常见误区
+  UPDATE ANALYTICS_DB.MART.ORDERS
+    SET STATUS = :P_STATUS
+    WHERE ORDER_ID = :P_ORDER_ID
+      AND STATUS = 'PENDING';
 
-- **误区：** 隐藏按钮等于禁止数据库写入
-  **纠正：** 权限判断沿用户、当前激活角色、角色继承、对象权限和所有权追踪，并检查 Database、Schema 与目标对象的使用权限。
-- **误区：** Owner Rights 过程无需校验参数
-  **纠正：** 权限判断沿用户、当前激活角色、角色继承、对象权限和所有权追踪，并检查 Database、Schema 与目标对象的使用权限。
-- **误区：** 授予全部对象 OWNERSHIP 降低风险
-  **纠正：** 权限判断沿用户、当前激活角色、角色继承、对象权限和所有权追踪，并检查 Database、Schema 与目标对象的使用权限。
-- **误区：** 管理员能调用过程就无需检查调用角色
-  **纠正：** 权限判断沿用户、当前激活角色、角色继承、对象权限和所有权追踪，并检查 Database、Schema 与目标对象的使用权限。
+  RETURN 'REQUEST_PROCESSED';
+END;
+$$;
 
-## 完成标准
+GRANT USAGE ON PROCEDURE APP_API.SET_ORDER_STATUS(NUMBER, VARCHAR)
+  TO ROLE ORDER_PROCESSOR_ROLE;
+~~~
 
-- [ ] 能说明：把服务权限限制在业务必需范围，降低凭证泄露和程序缺陷的影响
-- [ ] 能说明：为服务设独立受限角色，必要时以严格校验的 Owner Rights 过程封装窄写操作
-- [ ] 能说明：限制可操作对象/参数、记录调用，避免服务长期使用 ACCOUNTADMIN
-- [ ] 能指出本知识点的适用前提和不适用场景。
-- [ ] 能提供至少一项运行、数据或配置证据支持判断。
-- [ ] 能描述失败后的恢复、回滚或人工升级路径。
+这个入口仍要验证调用者是否能操作这笔订单、是否存在跨租户访问、更新行数是否符合预期、如何记录请求 ID，以及重复请求是否幂等。Owner's Rights 只改变过程内 SQL 的权限上下文，不代表调用者输入可信。不要接受任意表名或拼接 SQL，否则有限业务接口可能变成任意 SQL 执行入口。
+
+## Caller's Rights 与 Owner's Rights 的取舍
+
+Caller's Rights 沿用调用者权限，适合操作范围应严格受用户授权约束的场景。Owner's Rights 使用过程 Owner 权限，适合把高权限操作封装成有限接口，但需要严格校验输入、记录调用并缩小目标对象范围。
+
+选择时先问：这个动作是否应该由每个调用者直接完成？若不是，为什么需要提升权限？能否把提升后的能力缩小到一个业务动作？若无法回答，就不要用 Owner's Rights。
+
+## 权限验收要同时测试允许和拒绝
+
+服务角色应能读取指定 View，却不能读取 HR/Finance 敏感表；可以通过 Procedure 更新指定状态，却不能直接 UPDATE 目标表；撤销功能角色后，服务应失去调用能力。新建表时还要确认 Future Grants 没有扩大到未批准的对象类型。
+
+## 常见权限误区
+
+- 把隐藏按钮当成数据库权限隔离。
+- 给服务 ACCOUNTADMIN 或全库 OWNERSHIP，认为部署更省事。
+- 使用 Owner's Rights 过程，却允许任意对象名或未经验证的参数。
+- 以为 Database 级和 Schema 级 Future Grants 一定叠加。
+- 使用 Managed Access Schema 后，仍期待对象 Owner 自行授权。
 
 ## 自测
 
-1. 如何在实际系统中验证“把服务权限限制在业务必需范围，降低凭证泄露和程序缺陷的影响”？
-2. 当“为服务设独立受限角色，必要时以严格校验的 Owner Rights 过程封装窄写操作”不成立时，最可能需要检查哪些边界和证据？
-3. 为什么不能采用“隐藏按钮等于禁止数据库写入”这一做法？
+1. 服务只需更新订单状态，为什么不应直接得到整个 Schema 的 OWNERSHIP？
+2. FUTURE TABLES 为什么不能据此推断未来 View 也会自动授权？
+3. Managed Access Schema 中谁可以管理对象授权？
+4. Owner's Rights Procedure 为什么仍需限制参数、目标对象和业务主键？
+5. Caller's Rights 与 Owner's Rights 的核心区别是什么？
 
-回答时需要给出判断依据和验证方法，而不只是复述定义。
+## 参考资料
+
+- [Access control best practices](https://docs.snowflake.com/en/user-guide/security-access-control-considerations)
+- [Access control privileges](https://docs.snowflake.com/en/user-guide/security-access-control-privileges)
+- [Owner's rights and caller's rights stored procedures](https://docs.snowflake.com/en/developer-guide/stored-procedure/stored-procedures-rights)

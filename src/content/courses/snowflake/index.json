@@ -5820,13 +5820,31 @@
       "summary": "把服务权限限制在业务必需范围，降低凭证泄露和程序缺陷的影响",
       "references": [
         {
-          "id": "snowflake-guide-least-privilege-ref-1",
+          "id": "snowflake-guide-least-privilege-verified-1",
           "type": "official",
-          "title": "Overview of access control",
-          "url": "https://docs.snowflake.com/en/user-guide/security-access-control-overview",
+          "title": "Access control best practices",
+          "url": "https://docs.snowflake.com/en/user-guide/security-access-control-considerations",
           "publisher": "Snowflake Documentation",
-          "relevance": "核对“最小权限角色与受控写入入口”涉及的产品行为、配置边界或工程机制。",
-          "verifiedAt": "待核验"
+          "relevance": "核对对象访问角色/功能角色层级、Managed Access Schema、Future Grants 与最小权限实践。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "snowflake-guide-least-privilege-verified-2",
+          "type": "official",
+          "title": "Access control privileges",
+          "url": "https://docs.snowflake.com/en/user-guide/security-access-control-privileges",
+          "publisher": "Snowflake Documentation",
+          "relevance": "核对 USAGE、OWNERSHIP、MANAGE GRANTS 和对象级授权含义。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "snowflake-guide-least-privilege-verified-3",
+          "type": "official",
+          "title": "Owner's rights and caller's rights stored procedures",
+          "url": "https://docs.snowflake.com/en/developer-guide/stored-procedure/stored-procedures-rights",
+          "publisher": "Snowflake Documentation",
+          "relevance": "核对存储过程调用者权限与 Owner's Rights 的执行上下文和安全限制。",
+          "verifiedAt": "2026-11-28"
         }
       ]
     },
@@ -5991,13 +6009,40 @@
       "summary": "把数据质量和正确性作为可靠性的一部分，而不只看任务能否执行",
       "references": [
         {
-          "id": "snowflake-guide-reliability-ref-1",
+          "id": "snowflake-guide-reliability-verified-1",
           "type": "official",
-          "title": "Introduction to data pipelines",
-          "url": "https://docs.snowflake.com/en/user-guide/data-pipelines-intro",
+          "title": "Enable automatic table schema evolution",
+          "url": "https://docs.snowflake.com/en/user-guide/data-load-schema-evolution",
           "publisher": "Snowflake Documentation",
-          "relevance": "核对“数据契约、Schema 漂移与幂等恢复”涉及的产品行为、配置边界或工程机制。",
-          "verifiedAt": "待核验"
+          "relevance": "核对 ENABLE_SCHEMA_EVOLUTION、MATCH_BY_COLUMN_NAME、EVOLVE SCHEMA 权限、支持文件格式、每次 COPY 的列数限制以及不能演进既有列类型的边界。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "snowflake-guide-reliability-verified-2",
+          "type": "official",
+          "title": "Snowpipe load history and file metadata",
+          "url": "https://docs.snowflake.com/en/user-guide/data-load-snowpipe-intro",
+          "publisher": "Snowflake Documentation",
+          "relevance": "核对 Snowpipe 文件加载元数据、文件名重复处理、顺序、迟到和失败后重放行为。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "snowflake-guide-reliability-verified-3",
+          "type": "official",
+          "title": "Use SQL to work with expectations",
+          "url": "https://docs.snowflake.com/en/user-guide/data-quality-expectations",
+          "publisher": "Snowflake Documentation",
+          "relevance": "核对 DMF 测量值如何通过 Expectation 转为违规状态。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "snowflake-guide-reliability-verified-4",
+          "type": "official",
+          "title": "Introduction to data quality checks",
+          "url": "https://docs.snowflake.com/en/user-guide/data-quality-intro",
+          "publisher": "Snowflake Documentation",
+          "relevance": "核对系统/自定义 DMF、Expectation、调度频率和 Data Quality Monitoring 的适用范围。",
+          "verifiedAt": "2026-11-28"
         }
       ]
     },
@@ -6153,13 +6198,49 @@
       "summary": "把应用代码、安装包、对象引用和角色授权做成可安装/升级的数据产品",
       "references": [
         {
-          "id": "snowflake-guide-native-app-ref-1",
+          "id": "snowflake-guide-native-app-verified-1",
           "type": "official",
-          "title": "Overview of access control",
-          "url": "https://docs.snowflake.com/en/user-guide/security-access-control-overview",
+          "title": "Native App manifest reference",
+          "url": "https://docs.snowflake.com/en/developer-guide/native-apps/manifest-reference",
           "publisher": "Snowflake Documentation",
-          "relevance": "核对“Native App 安装、引用与消费者授权”涉及的产品行为、配置边界或工程机制。",
-          "verifiedAt": "待核验"
+          "relevance": "核对 Manifest 的版本、权限请求、References、Artifacts 和 Setup Script 字段。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "snowflake-guide-native-app-verified-2",
+          "type": "official",
+          "title": "Create the setup script",
+          "url": "https://docs.snowflake.com/en/developer-guide/native-apps/creating-setup-script",
+          "publisher": "Snowflake Documentation",
+          "relevance": "核对 Setup Script 的执行、Application Role 创建和应用内部对象授权。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "snowflake-guide-native-app-verified-3",
+          "type": "official",
+          "title": "Request references and object-level privileges from consumers",
+          "url": "https://docs.snowflake.com/en/developer-guide/native-apps/requesting-refs",
+          "publisher": "Snowflake Documentation",
+          "relevance": "核对 Reference 声明、消费者创建引用和回调授权流程。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "snowflake-guide-native-app-verified-4",
+          "type": "official",
+          "title": "Allow access to a consumer account",
+          "url": "https://docs.snowflake.com/en/developer-guide/native-apps/ui-consumer-granting-privs",
+          "publisher": "Snowflake Documentation",
+          "relevance": "核对消费者审批权限请求、运行资源权限和对象访问引用。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "snowflake-guide-native-app-verified-5",
+          "type": "official",
+          "title": "Upgrades and app lifecycle",
+          "url": "https://docs.snowflake.com/en/developer-guide/native-apps/consumer-guide-upgrades",
+          "publisher": "Snowflake Documentation",
+          "relevance": "核对 major/patch 版本、两主版本窗口、Setup Script 重跑、代码替换与应用内数据保留。",
+          "verifiedAt": "2026-11-28"
         }
       ]
     },
