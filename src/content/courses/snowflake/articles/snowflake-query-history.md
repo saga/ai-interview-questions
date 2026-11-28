@@ -2,60 +2,84 @@
 
 ## 本节要解决的问题
 
-查看 SQL 的运行状态、耗时与错误.
-
-Snowflake 工程交付与运维。重点是让配置、执行身份、变更、运行证据和恢复过程可重复、可审查、可追踪。
-
-本教程只对应知识点 `snowflake-query-history`。目标是理解其机制、适用边界和验证方法，不把相邻知识点合并成一个大章。
+通过 Query History 查明一条 SQL 是否提交、何时开始执行、使用哪个 Warehouse、由谁执行、是否失败，以及时间花在哪里。需要区分即时排查和长期历史分析：Snowsight、Information Schema 表函数与 ACCOUNT_USAGE 视图的数据范围和延迟并不相同。
 
 ## 核心知识
 
-### 查看 SQL 的运行状态、耗时与错误.
+### Query History 记录语句执行元数据
 
-落实时将这项要求放到实际输入、输出和运行上下文里验证。Snowflake 工程交付与运维。重点是让配置、执行身份、变更、运行证据和恢复过程可重复、可审查、可追踪。
+Query History 可以按时间、用户、Session、Warehouse、状态等维度查询 SQL 执行记录。重要字段包括 QUERY_ID、QUERY_TEXT、USER_NAME、ROLE_NAME、WAREHOUSE_NAME、START_TIME、END_TIME、EXECUTION_STATUS、ERROR_CODE 和 ERROR_MESSAGE。
 
-### 通过 Query History 定位失败或缓慢查询.
+也可以检查编译、排队、执行时间以及扫描微分区等性能字段。Query History 适合回答“发生了什么”，但不直接展示每个算子的详细执行路径。
 
-诊断不能只看总耗时。应拆分编译、排队、执行和结果传输，再检查扫描量、过滤效率、Join 基数、排序/聚合、溢写和估算行数偏差。
+### Information Schema 与 ACCOUNT_USAGE 的适用窗口不同
 
-### Query History 保存执行记录，Query Profile 进一步显示执行细节.
+Information Schema 的 QUERY_HISTORY 表函数面向最近活动，查询范围限制在最近 7 天，适合较及时的排查。SNOWFLAKE.ACCOUNT_USAGE.QUERY_HISTORY 可查询最近 365 天的记录，但视图存在数据延迟，官方文档说明最高约 45 分钟。事故刚发生时不要假设 Account Usage 已经完整更新。
 
-诊断不能只看总耗时。应拆分编译、排队、执行和结果传输，再检查扫描量、过滤效率、Join 基数、排序/聚合、溢写和估算行数偏差。
+使用 ACCOUNT_USAGE 时应明确时间过滤并只选择需要的列，避免全表扫描历史记录。访问视图还需要相应 SNOWFLAKE 数据库权限。
+
+### Query History 与 Query Profile 配合定位原因
+
+Query History 提供状态、耗时和汇总性能指标；Query Profile 展示算子及其数据流，适合继续定位扫描、Join、聚合、排序、网络传输和溢写等阶段。排队时间明显时，还需要结合 Warehouse Load History，避免把仓库过载误判为 SQL 执行本身很慢。
 
 ## 工程实施步骤
 
-1. 明确 Git 版本、目标环境、部署身份、对象依赖和所需权限。
-2. 先在低风险环境生成变更计划并运行静态、集成和数据验证。
-3. 发布后核对对象定义、实际数据、运行指标和回滚点。
+1. **锁定查询。** 优先用 Query ID；没有 Query ID 时用时间范围、用户、Warehouse、Session 和 SQL 文本特征缩小范围。
+2. **先检查即时视图。** 在 Snowsight Query History 查状态与错误；必要时使用 Information Schema QUERY_HISTORY 表函数查看最近七天。
+3. **检查长期记录。** 使用 ACCOUNT_USAGE.QUERY_HISTORY 对比跨天、跨周或发布前后的查询表现，注意其延迟与历史保留范围。
+4. **拆分时间。** 分别检查 COMPILATION_TIME、EXECUTION_TIME、QUEUED_PROVISIONING_TIME、QUEUED_OVERLOAD_TIME 和 TRANSACTION_BLOCKED_TIME，判断时间花在编译、仓库恢复、资源排队还是事务阻塞。
+5. **继续看 Profile。** 对执行时间异常的查询打开 Query Profile，检查扫描量、Join 输入行数、过滤效率、溢写和最耗时的算子。
+6. **检查运行上下文。** 核对用户、Role、Warehouse、Database、Schema、Query Tag 和会话参数，确保比较的是同一类工作负载。
+7. **把异常转成行动。** 错误码对应权限、对象、类型或 SQL 问题；排队对应仓库负载；执行算子过慢则进一步分析查询计划或数据布局。
+8. **保留可重放证据。** 记录 Query ID、SQL 版本、参数、运行上下文和观察时间窗，避免只保存截图或口头描述。
+
+示例：按 Warehouse 汇总最近 24 小时的失败查询和排队时间。
+
+~~~sql
+SELECT
+  warehouse_name,
+  execution_status,
+  COUNT(*) AS query_count,
+  AVG(queued_overload_time) AS avg_overload_ms,
+  SUM(execution_time) AS total_execution_ms
+FROM SNOWFLAKE.ACCOUNT_USAGE.QUERY_HISTORY
+WHERE start_time >= DATEADD(hour, -24, CURRENT_TIMESTAMP())
+GROUP BY warehouse_name, execution_status
+ORDER BY query_count DESC;
+~~~
 
 ## 场景分析
 
-团队需要将数据库变更从开发环境发布到生产，涉及身份、依赖、数据影响和失败恢复。请写出发布和回滚检查点。
+上午 10 点后，某个批处理任务看起来“卡住”。开发人员只看到客户端一直等待，准备重启应用。
 
-将场景转换为明确输入、状态变化和预期输出。逐项检查本节核心要求，区分配置事实、运行证据和待验证假设。缺少权限、版本、数据样本或官方行为证据时，明确记录未知项，不用猜测补齐。
+先用运行时刻、用户和 Warehouse 找到 Query ID。若状态显示正在排队，检查 QUEUED_OVERLOAD_TIME 与 Warehouse Load History；若查询执行时间很长，再打开 Query Profile；若状态为失败，先读取 ERROR_CODE/ERROR_MESSAGE 并检查相关对象、角色和参数。应用重启可能会中断客户端连接，但不能自动释放被阻塞的事务或修复仓库容量。
+
+事故记录应包括查询 ID、状态、关键时间字段、Profile 证据、采取的动作和恢复结果。这样下一次可以比较同一 SQL 的执行行为，而不是仅凭用户感知判断是否变慢。
 
 ## 常见误区
 
-- **误区：** 查询历史只保存编辑器里的 SQL
-  **纠正：** 回到本知识点的输入条件、执行边界和验证证据，确认判断成立的前提，不要把简化经验当普遍规则。
-- **误区：** Query History 和执行记录没有关系
-  **纠正：** 诊断不能只看总耗时。应拆分编译、排队、执行和结果传输，再检查扫描量、过滤效率、Join 基数、排序/聚合、溢写和估算行数偏差。
-- **误区：** 每次失败都必须重建 Warehouse
-  **纠正：** Snowflake 的存储、计算与 Cloud Services 属于不同责任边界。分别检查数据持久化、Warehouse 资源以及平台级元数据、认证与协调，不能把一个层次的设置当作另一个层次的修复手段。
+- **把 Query History 当作完整执行计划。** 它主要记录查询级元数据，算子级分析应继续看 Query Profile。
+- **要求 Account Usage 实时反映刚执行的查询。** 其历史视图有延迟；即时排查优先使用 Snowsight 或 Information Schema。
+- **将总耗时全部算作 SQL 执行时间。** 编译、仓库恢复、过载排队、事务阻塞和结果传输可能占用明显时间。
+- **只按 SQL 文本检索。** 相同文本可能由不同用户、角色、Session 或 Warehouse 执行，应结合上下文过滤。
+- **排队或失败时先重启客户端。** 应先确认服务端查询状态、Query ID 和事务情况。
 
 ## 完成标准
 
-- [ ] 能说明：查看 SQL 的运行状态、耗时与错误.
-- [ ] 能说明：通过 Query History 定位失败或缓慢查询.
-- [ ] 能说明：Query History 保存执行记录，Query Profile 进一步显示执行细节.
-- [ ] 能指出本知识点的适用前提和不适用场景。
-- [ ] 能提供至少一项运行、数据或配置证据支持判断。
-- [ ] 能描述失败后的恢复、回滚或人工升级路径。
+- [ ] 能使用 Query ID 或上下文条件定位查询。
+- [ ] 能说明 Information Schema 与 ACCOUNT_USAGE 的时间窗口和延迟差异。
+- [ ] 能从查询级时间字段判断编译、排队、执行和事务阻塞。
+- [ ] 能判断何时需要打开 Query Profile 或 Warehouse Load History。
+- [ ] 能整理可供复盘的 Query ID 和运行证据。
 
 ## 自测
 
-1. 如何在实际系统中验证“查看 SQL 的运行状态、耗时与错误.”？
-2. 当“通过 Query History 定位失败或缓慢查询.”不成立时，最可能需要检查哪些边界和证据？
-3. 为什么不能采用“查询历史只保存编辑器里的 SQL”这一做法？
+1. 刚执行的查询没有出现在 ACCOUNT_USAGE.QUERY_HISTORY 中，是否一定表示它没有执行？应该改用什么方式查看？
+2. QUEUED_OVERLOAD_TIME 很高而 EXECUTION_TIME 较低，问题更可能位于 SQL 算子还是仓库负载？
+3. Query History 显示执行时间长，但无法从汇总字段判断具体慢算子，下一步应查看什么？
 
-回答时需要给出判断依据和验证方法，而不只是复述定义。
+## 参考资料
+
+- [Exploring execution times](https://docs.snowflake.com/en/user-guide/performance-query-exploring)
+- [QUERY_HISTORY view](https://docs.snowflake.com/en/sql-reference/account-usage/query_history)
+- [WAREHOUSE_LOAD_HISTORY view](https://docs.snowflake.com/en/sql-reference/account-usage/warehouse_load_history)

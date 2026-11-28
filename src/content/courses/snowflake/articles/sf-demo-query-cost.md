@@ -2,58 +2,73 @@
 
 ## 本节要解决的问题
 
-将 Warehouse/查询消耗关联到工作负载、业务吞吐、SLA 与预算护栏。
-
-Snowflake 平台基础。区分持久化对象、计算资源、元数据服务、会话上下文和授权主体，再沿数据实际流动路径验证行为。
-
-本教程只对应知识点 `sf-demo-query-cost`。目标是理解其机制、适用边界和验证方法，不把相邻知识点合并成一个大章。
+把查询级计算消耗关联到具体工作负载、用户、角色、仓库和业务标签，并与仓库空闲成本及账户账单交叉核对。查询成本归因适合做工作负载对比和内部成本分摊，但不是 Snowflake 总账单的逐查询拆分。
 
 ## 核心知识
 
-### 结合标签、角色、仓库、时间窗和作业标识做费用归因
+### Query Attribution 按查询归因 Warehouse 计算消耗
 
-Snowflake 的存储、计算与 Cloud Services 属于不同责任边界。分别检查数据持久化、Warehouse 资源以及平台级元数据、认证与协调，不能把一个层次的设置当作另一个层次的修复手段。
+SNOWFLAKE.ACCOUNT_USAGE.QUERY_ATTRIBUTION_HISTORY 提供查询级计算 credits 归因，可按 QUERY_TAG、USER_NAME、WAREHOUSE_NAME、查询时间和参数化查询 hash 分析。并发查询的 Warehouse 费用按资源消耗权重分配，不是把一个时间段的 Warehouse 总消耗简单平均到查询数量。
 
-### 同时评估 credits、完成工作量、延迟和结果质量
+查询归因不包含 Warehouse 空闲时间，也不包括存储、数据传输、Cloud Services、Serverless 功能和 AI 服务 token 等其他费用。极短查询可能不产生单条查询归因记录；Adaptive Warehouse 作业也可能需要使用其它用量视图。
 
-日志解释发生了什么，指标观察趋势，Trace 关联跨步骤执行，告警触发响应。要把这些信号与数据新鲜度、质量、批次对账和责任人连接起来。
+### Query Tag 建立业务工作负载与账单之间的关联
 
-### 识别闲置、重试、持续时间与尺寸变化
+应用、ETL 或服务可以通过 QUERY_TAG 会话参数标注应用、团队、作业或成本中心。标签应稳定、受控并避免放入个人隐私或秘密信息。标签缺失、版本变更和任务重试都会影响归因，因此需要对“untagged”工作量做单独监控。
 
-日志解释发生了什么，指标观察趋势，Trace 关联跨步骤执行，告警触发响应。要把这些信号与数据新鲜度、质量、批次对账和责任人连接起来。
+示例：
+
+~~~sql
+ALTER SESSION SET QUERY_TAG = 'APP=orders_etl;ENV=prod;TEAM=data-platform';
+~~~
+
+### 费用分析需要查询、仓库和账户三个视角
+
+查询归因回答“哪些 SQL 消耗了执行计算资源”；WAREHOUSE_METERING_HISTORY 可检查 Warehouse 的小时级用量；METERING_HISTORY / METERING_DAILY_HISTORY 用于观察账户级不同服务的用量和账单调整。三个口径不能直接相加，也不能用查询归因代替最终账单核对。
 
 ## 工程实施步骤
 
-1. 确认对象类型、当前 Role、Warehouse、Database 和 Schema，避免把 Session Context 当成对象本身。
-2. 沿操作路径收集 Query ID、对象定义、授权与运行状态，区分控制面、计算和数据层。
-3. 用相同输入与代表性工作负载验证结果，并记录权限、成本和失败恢复影响。
+1. 为应用连接、ETL 作业和交互式任务制定 QUERY_TAG 规范，记录应用、环境、团队、批次或业务域。
+2. 在 Query History 中检查标签覆盖率、查询状态、Warehouse 和运行时间，先识别未打标签的查询。
+3. 按 QUERY_TAG、USER_NAME 和 WAREHOUSE_NAME 对 QUERY_ATTRIBUTION_HISTORY 汇总 credits，分析昂贵查询、重复查询和重试。
+4. 将单查询归因结果与 WAREHOUSE_METERING_HISTORY 对照，单独列出仓库空闲时间及未被查询归因覆盖的资源消耗。
+5. 使用 METERING_HISTORY 或 METERING_DAILY_HISTORY 按 SERVICE_TYPE 核对账户级用量；对最终计费口径使用账单数据，不直接把未经调整的 credits 当作金额。
+6. 把 credits 与业务吞吐量、任务完成时间、数据新鲜度和结果质量结合，计算每千笔订单、每次报表刷新或每批数据的成本。
+7. 建立预算告警和异常复盘流程，对标签缺失、重试激增、任务耗时增长和仓库空闲过高分别制定处理方式。
 
 ## 场景分析
 
-分析团队发现同一张表在不同 Warehouse 上表现不同，同时有人把对象不存在、权限不足和查询排队都归因于“仓库没开好”。请拆分对象、执行和访问边界，列出证明根因所需证据。
+订单 ETL 团队认为本月 Snowflake 成本上涨来自最近发布的 SQL 优化。财务希望按团队分摊计算费用，工程团队则想知道哪条查询变贵。
 
-将场景转换为明确输入、状态变化和预期输出。逐项检查本节核心要求，区分配置事实、运行证据和待验证假设。缺少权限、版本、数据样本或官方行为证据时，明确记录未知项，不用猜测补齐。
+先检查 QUERY_TAG 是否覆盖发布前后工作负载，并比较相同参数化查询的调用次数和 QUERY_ATTRIBUTION_HISTORY credits。再按仓库检查 METERING_HISTORY 与 WAREHOUSE_METERING_HISTORY，确认是否因自动暂停阈值变长、空闲时间增加或多集群扩展而产生额外消耗。
+
+如果查询归因显示执行成本没有上升，但仓库小时用量上涨，应优先检查空闲和其他服务费用；如果单查询 credits 上升，再检查数据量、SQL 计划和重试。最终分摊时明确查询归因的覆盖范围，不能将查询级 credits 当成部门完整账单。
 
 ## 常见误区
 
-- **误区：** 仅按总 credits 判断效率
-  **纠正：** 日志解释发生了什么，指标观察趋势，Trace 关联跨步骤执行，告警触发响应。要把这些信号与数据新鲜度、质量、批次对账和责任人连接起来。
-- **误区：** 将所有服务费用都视为 Warehouse 费用
-  **纠正：** Snowflake 的存储、计算与 Cloud Services 属于不同责任边界。分别检查数据持久化、Warehouse 资源以及平台级元数据、认证与协调，不能把一个层次的设置当作另一个层次的修复手段。
+- **认为 QUERY_ATTRIBUTION_HISTORY 就是总账单。** 它不包含空闲、存储、数据传输、Cloud Services 和 Serverless 等费用。
+- **直接按 SQL 次数平均分摊 credits。** 并发查询的归因基于资源消耗权重，查询成本并不相等。
+- **忽略仓库空闲时间。** 查询归因不覆盖全部空闲用量，需要通过 Warehouse Metering 等视图补充。
+- **只记录 Warehouse 名称，不设置 Query Tag。** 仓库内可能混合多个团队和应用，难以稳定归因。
+- **把 credits 直接换算成最终金额。** 价格、服务类型和账单调整会影响实际费用，需核对计费数据。
 
 ## 完成标准
 
-- [ ] 能说明：结合标签、角色、仓库、时间窗和作业标识做费用归因
-- [ ] 能说明：同时评估 credits、完成工作量、延迟和结果质量
-- [ ] 能说明：识别闲置、重试、持续时间与尺寸变化
-- [ ] 能指出本知识点的适用前提和不适用场景。
-- [ ] 能提供至少一项运行、数据或配置证据支持判断。
-- [ ] 能描述失败后的恢复、回滚或人工升级路径。
+- [ ] 能用 Query Tag 标识业务工作负载并检查覆盖率。
+- [ ] 能解释 QUERY_ATTRIBUTION_HISTORY 的归因对象和排除项。
+- [ ] 能将查询归因与 Warehouse 和账户级 metering 交叉核对。
+- [ ] 能发现未打标签、重试和空闲消耗造成的归因盲区。
+- [ ] 能将 credits 与业务吞吐和数据质量结合分析单位成本。
 
 ## 自测
 
-1. 如何在实际系统中验证“结合标签、角色、仓库、时间窗和作业标识做费用归因”？
-2. 当“同时评估 credits、完成工作量、延迟和结果质量”不成立时，最可能需要检查哪些边界和证据？
-3. 为什么不能采用“仅按总 credits 判断效率”这一做法？
+1. QUERY_ATTRIBUTION_HISTORY 显示某团队 credits 没有变化，但 Warehouse Metering 明显上涨，应该检查哪些费用构成？
+2. 两条查询执行次数相同，为什么不应该平均分配相同 credits？
+3. Query Tag 覆盖率只有 70%，这会如何影响成本分析和团队分摊？
 
-回答时需要给出判断依据和验证方法，而不只是复述定义。
+## 参考资料
+
+- [Attributing cost](https://docs.snowflake.com/en/user-guide/cost-attributing)
+- [QUERY_ATTRIBUTION_HISTORY view](https://docs.snowflake.com/en/sql-reference/account-usage/query_attribution_history)
+- [METERING_HISTORY view](https://docs.snowflake.com/en/sql-reference/account-usage/metering_history)
+- [METERING_DAILY_HISTORY view](https://docs.snowflake.com/en/sql-reference/account-usage/metering_daily_history)
