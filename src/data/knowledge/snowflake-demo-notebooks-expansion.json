@@ -429,15 +429,19 @@
     "area": "data-platform",
     "topic": "snowflake-data-products",
     "priority": "P1",
-    "summary": "构建交互式数据应用，同时治理查询参数、授权、导出、指标语义与发布风险。",
+    "summary": "为 Streamlit in Snowflake 设计安全的数据应用，理解 Owner’s Rights、Restricted Caller’s Rights、Runtime 选择、参数化查询、缓存隔离与导出控制。",
     "required": [
-      "把数据授权放在服务端而不只隐藏 UI 字段",
-      "验证用户参数并限制查询范围和成本",
-      "为导出、异常和发布提供控制与审计"
+      "说明默认 Owner’s Rights 下应用使用应用所有者权限，分析查看者可能看到的数据范围。",
+      "比较 Warehouse Runtime 与 Container Runtime，识别 Restricted Caller’s Rights 的版本和 Caller Grants 条件。",
+      "使用参数绑定和服务端白名单限制查询，不允许用户输入拼接成 SQL 结构。",
+      "统一查询、Row Access/Masking Policy、导出和缓存的数据权限边界，并用不同真实用户验证。"
     ],
     "misconceptions": [
-      "将界面隐藏当作数据安全控制",
-      "不区分应用上下文和访问者身份"
+      "认为 Streamlit 默认按当前查看者的 Role 读取底表",
+      "把隐藏控件或筛选选项当成服务端数据授权",
+      "认为 Restricted Caller’s Rights 在 Warehouse Runtime 可用",
+      "缓存键未包含会改变结果的用户授权上下文",
+      "页面显示 Top N，但下载路径返回未限制的全量结果"
     ],
     "angles": [
       "scenario",
@@ -504,15 +508,20 @@
     "area": "data-platform",
     "topic": "data-engineering",
     "priority": "P1",
-    "summary": "管理 Stage、文件格式、COPY 加载、拒绝行、来源批次和文件级质量对账。",
+    "summary": "管理 Snowflake Internal/External Stage、File Format 和 COPY INTO 文件加载；利用文件元数据、验证模式、错误表与加载历史控制解析、失败恢复和重复文件风险。",
     "required": [
-      "区分文件存放与目标表加载",
-      "验证文件格式、匹配范围和拒绝记录",
-      "用来源/批次标识避免重复并支持完整性核验"
+      "区分 User Stage、Table Stage、Named Internal Stage 与 External Stage，理解 PUT 与云存储上传的边界。",
+      "为 CSV/JSON/Parquet 定义 File Format、列映射和类型转换规则。",
+      "使用 LIST、Stage 查询和 METADATA$ 列定位源文件及行号。",
+      "区分 VALIDATION_MODE、ON_ERROR、VALIDATE、COPY_HISTORY 与 Error Table 的作用。",
+      "说明文件级 COPY 加载元数据无法替代跨文件业务键去重与幂等处理。"
     ],
     "misconceptions": [
-      "把 Stage 当作目标业务表",
-      "把文件加载成功当作数据质量合格"
+      "把 Stage 当成目标表或业务数据存储模型",
+      "把文件上传成功当成 COPY 已完成且业务质量合格",
+      "认为 VALIDATION_MODE 会实际写入表",
+      "认为 COPY 文件去重会识别不同文件中的重复业务键",
+      "重放历史文件前不检查 load metadata 与目标表记录"
     ],
     "angles": [
       "definition",
