@@ -20,6 +20,8 @@
 
 不要擅自把 Variant 改造成新的 canonical。
 
+【表达质量要求】最终题干、选项、explanation、misconceptions 和 referenceAnswer 定稿前，必须应用 `skills/unslop/SKILL.md` 的 review-and-fix：删除无信息量铺垫、套话、翻译腔和重复句式，让中文自然、具体、可读。不要机械禁用“不是……而是……”“首先、其次”等句式；必要时保留。禁止为追求自然而改动答案、技术事实、术语、限定条件、source 或 Knowledge Boundary。中文例子见 `skills/unslop/references/chinese-patterns.md`。题目语义仍以 `docs/question-content-spec.md` 为准。
+
 ==================================================
 0. 任务边界
 =======
