@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { validateBlueprintKnowledgeIdentity } from './convert-blueprint-helpers';
 
 describe('blueprint KnowledgeNode identity', () => {
-  it('accepts a shared topic when knowledgeId identifies the exact course node', () => {
+  it('accepts the same exact KnowledgeNode ID in topic and knowledgeId', () => {
     expect(validateBlueprintKnowledgeIdentity({
       id: 'sf-architecture-q1',
       courseId: 'snowflake',
