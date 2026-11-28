@@ -51,7 +51,8 @@ description: "把一篇技术文章转成题库题目。用户提供文章链接
    - `angle`：来自枚举，不得自造
    - `difficulty`：easy/medium/hard，依题目认知要求判断；
    - `cognitiveTask`：从 schema 合法枚举中选择真实的作答认知行为；
-   - `source.materialId`：填写当前实际使用材料的稳定 ID，不得省略或虚构
+   - `source.materialId`：填写当前实际使用材料的稳定 ID，不得省略或虚构；有明确章节/页码时记录 `section` / `page`
+   - Snowflake 课程题还必须填写 `source.relatedMaterials`，指向课程路线映射中的官方文档 ID；没有实际核验的来源不能填入
    - `formats.choice`：`type`/`options`/`answer`，single 恰好 1 个答案、multiple 至少 2 个；
      **默认按 multiple 起草**，只有结论唯一的题才用 single（题型分布要求见 `spec §9`）
    - `explanation`：解释正确答案和关键误区
