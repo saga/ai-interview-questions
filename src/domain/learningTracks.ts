@@ -15,7 +15,7 @@ export function courseIdOfQuestion(
   nodesById: ReadonlyMap<string, KnowledgeNode>,
 ): LearningTrackId | string {
   if (question.courseId) return question.courseId;
-  const node = nodesById.get(question.topic);
+  const node = nodesById.get(question.knowledgeId ?? question.topic);
   return node ? courseIdOfNode(node) : 'ai';
 }
 
