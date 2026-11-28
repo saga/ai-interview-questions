@@ -70,6 +70,7 @@ npm run questions:manage -- challenge --topic=rag --limit=20
 - [Snowflake CoCo Skills 专项 100 道题与知识点覆盖矩阵](docs/snowflake-coco-skills-100.md)
 - [SnowPro Core COF-C03 考点与 200 道新增题覆盖矩阵](docs/snowflake-certification-cof-c03-coverage-200.md)
 - `skills/snowflake-curriculum/SKILL.md`：独立 Snowflake 课程的知识点/题目维护 prompt
+- `skills/unslop/SKILL.md`：中文学习文章、技术教材、题干与解析的表达审校；文章和题目生成后定稿前应用
 - 进入训练前先选择学习体系：AI、Snowflake、Security Architecture 与校招面试课程的主题、题库、知识点覆盖和本地训练进度分别管理。
 - `docs/CONVERSATION_ARCHITECTURE.md`：统一 Conversation / Intent / Capability 入口设计（ADR-061）
 - `docs/DECISIONS.md`：关键决策（ADR，含"为何不迁 Astro"）
