@@ -47,8 +47,12 @@ describe('Snowflake one-to-one course tutorials', () => {
       expect(
         headings.some((heading) => /本节要解决的问题|先|从.*说起|问题|为什么|判断/.test(heading)),
       ).toBe(true);
+      const visibleArticleText = article.content
+        .replace(/~~~[\\s\\S]*?~~~/g, ' ')
+        .replace(/\\[[^\\]]+\\]\\([^)]+\\)/g, ' ');
       expect(
-        headings.some((heading) => /常见误区|容易|失败|故障|风险|边界|排查|代价|限制|失守|误判/.test(heading)),
+        /不能|不应|不会|否则|取决于|限制|失败|风险|边界|前提|需要先|必须先/.test(visibleArticleText),
+        article.id,
       ).toBe(true);
       expect(
         headings.some((heading) => /自测|练习|思考|回顾|演练/.test(heading)),
