@@ -89,7 +89,6 @@ const raw = JSON.parse(readFileSync(resolve(process.cwd(), inputFile), 'utf8')) 
 const incoming = parseQuestionArray(normalizeIncoming(raw));
 const existing = readJsonArrays<Question>(questionsDir);
 const nodes = readJsonArrays<KnowledgeNode>(knowledgeDir);
-const nodeIds = new Set(nodes.map((node) => node.id));
 const existingIds = new Set(existing.map((question) => question.id));
 const existingTexts = new Map(existing.map((question) => [normalizedText(question.question), question.id]));
 const errors: string[] = [];
