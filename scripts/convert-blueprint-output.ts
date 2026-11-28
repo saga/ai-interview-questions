@@ -61,7 +61,12 @@ const promptItemSchema = z.object({
   assessmentTarget: z.string().optional(),
   reasoningGoal: z.string().optional(),
   misconceptions: z.array(z.string().min(1)).optional(),
-  source: z.object({ materialId: z.string().min(1), section: z.string().optional() }).optional(),
+  source: z.object({
+    materialId: z.string().min(1),
+    section: z.string().optional(),
+    page: z.number().int().nonnegative().optional(),
+    relatedMaterials: z.array(z.string().min(1)).optional(),
+  }).optional(),
   question: z.string().min(1),
   explanation: z.string().min(1),
   formats: z.array(promptFormatSchema).min(1).max(1),
@@ -145,6 +150,15 @@ for (const item of items) {
   const misconceptionMap = toMisconceptionMap(item, indices);
   if (item.questionRole === 'canonical') {
     if (!item.difficulty) errors.push(`${item.id}: canonical 必须产出 difficulty`);
+    if (!item.source?.materialId?.trim()) {
+      errors.push(`${item.id}: canonical 缺 source.materialId`);
+    }
+    if (item.courseId === 'snowflake') {
+      if (!item.source?.section?.trim()) errors.push(`${item.id}: Snowflake 课程题缺 source.section`);
+      if (!item.source?.relatedMaterials?.length) {
+        errors.push(`${item.id}: Snowflake 课程题缺 source.relatedMaterials`);
+      }
+    }
     const [core, ...supporting] = item.concepts ?? [];
     const choice: { type: 'single' | 'multiple'; options: string[]; answer: number[]; misconceptionMap?: (number | null)[] } = {
       type,
