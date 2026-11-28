@@ -40,7 +40,7 @@ Agent 对象本身不等于权限代理。配置里列出某个 Semantic View �
 
 ### 工具权限由请求的 Snowflake 上下文决定
 
-调用 Agent 的角色需要获得 SNOWFLAKE.CORTEX_USER 或 SNOWFLAKE.CORTEX_AGENT_USER 数据库角色。后者只开放 Cortex Agents、CoWork 和 CoCo，不等于开放所有 Cortex AI 功能。如果 Agent 配置了 Cortex Analyst 工具，还需要单独授予 SNOWFLAKE.CORTEX_ANALYST_USER；CORTEX_AGENT_USER 本身不包含 Analyst 权限。
+调用 Agent 的角色需要获得 SNOWFLAKE.CORTEX_USER 或 SNOWFLAKE.CORTEX_AGENT_USER 数据库角色。CORTEX_USER 覆盖所有 Covered AI Features，包括 Cortex Agents 和 Cortex Analyst；CORTEX_AGENT_USER 只开放 Cortex Agents、CoWork 和 CoCo，不等于开放所有 Cortex AI 功能。若为最小权限而只授予 CORTEX_AGENT_USER，同时又配置 Cortex Analyst 工具，还要额外授予 SNOWFLAKE.CORTEX_ANALYST_USER。
 
 REST API 请求通过认证方法识别调用者，再由 X-Snowflake-Role 指定授权角色；省略该 Header 时使用用户的 Default Role。请求上下文中启用的 Secondary Roles 也参与权限检查和数据保护策略评估。Snowsight/CoWork 则使用界面中选择的 Role。调用者还需要对 Agent 及其 Database/Schema 有 USAGE，并对 Agent 使用的 Warehouse 和工具对象拥有相应权限。
 
@@ -55,7 +55,7 @@ Content-Type: application/json
 
 上例展示的是请求头和资源路径示意，不包含真实账户 URL 或认证流程。不能让用户在自然语言问题中指定 X-Snowflake-Role，也不能信任检索到的文档要求 Agent 切换到管理员角色。
 
-工具缺权处理由 Agent specification 顶层的 orchestration.tool_not_accessible 控制，允许值为 accept、reject 和 legacy。当前默认值是 accept：调用者缺少某个工具权限时，整次运行继续使用可访问的工具，并把不可用工具作为 Warning 报告；reject 则让该次运行失败。legacy 保留旧版兼容行为。这个设置不是请求 Header，也不能由每次 agents/{name}:run 调用临时覆盖，应通过 Agent specification 更新。
+工具缺权处理由 Agent specification 顶层的 orchestration.tool_not_accessible 控制，允许值为 accept、reject 和 legacy。当前默认值是 accept：调用者缺少某个被预先检查的工具权限时，整次运行继续使用可访问的工具，并把不可用工具作为 Warning 报告；reject 则让该次运行失败。legacy 保留旧版兼容行为。这个设置不是请求 Header。使用已有 Agent 对象的 agents/{name}:run 时不能临时覆盖，必须更新 Agent specification；若直接向 agent:run 提交完整 specification，则可在该请求 specification 中设置。
 
 对必须同时取得结构化结果和文档证据的风险分析，建议使用 reject，或由应用端严格检查工具 Warning 与完成状态；不能把“部分工具可用”误报成完整分析。只有业务明确允许部分结果时，才采用 accept，并在界面上标出哪些证据缺失。
 
