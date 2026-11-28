@@ -32,6 +32,10 @@ description: "写新题并落库。用户要求新增面试题、起草题目或
 5. 如果题目涉及 AWS、模型、API、认证考试或其他时效事实，确认来源、适用版本和核验日期；不确定的事实不得写成绝对结论。
 6. 如果题目内容来自一篇具体文章而不是从零构思，转 **article-to-questions** skill 生成内容，再回到本 skill 完成校验与写入。
 
+## 起草表达审查
+
+起草完成、结构校验之前，应用 `skills/unslop/SKILL.md` 的 review-and-fix，检查题干、选项、explanation、referenceAnswer 和 misconceptions。优先删去空泛背景、套话、翻译腔和模板化解析。不得改动正确答案、技术条件、专业术语、知识映射或 source metadata；表达审查不能替代下方题目契约和 `docs/question-content-spec.md`。
+
 ## 题目契约
 
 每道题必须满足：
