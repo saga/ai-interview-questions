@@ -4731,16 +4731,79 @@
       "file": "snowflake-guide-task-dag.md",
       "topic": "snowflake-devops",
       "priority": "P1",
-      "summary": "将真实工作流依赖建模为可管理、可观察的执行图",
+      "summary": "使用 Root、Child、AFTER 和 Finalizer 建模任务依赖，控制图运行重叠与失败重试，并通过 REST API、Task History 和 Graph Run Group 管理及追踪执行。",
       "references": [
         {
           "id": "snowflake-guide-task-dag-ref-1",
           "type": "official",
-          "title": "Introduction to data pipelines",
-          "url": "https://docs.snowflake.com/en/user-guide/data-pipelines-intro",
           "publisher": "Snowflake Documentation",
-          "relevance": "核对“Task DAG 与任务管理 API”涉及的产品行为、配置边界或工程机制。",
-          "verifiedAt": "待核验"
+          "verifiedAt": "2026-11-28",
+          "title": "Create a sequence of tasks with a task graph",
+          "url": "https://docs.snowflake.com/en/user-guide/tasks-graphs",
+          "relevance": "核对 Root/Child/Finalizer、AFTER 依赖、图内并行、版本更新、暂停/恢复、失败重试和 OVERLAP_POLICY。"
+        },
+        {
+          "id": "snowflake-guide-task-dag-ref-2",
+          "type": "official",
+          "publisher": "Snowflake Documentation",
+          "verifiedAt": "2026-11-28",
+          "title": "CREATE TASK",
+          "url": "https://docs.snowflake.com/en/sql-reference/sql/create-task",
+          "relevance": "核对 AFTER 多前置关系、同 Schema/Owner、任务数量限制、根任务暂停后修改和 OVERLAP_POLICY 参数。"
+        },
+        {
+          "id": "snowflake-guide-task-dag-ref-3",
+          "type": "official",
+          "publisher": "Snowflake Documentation",
+          "verifiedAt": "2026-11-28",
+          "title": "EXECUTE TASK",
+          "url": "https://docs.snowflake.com/en/sql-reference/sql/execute-task",
+          "relevance": "核对 AWAIT、RETRY LAST、RETRY GRAPH RUN GROUP、14 天窗口和图结构未修改等重试条件。"
+        },
+        {
+          "id": "snowflake-guide-task-dag-ref-4",
+          "type": "official",
+          "publisher": "Snowflake Documentation",
+          "verifiedAt": "2026-11-28",
+          "title": "Task Graph SQL commands",
+          "url": "https://docs.snowflake.com/en/sql-reference/sql/create-task-graph",
+          "relevance": "核对 Preview 的 Task Graph 对象、COMMIT/RESUME 生命周期、图级设置和成员任务默认值。"
+        },
+        {
+          "id": "snowflake-guide-task-dag-ref-5",
+          "type": "official",
+          "publisher": "Snowflake Documentation",
+          "verifiedAt": "2026-11-28",
+          "title": "Snowflake REST Task API",
+          "url": "https://docs.snowflake.com/en/developer-guide/snowflake-rest-api/reference/task",
+          "relevance": "核对 Task 资源的创建/读取/更新/删除、execute/resume/suspend、依赖查询和 current-graphs/complete-graphs 接口。"
+        },
+        {
+          "id": "snowflake-guide-task-dag-ref-6",
+          "type": "official",
+          "publisher": "Snowflake Documentation",
+          "verifiedAt": "2026-11-28",
+          "title": "Manage tasks",
+          "url": "https://docs.snowflake.com/en/developer-guide/snowflake-rest-api/tasks/tasks-introduction",
+          "relevance": "核对 REST API 的资源管理模型和端点用途。"
+        },
+        {
+          "id": "snowflake-guide-task-dag-ref-7",
+          "type": "official",
+          "publisher": "Snowflake Documentation",
+          "verifiedAt": "2026-11-28",
+          "title": "TASK_HISTORY",
+          "url": "https://docs.snowflake.com/en/sql-reference/functions/task_history",
+          "relevance": "核对 Task 执行状态、Query ID、错误、scheduled_time 和 graph run 记录。"
+        },
+        {
+          "id": "snowflake-guide-task-dag-ref-8",
+          "type": "official",
+          "publisher": "Snowflake Documentation",
+          "verifiedAt": "2026-11-28",
+          "title": "COMPLETE_TASK_GRAPHS",
+          "url": "https://docs.snowflake.com/en/sql-reference/functions/complete_task_graphs",
+          "relevance": "核对已完成图运行、GRAPH_RUN_GROUP_ID、ATTEMPT_NUMBER 与整图耗时记录。"
         }
       ]
     },
