@@ -40,7 +40,6 @@ import {
 import { TAXONOMY, topicLabel as taxonomyTopicLabel } from '../../data/taxonomy';
 import { IntegratedTutorialsSection, MARKDOWN_COMPONENTS } from './IntegratedTutorialsSection';
 import {
-  SNOWFLAKE_LEARNING_ARTICLES,
   SNOWFLAKE_LEARNING_CONTENT,
   SNOWFLAKE_LEARNING_OVERVIEW,
 } from '../../data/learning/snowflake';
@@ -70,22 +69,6 @@ const TOPIC_LABELS = new Map<string, string>([
   ...SAP_COURSERA_COURSE_TOPICS,
   ...SAP_JUNIOR_PRACTICE_TOPICS,
 ].map(({ id, label }) => [id, label]));
-
-const TOPIC_DESCRIPTIONS = new Map<string, string>(
-  [
-    ...TAXONOMY.flatMap((domain) => domain.topics),
-    ...SNOWFLAKE_COURSE_TOPICS,
-    ...SECURITY_ARCHITECTURE_COURSE_TOPICS,
-    ...CAMPUS_EMPLOYMENT_COURSE_TOPICS,
-    ...SAP_IT_SERVICE_COURSE_TOPICS,
-    ...SAP_COURSERA_COURSE_TOPICS,
-    ...SAP_JUNIOR_PRACTICE_TOPICS,
-  ].flatMap((topic) =>
-    'description' in topic && topic.description
-      ? [[topic.id, topic.description] as [string, string]]
-      : [],
-  ),
-);
 
 function labelForTopic(topicId: string): string {
   return TOPIC_LABELS.get(topicId) ?? taxonomyTopicLabel(topicId);
@@ -248,136 +231,122 @@ export default function StudyPage({ trackId, nodes, questions, onGoTrain, onAskT
   const selectedNodeCompleted = selectedNode ? completedNode(selectedNode.id) : false;
   const courseObjectives = isSnowflake ? SNOWFLAKE_LEARNING_OVERVIEW.objectives : [];
   const courseRoadmap = isSnowflake ? SNOWFLAKE_LEARNING_OVERVIEW.roadmap : [];
-  const topicDescription = selectedNode
-    ? TOPIC_DESCRIPTIONS.get(selectedNode.topic)
-    : undefined;
+  const articleBody = useMemo(
+    () => selectedArticle?.content.replace(/^#\\s+[^\\r\\n]+(?:\\r?\\n)+/, '') ?? '',
+    [selectedArticle?.content],
+  );
 
   return (
-    <div style={{ width: '100%', maxWidth: 1440, margin: '0 auto' }}>
-      <Space align="center" style={{ marginBottom: 8 }} wrap>
-        <BookOutlined />
-        <Typography.Title level={3} style={{ margin: 0 }}>
-          {track.shortTitle} · 学习
-        </Typography.Title>
-        <Tag color="blue">知识学习</Tag>
-      </Space>
-      <Typography.Paragraph type="secondary" style={{ maxWidth: 980 }}>
-        {isSnowflake
-          ? SNOWFLAKE_LEARNING_OVERVIEW.introduction
-          : track.description}
-      </Typography.Paragraph>
-
-      <Row gutter={[12, 12]} style={{ marginBottom: 16 }}>
-        <Col xs={12} md={6}>
-          <Card size="small">
-            <Typography.Text type="secondary">知识点</Typography.Text>
-            <Typography.Title level={3} style={{ margin: '4px 0 0' }}>
-              {nodes.length}
-            </Typography.Title>
-          </Card>
-        </Col>
-        <Col xs={12} md={6}>
-          <Card size="small">
-            <Typography.Text type="secondary">
-              {isSnowflake ? '独立教程' : '知识摘要'}
-            </Typography.Text>
-            <Typography.Title level={3} style={{ margin: '4px 0 0' }}>
-              {isSnowflake ? SNOWFLAKE_LEARNING_ARTICLES.length : nodes.length}
-            </Typography.Title>
-          </Card>
-        </Col>
-        <Col xs={12} md={6}>
-          <Card size="small">
-            <Typography.Text type="secondary">已完成学习资料</Typography.Text>
-            <Typography.Title level={3} style={{ margin: '4px 0 0' }}>
-              {completedNodeCount} / {nodes.length}
-            </Typography.Title>
-            <Progress percent={completionPercent} size="small" showInfo={false} />
-          </Card>
-        </Col>
-        <Col xs={12} md={6}>
-          <Card size="small">
-            <Typography.Text type="secondary">关联题目</Typography.Text>
-            <Typography.Title level={3} style={{ margin: '4px 0 0' }}>
-              {questions.length}
-            </Typography.Title>
-          </Card>
-        </Col>
-      </Row>
-
-      {isSnowflake && (
-        <IntegratedTutorialsSection nodes={nodes} onSelectNode={setSelectedNodeId} />
-      )}
-
-      <Row gutter={[16, 16]} align="top">
-        <Col xs={24} md={9} xl={7}>
-          <Card
+    <div className="study-page">
+      <div className="study-toolbar">
+        <Space align="center" size={10}>
+          <BookOutlined />
+          <Typography.Text strong>{track.shortTitle}</Typography.Text>
+          <Typography.Text type="secondary">{nodes.length} 个知识点</Typography.Text>
+        </Space>
+        <Space align="center" size={12} wrap className="study-toolbar-tools">
+          <Typography.Text type="secondary" className="study-progress-label">
+            阅读进度 {completedNodeCount}/{nodes.length}
+          </Typography.Text>
+          <Progress
+            percent={completionPercent}
             size="small"
-            title="课程知识体系"
-            extra={<Typography.Text type="secondary">{nodes.length} 个节点</Typography.Text>}
-            styles={{ body: { maxHeight: '68vh', overflowY: 'auto' } }}
-          >
-            {loadingProgress ? (
-              <Typography.Text type="secondary">正在加载学习进度…</Typography.Text>
-            ) : (
-              <Tree
-                blockNode
-                defaultExpandAll={false}
-                defaultExpandedKeys={nodes[0] ? [`topic:${nodes[0].topic}`] : []}
-                selectedKeys={selectedNode ? [`node:${selectedNode.id}`] : []}
-                treeData={treeData}
-                onSelect={(keys) => {
-                  const key = String(keys[0] ?? '');
-                  if (key.startsWith('node:')) setSelectedNodeId(key.slice(5));
-                }}
-              />
-            )}
-          </Card>
-          <Card size="small" title="学习目标" style={{ marginTop: 12 }}>
-            {isSnowflake ? (
-              <List
-                size="small"
-                split={false}
-                dataSource={courseObjectives}
-                renderItem={(item) => <List.Item style={{ paddingBlock: 4 }}>{item}</List.Item>}
-              />
-            ) : (
-              <>
-                <Typography.Paragraph>{track.description}</Typography.Paragraph>
-                {'learningPathUrl' in track && (
-                  <Typography.Link href={track.learningPathUrl} target="_blank" rel="noreferrer">
-                    查看课程路线与资料
-                  </Typography.Link>
-                )}
-              </>
-            )}
-          </Card>
+            showInfo={false}
+            style={{ width: 112, margin: 0 }}
+          />
           {isSnowflake && (
-            <Card size="small" title="学习路线" style={{ marginTop: 12 }}>
-              <List
-                size="small"
-                split={false}
-                dataSource={courseRoadmap}
-                renderItem={(item, index) => (
-                  <List.Item style={{ paddingBlock: 4 }}>
-                    <Typography.Text type="secondary" style={{ marginRight: 8 }}>
-                      {index + 1}.
-                    </Typography.Text>
-                    {item}
-                  </List.Item>
-                )}
-              />
-            </Card>
+            <IntegratedTutorialsSection nodes={nodes} onSelectNode={setSelectedNodeId} />
           )}
+        </Space>
+      </div>
+
+      <Row gutter={[16, 16]} align="top" className="study-layout">
+        <Col xs={24} md={8} xl={5}>
+          <div className="study-directory">
+            <Card
+              size="small"
+              title="课程目录"
+              extra={<Typography.Text type="secondary">{nodes.length} 项</Typography.Text>}
+              className="study-directory-card"
+              styles={{ body: { maxHeight: 'calc(100dvh - 220px)', overflowY: 'auto' } }}
+            >
+              {loadingProgress ? (
+                <Typography.Text type="secondary">正在加载学习进度…</Typography.Text>
+              ) : (
+                <Tree
+                  blockNode
+                  defaultExpandAll={false}
+                  defaultExpandedKeys={nodes[0] ? [`topic:${nodes[0].topic}`] : []}
+                  selectedKeys={selectedNode ? [`node:${selectedNode.id}`] : []}
+                  treeData={treeData}
+                  onSelect={(keys) => {
+                    const key = String(keys[0] ?? '');
+                    if (key.startsWith('node:')) setSelectedNodeId(key.slice(5));
+                  }}
+                />
+              )}
+            </Card>
+
+            <Collapse
+              ghost
+              size="small"
+              className="study-course-outline"
+              items={[{
+                key: 'outline',
+                label: '课程目标与学习路线',
+                children: (
+                  <>
+                    {isSnowflake ? (
+                      <>
+                        <Typography.Paragraph type="secondary">
+                          {SNOWFLAKE_LEARNING_OVERVIEW.introduction}
+                        </Typography.Paragraph>
+                        <List
+                          size="small"
+                          split={false}
+                          dataSource={courseObjectives}
+                          renderItem={(item) => <List.Item style={{ paddingBlock: 4 }}>{item}</List.Item>}
+                        />
+                        <Divider style={{ marginBlock: 8 }} />
+                        <List
+                          size="small"
+                          split={false}
+                          dataSource={courseRoadmap}
+                          renderItem={(item, index) => (
+                            <List.Item style={{ paddingBlock: 4 }}>
+                              <Typography.Text type="secondary" style={{ marginRight: 8 }}>
+                                {index + 1}.
+                              </Typography.Text>
+                              {item}
+                            </List.Item>
+                          )}
+                        />
+                      </>
+                    ) : (
+                      <>
+                        <Typography.Paragraph>{track.description}</Typography.Paragraph>
+                        {'learningPathUrl' in track && (
+                          <Typography.Link href={track.learningPathUrl} target="_blank" rel="noreferrer">
+                            查看课程路线与资料
+                          </Typography.Link>
+                        )}
+                      </>
+                    )}
+                  </>
+                ),
+              }]}
+            />
+          </div>
         </Col>
 
-        <Col xs={24} md={15} xl={17}>
+        <Col xs={24} md={16} xl={19}>
           {!selectedNode ? (
             <Card><Empty description="当前课程没有知识节点" /></Card>
           ) : (
             <Card
+              className="study-reader-card"
               title={
-                <div>
+                <div className="study-reader-heading">
                   <Typography.Title level={4} style={{ margin: 0 }}>
                     {selectedNode.name}
                   </Typography.Title>
@@ -386,15 +355,21 @@ export default function StudyPage({ trackId, nodes, questions, onGoTrain, onAskT
                     <Tag color={selectedNode.priority === 'P0' ? 'red' : 'blue'}>
                       {selectedNode.priority}
                     </Tag>
-                    {selectedPack
-                      ? <Tag color="success">独立教程</Tag>
-                      : <Tag>知识摘要</Tag>}
+                    {selectedArticle && (
+                      <>
+                        <Tag color="success">完整教程</Tag>
+                        <Typography.Text type="secondary" className="study-reading-time">
+                          <ClockCircleOutlined /> {selectedArticle.estimatedMinutes} 分钟
+                        </Typography.Text>
+                      </>
+                    )}
+                    {!selectedPack && <Tag>知识摘要</Tag>}
                     {selectedNodeCompleted && <Tag color="success">已完成资料学习</Tag>}
                   </Space>
                 </div>
               }
               extra={
-                <Space wrap>
+                <Space wrap className="study-reader-actions">
                   <Button
                     icon={<RobotOutlined />}
                     onClick={() => onAskTutor(selectedNode, selectedArticle?.content)}
@@ -412,41 +387,21 @@ export default function StudyPage({ trackId, nodes, questions, onGoTrain, onAskT
                 </Space>
               }
             >
-              <Typography.Paragraph type="secondary">
-                {selectedNode.summary}
-              </Typography.Paragraph>
-              {topicDescription && (
-                <Typography.Paragraph type="secondary">
-                  {topicDescription}
-                </Typography.Paragraph>
-              )}
-
               {selectedPack && selectedArticle ? (
                 <>
-                  <Space wrap>
-                    <Typography.Text strong>{selectedArticle.title}</Typography.Text>
-                    <Tag color="blue">
-                      {selectedArticle.level === 'foundation' ? '基础'
-                        : selectedArticle.level === 'intermediate' ? '中级' : '进阶'}
-                    </Tag>
-                    <Typography.Text type="secondary">
-                      <ClockCircleOutlined /> {selectedArticle.estimatedMinutes} 分钟
-                    </Typography.Text>
-                  </Space>
-                  <Divider style={{ marginBlock: 12 }} />
                   <div className="study-article">
                     <XMarkdown
-                      content={selectedArticle.content}
+                      content={articleBody}
                       components={MARKDOWN_COMPONENTS}
                       className="x-markdown-light"
                     />
                   </div>
                   <Divider />
-                  <Space style={{ width: '100%', justifyContent: 'space-between' }} wrap>
+                  <Space className="study-completion-row" style={{ width: '100%', justifyContent: 'space-between' }} wrap>
                     <Typography.Text type="secondary">
                       {selectedArticleCompleted
                         ? '已标记阅读完成；这不代表已经掌握。'
-                        : '阅读完成只记录学习资料进度，不会提高考试掌握度。'}
+                        : '读完后标记进度；掌握程度以独立检测结果为准。'}
                     </Typography.Text>
                     <Button
                       type={selectedArticleCompleted ? 'default' : 'primary'}
@@ -486,11 +441,14 @@ export default function StudyPage({ trackId, nodes, questions, onGoTrain, onAskT
                 </>
               ) : (
                 <>
+                  <Typography.Paragraph className="study-node-summary">
+                    {selectedNode.summary}
+                  </Typography.Paragraph>
                   <Alert
                     type="info"
                     showIcon
-                    message="当前知识点提供结构化学习摘要"
-                    description="这里展示知识定义、必须掌握的内容和常见误区，不把摘要伪装成完整教材。可以让 Copilot 围绕这些材料展开讲解。"
+                    message="当前节点提供的是学习摘要"
+                    description="摘要用于建立知识地图和复习重点，不等同于完整教材。可以继续向 Copilot 追问，也可以使用知识点检测检查理解。"
                     style={{ marginBottom: 16 }}
                   />
                   <Typography.Title level={5}>需要掌握</Typography.Title>
@@ -510,7 +468,7 @@ export default function StudyPage({ trackId, nodes, questions, onGoTrain, onAskT
                     </>
                   )}
                   <Divider />
-                  <Space style={{ width: '100%', justifyContent: 'space-between' }} wrap>
+                  <Space className="study-completion-row" style={{ width: '100%', justifyContent: 'space-between' }} wrap>
                     <Typography.Text type="secondary">
                       {selectedNodeCompleted
                         ? '已完成学习摘要复习；不代表知识掌握。'
