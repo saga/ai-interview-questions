@@ -1,5 +1,6 @@
 import { isValidElement, useMemo, useState, type ReactNode } from 'react';
-import { Button, Card, Collapse, Col, Divider, Modal, Row, Space, Tag, Typography } from 'antd';
+import { BookOutlined, LeftOutlined, ReadOutlined } from '@ant-design/icons';
+import { Button, Divider, List, Modal, Space, Tag, Typography } from 'antd';
 import { Mermaid } from '@ant-design/x';
 import { XMarkdown, type ComponentProps as MarkdownComponentProps } from '@ant-design/x-markdown';
 import '@ant-design/x-markdown/themes/light.css';
@@ -25,57 +26,143 @@ interface Props {
   onSelectNode: (nodeId: string) => void;
 }
 
+function levelLabel(level: string): string {
+  return level === 'foundation' ? '基础' : level === 'intermediate' ? '中级' : '进阶';
+}
+
 export function IntegratedTutorialsSection({ nodes, onSelectNode }: Props) {
+  const [open, setOpen] = useState(false);
   const [activeId, setActiveId] = useState<string>();
   const activeTutorial = SNOWFLAKE_INTEGRATED_TUTORIALS.find((item) => item.id === activeId);
   const nodeById = useMemo(() => new Map(nodes.map((node) => [node.id, node])), [nodes]);
 
+  const close = () => {
+    setOpen(false);
+    setActiveId(undefined);
+  };
+
   return (
     <>
-      <Card size="small" title={<Space wrap><Typography.Text strong>综合工程教程</Typography.Text><Tag color="blue">{SNOWFLAKE_INTEGRATED_TUTORIALS.length} 篇</Tag></Space>} style={{ marginBottom: 16 }}>
-        <Typography.Paragraph type="secondary" style={{ marginBottom: 8 }}>
-          按真实工程场景串联多个知识点。综合教程独立于 KnowledgeNode，不计入 194 篇节点教材的阅读进度。
-        </Typography.Paragraph>
-        <Collapse ghost items={[{
-          key: 'integrated-tutorials',
-          label: '查看端到端实践课程',
-          children: (
-            <Row gutter={[12, 12]}>
-              {SNOWFLAKE_INTEGRATED_TUTORIALS.map((tutorial) => (
-                <Col xs={24} sm={12} xl={6} key={tutorial.id}>
-                  <Card size="small" title={tutorial.title} extra={<Typography.Text type="secondary">{tutorial.estimatedMinutes} 分钟</Typography.Text>} style={{ height: '100%' }}>
-                    <Typography.Paragraph type="secondary" style={{ minHeight: 72 }}>{tutorial.description}</Typography.Paragraph>
-                    <Space wrap style={{ marginBottom: 10 }}>
-                      <Tag>{tutorial.level === 'foundation' ? '基础' : tutorial.level === 'intermediate' ? '中级' : '进阶'}</Tag>
-                      <Tag>{tutorial.linkedKnowledgeNodeIds.length} 个关联知识点</Tag>
-                    </Space>
-                    <Button type="primary" ghost block onClick={() => setActiveId(tutorial.id)}>阅读综合教程</Button>
-                  </Card>
-                </Col>
-              ))}
-            </Row>
-          ),
-        }]} />
-      </Card>
-      <Modal open={Boolean(activeTutorial)} title={activeTutorial?.title} onCancel={() => setActiveId(undefined)} footer={null} width={1080} styles={{ body: { maxHeight: '75vh', overflowY: 'auto' } }} destroyOnHidden>
-        {activeTutorial && (
+      <Button
+        size="middle"
+        icon={<BookOutlined />}
+        onClick={() => { setActiveId(undefined); setOpen(true); }}
+      >
+        端到端教程 · {SNOWFLAKE_INTEGRATED_TUTORIALS.length} 篇
+      </Button>
+
+      <Modal
+        open={open}
+        title={activeTutorial?.title ?? '端到端工程教程'}
+        onCancel={close}
+        footer={null}
+        width={1040}
+        styles={{ body: { maxHeight: '78vh', overflowY: 'auto' } }}
+        destroyOnHidden
+      >
+        {activeTutorial ? (
           <>
+            <Button
+              type="link"
+              icon={<LeftOutlined />}
+              onClick={() => setActiveId(undefined)}
+              style={{ paddingInline: 0, marginBottom: 12 }}
+            >
+              返回教程目录
+            </Button>
             <Space wrap style={{ marginBottom: 12 }}>
-              <Tag color="blue">{activeTutorial.level === 'foundation' ? '基础' : activeTutorial.level === 'intermediate' ? '中级' : '进阶'}</Tag>
+              <Tag color="blue">{levelLabel(activeTutorial.level)}</Tag>
               <Tag>{activeTutorial.estimatedMinutes} 分钟</Tag>
               <Tag>{activeTutorial.linkedKnowledgeNodeIds.length} 个关联知识点</Tag>
             </Space>
+            <Typography.Paragraph className="study-tutorial-intro">
+              {activeTutorial.description}
+            </Typography.Paragraph>
             <div className="study-article">
-              <XMarkdown content={activeTutorial.content} components={MARKDOWN_COMPONENTS} className="x-markdown-light" />
+              <XMarkdown
+                content={activeTutorial.content.replace(/^#\\s+[^\\r\\n]+(?:\\r?\\n)+/, '')}
+                components={MARKDOWN_COMPONENTS}
+                className="x-markdown-light"
+              />
             </div>
             <Divider />
             <Typography.Title level={5}>继续学习关联知识点</Typography.Title>
             <Space wrap>
               {activeTutorial.linkedKnowledgeNodeIds.map((nodeId) => {
                 const node = nodeById.get(nodeId);
-                return node ? <Button key={nodeId} type="link" size="small" onClick={() => { onSelectNode(nodeId); setActiveId(undefined); }}>{node.name}</Button> : null;
+                return node ? (
+                  <Button
+                    key={nodeId}
+                    type="link"
+                    size="small"
+                    onClick={() => { onSelectNode(nodeId); close(); }}
+                  >
+                    {node.name}
+                  </Button>
+                ) : null;
               })}
             </Space>
+            {activeTutorial.references.length > 0 && (
+              <>
+                <Divider />
+                <Typography.Title level={5}>参考资料</Typography.Title>
+                <List
+                  size="small"
+                  dataSource={activeTutorial.references}
+                  renderItem={(reference) => (
+                    <List.Item>
+                      <Typography.Link href={reference.url} target="_blank" rel="noreferrer">
+                        {reference.title}
+                      </Typography.Link>
+                      <Typography.Text type="secondary">{reference.publisher}</Typography.Text>
+                    </List.Item>
+                  )}
+                />
+              </>
+            )}
+          </>
+        ) : (
+          <>
+            <Typography.Paragraph type="secondary">
+              从完整工程场景出发，按设计、实施、验证和运行维护串起相关知识点。
+            </Typography.Paragraph>
+            <List
+              itemLayout="vertical"
+              dataSource={SNOWFLAKE_INTEGRATED_TUTORIALS}
+              renderItem={(tutorial) => (
+                <List.Item
+                  actions={[
+                    <Button
+                      key="read"
+                      type="link"
+                      icon={<ReadOutlined />}
+                      onClick={() => setActiveId(tutorial.id)}
+                    >
+                      阅读教程
+                    </Button>,
+                  ]}
+                >
+                  <List.Item.Meta
+                    title={
+                      <Space wrap size={8}>
+                        <Typography.Text strong>{tutorial.title}</Typography.Text>
+                        <Tag>{levelLabel(tutorial.level)}</Tag>
+                      </Space>
+                    }
+                    description={
+                      <>
+                        <Typography.Paragraph style={{ marginBottom: 4 }}>
+                          {tutorial.description}
+                        </Typography.Paragraph>
+                        <Typography.Text type="secondary">
+                          {tutorial.estimatedMinutes} 分钟 · {tutorial.linkedKnowledgeNodeIds.length} 个关联知识点
+                        </Typography.Text>
+                      </>
+                    }
+                  />
+                </List.Item>
+              )}
+            />
           </>
         )}
       </Modal>
