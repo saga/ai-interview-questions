@@ -3,7 +3,8 @@
 //   canonical → Question JSON（走 question:add 入库）；variant → 变体池 JSON（src/data/variants/ 格式）。
 //
 // 适配的 v7 落库字段（与 schema 对齐，避免 Zod 静默 strip）：
-//   - blueprintKnowledgeId：对账字段，仅与 topic 一致性校验（同名不同义于 schema 的 question.knowledgeId）。
+//   - courseId / knowledgeId：课程题的精确课程与 KnowledgeNode 身份，必须保留到 Question。
+//   - blueprintKnowledgeId：Part 1 对账字段，与最终 knowledgeId 一致性校验；不能和共享 topic 比较。
 //   - misconceptions：题目级误解数组 → Question.misconceptions。
 //   - misconceptionMap：Part2 以 option key 对齐的对象输出，此处转成 schema 要求的「按 option 索引的数组」。
 //   - source.materialId：溯源引用 → Question.source（此前被 Zod strip 丢失，复评 v6 P0 之一）。
@@ -23,7 +24,11 @@ import {
   type QuestionVariant,
   type VariantKind,
 } from '../src/schemas/variant.ts';
-import { mapMisconceptionMap, misconceptionMapsEqual } from './convert-blueprint-helpers.ts';
+import {
+  mapMisconceptionMap,
+  misconceptionMapsEqual,
+  validateBlueprintKnowledgeIdentity,
+} from './convert-blueprint-helpers.ts';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 
@@ -42,8 +47,10 @@ const promptItemSchema = z.object({
   questionRole: z.enum(['canonical', 'variant']),
   variantOf: z.string().nullable().optional(),
   category: z.string().min(1),
+  courseId: z.string().min(1).optional(),
+  knowledgeId: z.string().min(1).optional(),
   topic: z.string().min(1),
-  // v7 改名（prompt_part2 §2）：仅 Blueprint 与 topic 的对账字段，不是 schema 的 Question.knowledgeId。
+  // Blueprint 对账字段不是 Question schema 字段；仅用于核对它与最终 knowledgeId 一致。
   blueprintKnowledgeId: z.string().optional(),
   concepts: z.array(z.string().min(1)).optional(),
   tags: z.array(z.string()).default([]),
@@ -119,14 +126,8 @@ function toMisconceptionMap(item: PromptItem, indices: number[]): (number | null
 }
 
 for (const item of items) {
-  // blueprintKnowledgeId 仅对账：必须与 topic 一致（v7 §2）。不一致说明 Part2 误填了
-  // 课程知识点 id。本仓库 Knowledge 节点 id 即 topic（add-question.ts 用 nodeIds.has(topic) 校验）。
-  if (item.blueprintKnowledgeId && item.blueprintKnowledgeId !== item.topic) {
-    warnings.push(
-      `${item.id}: blueprintKnowledgeId "${item.blueprintKnowledgeId}" 与 topic "${item.topic}" 不一致。` +
-        `本仓库 topic 即 Knowledge 节点 id，已丢弃该对账字段`,
-    );
-  }
+  // 课程题的 topic 可以是多个节点共用的主题键；精确节点归属由 knowledgeId 决定。
+  validateBlueprintKnowledgeIdentity(item).forEach((problem) => errors.push(problem));
   // 测量意图落库（P0-2）：target + reasoningGoal 必须齐备才构成完整 assessment。
   // 缺一半时只告警不落库——半截的测量意图比没有更容易误导后续 review。
   const hasTarget = Boolean(item.assessmentTarget?.trim());
@@ -154,6 +155,8 @@ for (const item of items) {
     questions.push({
       id: item.id,
       category: item.category,
+      ...(item.courseId ? { courseId: item.courseId } : {}),
+      ...(item.knowledgeId ? { knowledgeId: item.knowledgeId } : {}),
       topic: item.topic,
       tags: item.tags,
       ...(item.difficulty ? { difficulty: item.difficulty } : {}),
