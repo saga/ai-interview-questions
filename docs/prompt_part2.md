@@ -62,9 +62,9 @@ Part 2 负责：
 1. Topic
    ==================================================
 
-原样继承 Part 1：
+原样继承 Part 1 的 `topic`，不得改名或重新推断。
 
-`topic`
+如果 Blueprint 含课程 `courseId` 和精确 `knowledgeId`，最终 Question 必须原样复制这两个字段；`topic` 仍按 Blueprint 保留，不得用 `knowledgeId` 覆盖共享主题键。
 
 不要：
 
@@ -152,9 +152,10 @@ Part 2 负责：
 
 注意：
 
-* `blueprintKnowledgeId` 只是 Blueprint 对账字段；
-* 不要把它当作最终 Question 的 `knowledgeId`；
-* 不要自行创造另一个 `knowledgeId`；
+* `blueprintKnowledgeId` 是 Blueprint 对账字段，不是 Question Schema 字段；
+* 若 Blueprint 是课程题，必须将 Blueprint 顶层的 `courseId`、`knowledgeId` 原样写入最终 Question 的同名字段；
+* 若不是课程题且 Blueprint 未提供这两个字段，则省略，不要自行创造；
+* 不要把共享 `topic` 当成具体 `knowledgeId`；
 * `concepts[0]` 必须是 core；
 * 后续才是 supporting。
 
