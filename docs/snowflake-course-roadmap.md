@@ -340,3 +340,10 @@ flowchart TD
 - [pgvector](https://github.com/pgvector/pgvector) — `pg-doc-pgvector`
 
 题目中的版本敏感表述应按版本标注。培训仓库以 PostgreSQL 18 为主，同时注明与 PostgreSQL 14+ 的兼容性；例如 `UNIQUE NULLS NOT DISTINCT` 自 PostgreSQL 15 起可用，并非 PostgreSQL 18 才新增。扩展（PgBouncer、PostGIS、pgvector）也需单独核对目标部署环境和版本。
+
+
+## 14. 独立 Markdown 教材（2026-11-28）
+
+课程教材扩展为 37 篇独立 Markdown 教程：29 篇 Snowflake 主课程、8 篇 PostgreSQL 数据库工程补充。知识库现有 194 个节点，按 9 个主题关联对应文章。教程正文不再放在 TypeScript 字符串中，目录、文章元数据、主题映射和参考资料由 `src/content/courses/snowflake/index.json` 管理。
+
+详细文章目录、主题覆盖和旧教材未扩张的原因见 [Snowflake 教材覆盖与建设复盘](./snowflake-learning-article-coverage.md)。

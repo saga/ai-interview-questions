@@ -30,6 +30,7 @@ import type { KnowledgeNode } from '../../schemas/knowledge';
 import type { Question } from '../../schemas/question';
 import { SNOWFLAKE_COURSE_TOPICS } from '../../data/learningTracks';
 import {
+  SNOWFLAKE_LEARNING_ARTICLES,
   SNOWFLAKE_LEARNING_CONTENT,
   SNOWFLAKE_LEARNING_OVERVIEW,
 } from '../../data/learning/snowflake';
@@ -92,11 +93,9 @@ export default function StudyPage({ nodes, questions, onGoTrain }: Props) {
     selectedPack?.articles.find((article) => article.id === selectedArticleId) ??
     selectedPack?.articles.find((article) => article.id === selectedProgress?.lastArticleId) ??
     selectedPack?.articles[0];
-  const articleCount = SNOWFLAKE_LEARNING_CONTENT.reduce((sum, pack) => sum + pack.articles.length, 0);
-  const completedArticleCount = SNOWFLAKE_LEARNING_CONTENT.reduce((sum, pack) => {
-    const completed = progressByNode.get(pack.nodeId)?.completedArticleIds ?? [];
-    return sum + pack.articles.filter((article) => completed.includes(article.id)).length;
-  }, 0);
+  const articleCount = SNOWFLAKE_LEARNING_ARTICLES.length;
+  const completedArticleIds = new Set(progress.flatMap((item) => item.completedArticleIds));
+  const completedArticleCount = SNOWFLAKE_LEARNING_ARTICLES.filter((article) => completedArticleIds.has(article.id)).length;
   const articleProgress = articleCount ? Math.round((completedArticleCount / articleCount) * 100) : 0;
 
   useEffect(() => {
@@ -208,7 +207,7 @@ export default function StudyPage({ nodes, questions, onGoTrain }: Props) {
       <Space align="center" style={{ marginBottom: 8 }} wrap>
         <BookOutlined />
         <Typography.Title level={3} style={{ margin: 0 }}>Snowflake 学习</Typography.Title>
-        <Tag color="blue">POC</Tag>
+        <Tag color="blue">课程教材</Tag>
       </Space>
       <Typography.Paragraph type="secondary" style={{ maxWidth: 980 }}>
         {SNOWFLAKE_LEARNING_OVERVIEW.introduction}
@@ -226,7 +225,7 @@ export default function StudyPage({ nodes, questions, onGoTrain }: Props) {
         </Col>
         <Col xs={12} md={6}>
           <Card size="small">
-            <Typography.Text type="secondary">已有核心教材</Typography.Text>
+            <Typography.Text type="secondary">课程教程</Typography.Text>
             <Typography.Title level={3} style={{ margin: '4px 0 0' }}>{SNOWFLAKE_LEARNING_CONTENT.length}</Typography.Title>
           </Card>
         </Col>

@@ -1,0 +1,1275 @@
+{
+  "overview": {
+    "introduction": "这门课程覆盖 Snowflake 平台、SQL 与对象模型、数据工程、企业数据架构、治理、DevOps、Iceberg、数据产品、Cortex GenAI、Agent 和 CoCo。PostgreSQL 是单独标识的数据库工程补充模块。",
+    "audience": "适合数据工程师、分析工程师、数据平台工程师、数据库工程师和 Solution Architect。先完成平台与数据工程主干，再按实际岗位选择治理、Lakehouse、GenAI、Agent 或 PostgreSQL 专题。",
+    "objectives": [
+      "解释 Snowflake 的对象模型、计算与存储边界，并能诊断常见 SQL 和 Warehouse 问题。",
+      "设计具备幂等、对账、质量门禁和可恢复能力的数据管道。",
+      "设计事实粒度、语义指标、RBAC 和数据产品契约。",
+      "使用 Git、CLI、DCM 和运行证据进行安全的生产发布与运维。",
+      "理解 Iceberg、Cortex、Agent 和 CoCo 的能力边界及生产约束。",
+      "掌握 PostgreSQL 的事务、MVCC、索引、备份、性能和运维基础，并明确与 Snowflake 的区别。"
+    ],
+    "roadmap": [
+      "平台主干：架构、对象模型、Warehouse、SQL、半结构化数据、Time Travel 与查询优化。",
+      "数据工程：COPY、Snowpipe、Snowpipe Streaming、SQL/Snowpark、Streams/Tasks、Dynamic Tables 与质量。",
+      "企业数据：分层、建模、语义层、身份、RBAC、脱敏与共享。",
+      "生产交付：Git、CLI、DCM Projects、CI/CD、Query Profile、可观测性和 FinOps。",
+      "扩展专题：Iceberg、Marketplace、Streamlit、Cortex Search、Semantic Views、Agents、ML 和 CoCo。",
+      "数据库补充：PostgreSQL SQL、MVCC、索引、VACUUM、备份、高可用和监控。"
+    ],
+    "notes": "教材正文位于独立 Markdown 文件中。当前课程包含 37 篇教程：29 篇 Snowflake 主课程和 8 篇 PostgreSQL 补充教程。所有课程 KnowledgeNode 按主题关联到教程；新知识节点必须同时检查教材覆盖。"
+  },
+  "articles": [
+    {
+      "id": "snowflake-architecture-core",
+      "file": "01-snowflake-architecture.md",
+      "title": "Snowflake 平台架构：存储、计算与 Cloud Services",
+      "kind": "core",
+      "level": "foundation",
+      "estimatedMinutes": 15,
+      "topics": [
+        "snowflake"
+      ],
+      "references": [
+        {
+          "id": "docs-snowflake-architecture",
+          "type": "official",
+          "title": "Snowflake key concepts and architecture",
+          "url": "https://docs.snowflake.com/en/user-guide/intro-key-concepts",
+          "publisher": "Snowflake Documentation",
+          "relevance": "三层架构、存储格式、Warehouse 与 Cloud Services 的官方定义。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "docs-warehouses",
+          "type": "official",
+          "title": "Virtual warehouses",
+          "url": "https://docs.snowflake.com/en/user-guide/warehouses",
+          "publisher": "Snowflake Documentation",
+          "relevance": "Warehouse 的计算职责、配置和运行管理。",
+          "verifiedAt": "2026-11-28"
+        }
+      ]
+    },
+    {
+      "id": "virtual-warehouse-core",
+      "file": "02-virtual-warehouse.md",
+      "title": "Virtual Warehouse：容量、并发与成本控制",
+      "kind": "core",
+      "level": "foundation",
+      "estimatedMinutes": 18,
+      "topics": [
+        "snowflake"
+      ],
+      "references": [
+        {
+          "id": "docs-warehouses",
+          "type": "official",
+          "title": "Virtual warehouses",
+          "url": "https://docs.snowflake.com/en/user-guide/warehouses",
+          "publisher": "Snowflake Documentation",
+          "relevance": "Warehouse 生命周期、尺寸和多集群能力。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "docs-warehouse-considerations",
+          "type": "official",
+          "title": "Warehouse considerations",
+          "url": "https://docs.snowflake.com/en/user-guide/warehouses-considerations",
+          "publisher": "Snowflake Documentation",
+          "relevance": "自动暂停、自动恢复、扩容与扩展的配置权衡。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "case-orderco-workload-isolation",
+          "type": "case",
+          "title": "Order.co Speeds Analytics up to 7x with Snowflake",
+          "url": "https://www.snowflake.com/en/customers/all-customers/case-study/order-co/",
+          "publisher": "Snowflake Customer Story",
+          "relevance": "公开案例：原有多类工作负载争抢资源，迁移后用独立 Virtual Warehouse 隔离；案例报告超过 200 名业务用户的查询提速 2–7 倍。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "docs-cost-controls",
+          "type": "official",
+          "title": "Cost controls for warehouses",
+          "url": "https://docs.snowflake.com/en/user-guide/cost-controlling-controls",
+          "publisher": "Snowflake Documentation",
+          "relevance": "Warehouse 成本控制与使用监控。",
+          "verifiedAt": "2026-11-28"
+        }
+      ]
+    },
+    {
+      "id": "snowflake-data-loading-core",
+      "file": "03-data-loading.md",
+      "title": "Snowflake 数据摄取：COPY、Snowpipe 与 Snowpipe Streaming",
+      "kind": "core",
+      "level": "foundation",
+      "estimatedMinutes": 20,
+      "topics": [
+        "data-engineering"
+      ],
+      "references": [
+        {
+          "id": "docs-data-loading",
+          "type": "official",
+          "title": "Overview of data loading",
+          "url": "https://docs.snowflake.com/en/user-guide/data-load-overview",
+          "publisher": "Snowflake Documentation",
+          "relevance": "批量加载、持续加载和摄取路径比较。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "docs-snowpipe",
+          "type": "official",
+          "title": "Introduction to Snowpipe",
+          "url": "https://docs.snowflake.com/en/user-guide/data-load-snowpipe-intro",
+          "publisher": "Snowflake Documentation",
+          "relevance": "文件到达后自动加载的工作方式。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "case-chocolate-finance-ingestion",
+          "type": "case",
+          "title": "Chocolate Finance Sweetens Customer Experiences With Fresher Data on Snowflake",
+          "url": "https://www.snowflake.com/en/customers/all-customers/video/chocolate-finance/",
+          "publisher": "Snowflake Customer Story",
+          "relevance": "公开案例：使用 S3 Stage、Snowpipe 和 Amazon Data Firehose，将最长 24 小时的报表延迟缩短至接近实时。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "docs-snowpipe-streaming",
+          "type": "official",
+          "title": "Snowpipe Streaming overview",
+          "url": "https://docs.snowflake.com/en/user-guide/snowpipe-streaming/data-load-snowpipe-streaming-overview",
+          "publisher": "Snowflake Documentation",
+          "relevance": "面向行级数据的持续摄取 API。",
+          "verifiedAt": "2026-11-28"
+        }
+      ]
+    },
+    {
+      "id": "streams-tasks-core",
+      "file": "04-streams-tasks-cdc.md",
+      "title": "Streams 与 Tasks：在 Snowflake 中构建 CDC 管道",
+      "kind": "core",
+      "level": "intermediate",
+      "estimatedMinutes": 22,
+      "topics": [
+        "data-engineering"
+      ],
+      "references": [
+        {
+          "id": "docs-streams-intro",
+          "type": "official",
+          "title": "Introduction to streams",
+          "url": "https://docs.snowflake.com/en/user-guide/streams-intro",
+          "publisher": "Snowflake Documentation",
+          "relevance": "Stream Offset、变更记录和 DML 消费事务语义。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "docs-tasks-intro",
+          "type": "official",
+          "title": "Introduction to tasks",
+          "url": "https://docs.snowflake.com/en/user-guide/tasks-intro",
+          "publisher": "Snowflake Documentation",
+          "relevance": "Task 调度、触发式任务、Task Graph 和计算模型。",
+          "verifiedAt": "2026-11-28"
+        }
+      ]
+    },
+    {
+      "id": "dynamic-tables-core",
+      "file": "05-dynamic-tables.md",
+      "title": "Dynamic Tables：声明式数据转换与新鲜度目标",
+      "kind": "core",
+      "level": "intermediate",
+      "estimatedMinutes": 18,
+      "topics": [
+        "data-engineering"
+      ],
+      "references": [
+        {
+          "id": "docs-dynamic-tables",
+          "type": "official",
+          "title": "Dynamic tables",
+          "url": "https://docs.snowflake.com/en/user-guide/dynamic-tables/overview",
+          "publisher": "Snowflake Documentation",
+          "relevance": "声明式定义、依赖关系和刷新模型。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "docs-dynamic-table-target-lag",
+          "type": "official",
+          "title": "Set the target lag for a dynamic table",
+          "url": "https://docs.snowflake.com/en/user-guide/dynamic-tables/target-lag",
+          "publisher": "Snowflake Documentation",
+          "relevance": "TARGET_LAG 的准确语义、best-effort 约束和管道调度行为。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "docs-dynamic-table-refresh-modes",
+          "type": "official",
+          "title": "Dynamic table refresh modes",
+          "url": "https://docs.snowflake.com/en/user-guide/dynamic-tables/refresh-modes",
+          "publisher": "Snowflake Documentation",
+          "relevance": "FULL、INCREMENTAL、AUTO 和 ADAPTIVE 等刷新模式。",
+          "verifiedAt": "2026-11-28"
+        }
+      ]
+    },
+    {
+      "id": "snowflake-objects-sql-session",
+      "file": "06-objects-sql-session-context.md",
+      "title": "Snowflake 对象模型、SQL 与会话上下文",
+      "kind": "core",
+      "level": "foundation",
+      "estimatedMinutes": 18,
+      "topics": [
+        "snowflake"
+      ],
+      "references": [
+        {
+          "id": "docs-snowflake-architecture",
+          "type": "official",
+          "title": "Snowflake key concepts and architecture",
+          "url": "https://docs.snowflake.com/en/user-guide/intro-key-concepts",
+          "publisher": "Snowflake Documentation",
+          "relevance": "账户架构、计算与对象模型。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "docs-sql-reference",
+          "type": "official",
+          "title": "SQL command reference",
+          "url": "https://docs.snowflake.com/en/sql-reference-commands",
+          "publisher": "Snowflake Documentation",
+          "relevance": "USE、CREATE、GRANT 等 SQL 命令语义。",
+          "verifiedAt": "2026-11-28"
+        }
+      ]
+    },
+    {
+      "id": "snowflake-semi-structured",
+      "file": "07-semi-structured-variant.md",
+      "title": "VARIANT 与半结构化数据：解析、访问和展开",
+      "kind": "core",
+      "level": "foundation",
+      "estimatedMinutes": 20,
+      "topics": [
+        "snowflake"
+      ],
+      "references": [
+        {
+          "id": "docs-semi-structured",
+          "type": "official",
+          "title": "Querying semi-structured data",
+          "url": "https://docs.snowflake.com/en/user-guide/querying-semistructured",
+          "publisher": "Snowflake Documentation",
+          "relevance": "VARIANT、路径表达式和半结构化查询。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "docs-flatten",
+          "type": "official",
+          "title": "FLATTEN table function",
+          "url": "https://docs.snowflake.com/en/sql-reference/functions/flatten",
+          "publisher": "Snowflake Documentation",
+          "relevance": "数组和对象展开的参数与返回列。",
+          "verifiedAt": "2026-11-28"
+        }
+      ]
+    },
+    {
+      "id": "snowflake-time-travel-cloning",
+      "file": "08-time-travel-cloning-recovery.md",
+      "title": "Time Travel、零拷贝克隆与数据恢复",
+      "kind": "core",
+      "level": "intermediate",
+      "estimatedMinutes": 18,
+      "topics": [
+        "snowflake"
+      ],
+      "references": [
+        {
+          "id": "docs-time-travel",
+          "type": "official",
+          "title": "Understanding and using Time Travel",
+          "url": "https://docs.snowflake.com/en/user-guide/data-time-travel",
+          "publisher": "Snowflake Documentation",
+          "relevance": "历史数据保留、AT/BEFORE 和恢复行为。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "docs-cloning",
+          "type": "official",
+          "title": "Cloning considerations",
+          "url": "https://docs.snowflake.com/en/user-guide/object-clone",
+          "publisher": "Snowflake Documentation",
+          "relevance": "零拷贝克隆的行为与限制。",
+          "verifiedAt": "2026-11-28"
+        }
+      ]
+    },
+    {
+      "id": "snowflake-micro-partitions-performance",
+      "file": "09-micro-partitions-query-optimization.md",
+      "title": "微分区、缓存与查询优化服务",
+      "kind": "deep-dive",
+      "level": "intermediate",
+      "estimatedMinutes": 24,
+      "topics": [
+        "snowflake"
+      ],
+      "references": [
+        {
+          "id": "docs-micro-partitions",
+          "type": "official",
+          "title": "Micro-partitions and data clustering",
+          "url": "https://docs.snowflake.com/en/user-guide/tables-clustering-micropartitions",
+          "publisher": "Snowflake Documentation",
+          "relevance": "微分区组织与裁剪机制。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "docs-query-profile",
+          "type": "official",
+          "title": "Exploring query profile",
+          "url": "https://docs.snowflake.com/en/user-guide/ui-query-profile",
+          "publisher": "Snowflake Documentation",
+          "relevance": "扫描、Join、聚合和算子耗时诊断。",
+          "verifiedAt": "2026-11-28"
+        }
+      ]
+    },
+    {
+      "id": "snowflake-sql-snowpark-transformations",
+      "file": "10-sql-snowpark-transformations.md",
+      "title": "SQL、Snowpark、UDF 与存储过程：转换逻辑如何分层",
+      "kind": "core",
+      "level": "intermediate",
+      "estimatedMinutes": 22,
+      "topics": [
+        "data-engineering"
+      ],
+      "references": [
+        {
+          "id": "docs-snowpark",
+          "type": "official",
+          "title": "Snowpark Developer Guide",
+          "url": "https://docs.snowflake.com/en/developer-guide/snowpark/index",
+          "publisher": "Snowflake Documentation",
+          "relevance": "Snowpark DataFrame、运行环境和开发边界。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "docs-udf",
+          "type": "official",
+          "title": "User-defined functions",
+          "url": "https://docs.snowflake.com/en/developer-guide/udf/udf-overview",
+          "publisher": "Snowflake Documentation",
+          "relevance": "UDF 类型和执行行为。",
+          "verifiedAt": "2026-11-28"
+        }
+      ]
+    },
+    {
+      "id": "snowflake-pipeline-reliability-quality",
+      "file": "11-pipeline-reliability-data-quality.md",
+      "title": "增量管道可靠性：幂等、迟到数据与质量门禁",
+      "kind": "core",
+      "level": "intermediate",
+      "estimatedMinutes": 24,
+      "topics": [
+        "data-engineering"
+      ],
+      "references": [
+        {
+          "id": "docs-pipelines",
+          "type": "official",
+          "title": "Introduction to data pipelines",
+          "url": "https://docs.snowflake.com/en/user-guide/data-pipelines-intro",
+          "publisher": "Snowflake Documentation",
+          "relevance": "管道中的 Streams、Tasks 与数据处理入口。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "docs-query-history",
+          "type": "official",
+          "title": "Query history",
+          "url": "https://docs.snowflake.com/en/user-guide/ui-query-history",
+          "publisher": "Snowflake Documentation",
+          "relevance": "任务查询执行证据和状态回溯。",
+          "verifiedAt": "2026-11-28"
+        }
+      ]
+    },
+    {
+      "id": "snowflake-stages-connectors-integrations",
+      "file": "12-stages-connectors-integrations.md",
+      "title": "Stage、File Format、Connector 与外部集成",
+      "kind": "deep-dive",
+      "level": "intermediate",
+      "estimatedMinutes": 20,
+      "topics": [
+        "data-engineering"
+      ],
+      "references": [
+        {
+          "id": "docs-stages",
+          "type": "official",
+          "title": "CREATE STAGE",
+          "url": "https://docs.snowflake.com/en/sql-reference/sql/create-stage",
+          "publisher": "Snowflake Documentation",
+          "relevance": "Stage 对象和外部存储配置。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "docs-integrations",
+          "type": "official",
+          "title": "Integrations overview",
+          "url": "https://docs.snowflake.com/en/sql-reference/sql/create-integration",
+          "publisher": "Snowflake Documentation",
+          "relevance": "Storage、Notification 和 External Access Integration。",
+          "verifiedAt": "2026-11-28"
+        }
+      ]
+    },
+    {
+      "id": "snowflake-enterprise-data-modeling",
+      "file": "13-enterprise-data-modeling-semantic-layer.md",
+      "title": "企业数据分层、事实粒度与业务语义模型",
+      "kind": "core",
+      "level": "intermediate",
+      "estimatedMinutes": 24,
+      "topics": [
+        "data-architecture"
+      ],
+      "references": [
+        {
+          "id": "docs-semantic-views",
+          "type": "official",
+          "title": "Semantic views",
+          "url": "https://docs.snowflake.com/en/user-guide/views-semantic/overview",
+          "publisher": "Snowflake Documentation",
+          "relevance": "业务语义、维度、度量和关系定义。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "docs-dimensional",
+          "type": "engineering",
+          "title": "Dimensional modeling overview",
+          "url": "https://learn.microsoft.com/en-us/power-bi/guidance/star-schema",
+          "publisher": "Microsoft Learn",
+          "relevance": "事实粒度、维度和星型模型的一般建模原则。",
+          "verifiedAt": "2026-11-28"
+        }
+      ]
+    },
+    {
+      "id": "snowflake-security-governance",
+      "file": "14-security-governance-rbac.md",
+      "title": "Snowflake 身份、RBAC 与数据治理策略",
+      "kind": "core",
+      "level": "intermediate",
+      "estimatedMinutes": 24,
+      "topics": [
+        "data-architecture"
+      ],
+      "references": [
+        {
+          "id": "docs-access-control",
+          "type": "official",
+          "title": "Overview of access control",
+          "url": "https://docs.snowflake.com/en/user-guide/security-access-control-overview",
+          "publisher": "Snowflake Documentation",
+          "relevance": "Role、Privilege、继承及 Managed Access Schema。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "docs-masking",
+          "type": "official",
+          "title": "Dynamic data masking",
+          "url": "https://docs.snowflake.com/en/user-guide/security-column-ddm-intro",
+          "publisher": "Snowflake Documentation",
+          "relevance": "列级动态脱敏的执行和绑定方式。",
+          "verifiedAt": "2026-11-28"
+        }
+      ]
+    },
+    {
+      "id": "snowflake-devops-deployment",
+      "file": "15-git-cli-dcm-cicd.md",
+      "title": "Snowflake Git、CLI、DCM Projects 与 CI/CD 发布",
+      "kind": "deep-dive",
+      "level": "intermediate",
+      "estimatedMinutes": 24,
+      "topics": [
+        "snowflake-devops"
+      ],
+      "references": [
+        {
+          "id": "docs-dcm",
+          "type": "official",
+          "title": "DCM Projects overview",
+          "url": "https://docs.snowflake.com/en/user-guide/dcm-projects/dcm-projects-overview",
+          "publisher": "Snowflake Documentation",
+          "relevance": "声明式数据库对象变更和项目模型。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "docs-cli",
+          "type": "official",
+          "title": "Snowflake CLI documentation",
+          "url": "https://docs.snowflake.com/en/developer-guide/snowflake-cli/index",
+          "publisher": "Snowflake Documentation",
+          "relevance": "本地连接、命令和 CI/CD 操作入口。",
+          "verifiedAt": "2026-11-28"
+        }
+      ]
+    },
+    {
+      "id": "snowflake-observability-finops",
+      "file": "16-observability-query-diagnostics-finops.md",
+      "title": "Snowflake 可观测性、查询诊断与 FinOps",
+      "kind": "deep-dive",
+      "level": "intermediate",
+      "estimatedMinutes": 24,
+      "topics": [
+        "snowflake-devops"
+      ],
+      "references": [
+        {
+          "id": "docs-query-history",
+          "type": "official",
+          "title": "Query history",
+          "url": "https://docs.snowflake.com/en/user-guide/ui-query-history",
+          "publisher": "Snowflake Documentation",
+          "relevance": "SQL 执行、失败和排队证据。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "docs-cost-controls",
+          "type": "official",
+          "title": "Cost controls for warehouses",
+          "url": "https://docs.snowflake.com/en/user-guide/cost-controlling-controls",
+          "publisher": "Snowflake Documentation",
+          "relevance": "Warehouse 预算、阈值和通知控制。",
+          "verifiedAt": "2026-11-28"
+        }
+      ]
+    },
+    {
+      "id": "snowflake-iceberg-architecture",
+      "file": "17-iceberg-architecture-catalog.md",
+      "title": "Apache Iceberg 与 Snowflake Lakehouse 架构",
+      "kind": "deep-dive",
+      "level": "intermediate",
+      "estimatedMinutes": 22,
+      "topics": [
+        "snowflake-lakehouse"
+      ],
+      "references": [
+        {
+          "id": "docs-iceberg",
+          "type": "official",
+          "title": "Apache Iceberg tables",
+          "url": "https://docs.snowflake.com/en/user-guide/tables-iceberg",
+          "publisher": "Snowflake Documentation",
+          "relevance": "Snowflake Iceberg Table 和 Catalog 架构。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "docs-iceberg-metadata",
+          "type": "official",
+          "title": "Iceberg metadata and retention",
+          "url": "https://docs.snowflake.com/en/user-guide/tables-iceberg-metadata",
+          "publisher": "Snowflake Documentation",
+          "relevance": "快照、元数据文件和保留策略。",
+          "verifiedAt": "2026-11-28"
+        }
+      ]
+    },
+    {
+      "id": "snowflake-iceberg-operations",
+      "file": "18-iceberg-evolution-maintenance-migration.md",
+      "title": "Iceberg Schema 演进、维护与迁移验收",
+      "kind": "deep-dive",
+      "level": "advanced",
+      "estimatedMinutes": 24,
+      "topics": [
+        "snowflake-lakehouse"
+      ],
+      "references": [
+        {
+          "id": "docs-iceberg-maintain",
+          "type": "official",
+          "title": "Manage Apache Iceberg tables",
+          "url": "https://docs.snowflake.com/en/user-guide/tables-iceberg-manage",
+          "publisher": "Snowflake Documentation",
+          "relevance": "外部 Catalog 的刷新与维护边界。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "docs-iceberg-best-practices",
+          "type": "official",
+          "title": "Iceberg best practices",
+          "url": "https://docs.snowflake.com/en/user-guide/tables-iceberg-best-practices",
+          "publisher": "Snowflake Documentation",
+          "relevance": "文件格式、元数据刷新和运行最佳实践。",
+          "verifiedAt": "2026-11-28"
+        }
+      ]
+    },
+    {
+      "id": "snowflake-sharing-products",
+      "file": "19-data-sharing-marketplace-native-apps.md",
+      "title": "Secure Data Sharing、Marketplace 与 Native Apps",
+      "kind": "deep-dive",
+      "level": "intermediate",
+      "estimatedMinutes": 22,
+      "topics": [
+        "snowflake-data-products"
+      ],
+      "references": [
+        {
+          "id": "docs-data-sharing",
+          "type": "official",
+          "title": "About Secure Data Sharing",
+          "url": "https://docs.snowflake.com/en/user-guide/data-sharing-intro",
+          "publisher": "Snowflake Documentation",
+          "relevance": "Provider、Consumer、Share 和只读共享语义。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "docs-native-app",
+          "type": "official",
+          "title": "About the Native App Framework",
+          "url": "https://docs.snowflake.com/en/developer-guide/native-apps/native-apps-about",
+          "publisher": "Snowflake Documentation",
+          "relevance": "Native App 包、应用分发和消费者安装。",
+          "verifiedAt": "2026-11-28"
+        }
+      ]
+    },
+    {
+      "id": "snowflake-streamlit-apps",
+      "file": "20-streamlit-data-app-delivery.md",
+      "title": "Streamlit in Snowflake 与数据应用交付",
+      "kind": "deep-dive",
+      "level": "intermediate",
+      "estimatedMinutes": 18,
+      "topics": [
+        "snowflake-data-products"
+      ],
+      "references": [
+        {
+          "id": "docs-streamlit",
+          "type": "official",
+          "title": "About Streamlit in Snowflake",
+          "url": "https://docs.snowflake.com/en/developer-guide/streamlit/about-streamlit",
+          "publisher": "Snowflake Documentation",
+          "relevance": "Streamlit 的运行环境和应用能力。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "docs-streamlit-native",
+          "type": "official",
+          "title": "Add a Streamlit app to a Native App",
+          "url": "https://docs.snowflake.com/en/developer-guide/native-apps/adding-streamlit",
+          "publisher": "Snowflake Documentation",
+          "relevance": "Streamlit 与 Native App 的集成边界。",
+          "verifiedAt": "2026-11-28"
+        }
+      ]
+    },
+    {
+      "id": "snowflake-cortex-functions",
+      "file": "21-cortex-llm-functions-document-ai.md",
+      "title": "Cortex AI Functions 与文档智能处理",
+      "kind": "deep-dive",
+      "level": "intermediate",
+      "estimatedMinutes": 22,
+      "topics": [
+        "snowflake-genai"
+      ],
+      "references": [
+        {
+          "id": "docs-cortex-functions",
+          "type": "official",
+          "title": "Cortex AI functions",
+          "url": "https://docs.snowflake.com/en/user-guide/snowflake-cortex/llm-functions",
+          "publisher": "Snowflake Documentation",
+          "relevance": "Cortex AI 函数入口和当前模型调用能力。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "docs-document-ai",
+          "type": "official",
+          "title": "Document AI",
+          "url": "https://docs.snowflake.com/en/user-guide/snowflake-document-ai/overview",
+          "publisher": "Snowflake Documentation",
+          "relevance": "文档抽取任务、处理和运行方式。",
+          "verifiedAt": "2026-11-28"
+        }
+      ]
+    },
+    {
+      "id": "snowflake-cortex-search-rag",
+      "file": "22-cortex-search-rag-evaluation.md",
+      "title": "Cortex Search、RAG 与检索质量评估",
+      "kind": "deep-dive",
+      "level": "advanced",
+      "estimatedMinutes": 24,
+      "topics": [
+        "snowflake-genai"
+      ],
+      "references": [
+        {
+          "id": "docs-cortex-search",
+          "type": "official",
+          "title": "Cortex Search overview",
+          "url": "https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-search/cortex-search-overview",
+          "publisher": "Snowflake Documentation",
+          "relevance": "托管搜索服务、索引和查询接口。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "docs-cortex-search-security",
+          "type": "official",
+          "title": "Cortex Search access control",
+          "url": "https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-search/cortex-search-access-control",
+          "publisher": "Snowflake Documentation",
+          "relevance": "访问控制和权限过滤。",
+          "verifiedAt": "2026-11-28"
+        }
+      ]
+    },
+    {
+      "id": "snowflake-semantic-analyst",
+      "file": "23-semantic-views-cortex-analyst.md",
+      "title": "Semantic Views、Cortex Analyst 与 Text-to-SQL",
+      "kind": "deep-dive",
+      "level": "advanced",
+      "estimatedMinutes": 26,
+      "topics": [
+        "snowflake-genai",
+        "data-architecture"
+      ],
+      "references": [
+        {
+          "id": "docs-semantic-views",
+          "type": "official",
+          "title": "Semantic views overview",
+          "url": "https://docs.snowflake.com/en/user-guide/views-semantic/overview",
+          "publisher": "Snowflake Documentation",
+          "relevance": "Semantic View 的模型组成。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "release-analyst-agents",
+          "type": "official",
+          "title": "Transition from Cortex Analyst to Cortex Agents",
+          "url": "https://docs.snowflake.com/en/release-notes/2026/other/2026-08-28-cortex-analyst-transition-cortex-agents",
+          "publisher": "Snowflake Documentation",
+          "relevance": "2026 年产品演进建议和兼容关系。",
+          "verifiedAt": "2026-11-28"
+        }
+      ]
+    },
+    {
+      "id": "snowflake-agent-tools",
+      "file": "24-cortex-agents-tool-orchestration.md",
+      "title": "Cortex Agents：工具设计与任务编排",
+      "kind": "deep-dive",
+      "level": "advanced",
+      "estimatedMinutes": 24,
+      "topics": [
+        "snowflake-agent-ml"
+      ],
+      "references": [
+        {
+          "id": "docs-cortex-agents",
+          "type": "official",
+          "title": "Cortex Agents",
+          "url": "https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-agents",
+          "publisher": "Snowflake Documentation",
+          "relevance": "Agent 工具、编排和可用能力。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "docs-agent-tools",
+          "type": "official",
+          "title": "Add tools to Cortex Agents",
+          "url": "https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-agents-add-tools",
+          "publisher": "Snowflake Documentation",
+          "relevance": "工具声明和配置方式。",
+          "verifiedAt": "2026-11-28"
+        }
+      ]
+    },
+    {
+      "id": "snowflake-agent-state",
+      "file": "25-cortex-agents-state-context.md",
+      "title": "Cortex Agents：线程、上下文与可恢复执行",
+      "kind": "deep-dive",
+      "level": "advanced",
+      "estimatedMinutes": 20,
+      "topics": [
+        "snowflake-agent-ml"
+      ],
+      "references": [
+        {
+          "id": "docs-cortex-agents",
+          "type": "official",
+          "title": "Cortex Agents",
+          "url": "https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-agents",
+          "publisher": "Snowflake Documentation",
+          "relevance": "Agent Threads、工具与编排。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "docs-agent-api",
+          "type": "official",
+          "title": "Cortex Agents REST API",
+          "url": "https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-agents-rest-api",
+          "publisher": "Snowflake Documentation",
+          "relevance": "API 调用、线程和执行管理。",
+          "verifiedAt": "2026-11-28"
+        }
+      ]
+    },
+    {
+      "id": "snowflake-agent-security-evaluation",
+      "file": "26-cortex-agent-security-evaluation-mcp.md",
+      "title": "Cortex Agent 安全、MCP 与端到端评测",
+      "kind": "deep-dive",
+      "level": "advanced",
+      "estimatedMinutes": 26,
+      "topics": [
+        "snowflake-agent-ml"
+      ],
+      "references": [
+        {
+          "id": "docs-cortex-agents",
+          "type": "official",
+          "title": "Cortex Agents",
+          "url": "https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-agents",
+          "publisher": "Snowflake Documentation",
+          "relevance": "Agent 工具集和身份相关配置。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "docs-cortex-search-agents",
+          "type": "official",
+          "title": "Cortex Search with Cortex Agents",
+          "url": "https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-search/cortex-search-agents",
+          "publisher": "Snowflake Documentation",
+          "relevance": "Search 与 Agent 的分析检索协作。",
+          "verifiedAt": "2026-11-28"
+        }
+      ]
+    },
+    {
+      "id": "snowflake-ml-lifecycle",
+      "file": "27-snowflake-ml-feature-model-lifecycle.md",
+      "title": "Snowflake ML：Feature Store、Model Registry 与模型生命周期",
+      "kind": "deep-dive",
+      "level": "advanced",
+      "estimatedMinutes": 24,
+      "topics": [
+        "snowflake-agent-ml"
+      ],
+      "references": [
+        {
+          "id": "docs-snowflake-ml",
+          "type": "official",
+          "title": "Snowflake ML overview",
+          "url": "https://docs.snowflake.com/en/developer-guide/snowflake-ml/overview",
+          "publisher": "Snowflake Documentation",
+          "relevance": "Snowflake ML 的主要能力入口。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "docs-feature-store",
+          "type": "official",
+          "title": "Feature Store",
+          "url": "https://docs.snowflake.com/en/developer-guide/snowflake-ml/feature-store/overview",
+          "publisher": "Snowflake Documentation",
+          "relevance": "特征实体、版本和在线/离线特征管理。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "docs-model-registry",
+          "type": "official",
+          "title": "Model Registry",
+          "url": "https://docs.snowflake.com/en/developer-guide/snowflake-ml/model-registry/overview",
+          "publisher": "Snowflake Documentation",
+          "relevance": "模型版本、注册和部署流程。",
+          "verifiedAt": "2026-11-28"
+        }
+      ]
+    },
+    {
+      "id": "snowflake-coco-workflows",
+      "file": "28-coco-assisted-development-workflows.md",
+      "title": "Snowflake CoCo：数据探索、SQL 生成与安全交付",
+      "kind": "deep-dive",
+      "level": "intermediate",
+      "estimatedMinutes": 22,
+      "topics": [
+        "snowflake-agent-ml"
+      ],
+      "references": [
+        {
+          "id": "docs-coco-search",
+          "type": "official",
+          "title": "Snowflake documentation search for CoCo",
+          "url": "https://docs.snowflake.com/en/search?q=CoCo",
+          "publisher": "Snowflake Documentation",
+          "relevance": "CoCo 当前功能和版本说明入口。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "repo-coco-skills",
+          "type": "engineering",
+          "title": "Snowflake CoCo Skills",
+          "url": "https://github.com/Snowflake-Labs/coco-skills",
+          "publisher": "GitHub · Snowflake-Labs",
+          "relevance": "CoCo 技能工作流和可复用开发任务。",
+          "verifiedAt": "2026-11-28"
+        }
+      ]
+    },
+    {
+      "id": "snowflake-asset-management-case",
+      "file": "29-asset-management-reference-architecture.md",
+      "title": "案例：资产管理平台的数据模型、研究检索与 Agent",
+      "kind": "case-study",
+      "level": "advanced",
+      "estimatedMinutes": 28,
+      "topics": [
+        "snowflake-agent-ml",
+        "data-architecture",
+        "snowflake-genai",
+        "data-engineering"
+      ],
+      "references": [
+        {
+          "id": "docs-semantic-views",
+          "type": "official",
+          "title": "Semantic views",
+          "url": "https://docs.snowflake.com/en/user-guide/views-semantic/overview",
+          "publisher": "Snowflake Documentation",
+          "relevance": "投资组合指标语义与关系定义。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "docs-cortex-search",
+          "type": "official",
+          "title": "Cortex Search overview",
+          "url": "https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-search/cortex-search-overview",
+          "publisher": "Snowflake Documentation",
+          "relevance": "研究文档检索能力。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "docs-access-control",
+          "type": "official",
+          "title": "Overview of access control",
+          "url": "https://docs.snowflake.com/en/user-guide/security-access-control-overview",
+          "publisher": "Snowflake Documentation",
+          "relevance": "数据访问、Role 和对象权限。",
+          "verifiedAt": "2026-11-28"
+        }
+      ]
+    },
+    {
+      "id": "postgresql-foundations",
+      "file": "30-postgresql-foundations-security.md",
+      "title": "PostgreSQL 基础架构、连接、Schema 与权限",
+      "kind": "core",
+      "level": "foundation",
+      "estimatedMinutes": 20,
+      "topics": [
+        "postgresql"
+      ],
+      "references": [
+        {
+          "id": "pg-docs-concepts",
+          "type": "official",
+          "title": "PostgreSQL: Database Concepts",
+          "url": "https://www.postgresql.org/docs/current/tutorial-concepts.html",
+          "publisher": "PostgreSQL Documentation",
+          "relevance": "数据库、Schema 与客户端基本概念。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "pg-docs-roles",
+          "type": "official",
+          "title": "PostgreSQL: Database Roles",
+          "url": "https://www.postgresql.org/docs/current/user-manag.html",
+          "publisher": "PostgreSQL Documentation",
+          "relevance": "Role、登录和权限管理。",
+          "verifiedAt": "2026-11-28"
+        }
+      ]
+    },
+    {
+      "id": "postgresql-sql-json",
+      "file": "31-postgresql-sql-json-query-engineering.md",
+      "title": "PostgreSQL SQL、JOIN、JSONB 与查询表达",
+      "kind": "core",
+      "level": "intermediate",
+      "estimatedMinutes": 24,
+      "topics": [
+        "postgresql"
+      ],
+      "references": [
+        {
+          "id": "pg-docs-dml",
+          "type": "official",
+          "title": "PostgreSQL: Data Manipulation",
+          "url": "https://www.postgresql.org/docs/current/dml.html",
+          "publisher": "PostgreSQL Documentation",
+          "relevance": "INSERT、UPDATE、DELETE 和 RETURNING。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "pg-docs-json",
+          "type": "official",
+          "title": "PostgreSQL: JSON Types",
+          "url": "https://www.postgresql.org/docs/current/datatype-json.html",
+          "publisher": "PostgreSQL Documentation",
+          "relevance": "JSON 与 JSONB 语义。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "pg-docs-window",
+          "type": "official",
+          "title": "PostgreSQL: Window Functions",
+          "url": "https://www.postgresql.org/docs/current/tutorial-window.html",
+          "publisher": "PostgreSQL Documentation",
+          "relevance": "窗口函数的使用。",
+          "verifiedAt": "2026-11-28"
+        }
+      ]
+    },
+    {
+      "id": "postgresql-mvcc-locks",
+      "file": "32-postgresql-transactions-mvcc-locks.md",
+      "title": "PostgreSQL 事务、MVCC、隔离级别与锁",
+      "kind": "core",
+      "level": "intermediate",
+      "estimatedMinutes": 24,
+      "topics": [
+        "postgresql"
+      ],
+      "references": [
+        {
+          "id": "pg-docs-mvcc",
+          "type": "official",
+          "title": "PostgreSQL: Concurrency Control",
+          "url": "https://www.postgresql.org/docs/current/mvcc.html",
+          "publisher": "PostgreSQL Documentation",
+          "relevance": "MVCC 与并发控制。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "pg-docs-locks",
+          "type": "official",
+          "title": "PostgreSQL: Explicit Locking",
+          "url": "https://www.postgresql.org/docs/current/explicit-locking.html",
+          "publisher": "PostgreSQL Documentation",
+          "relevance": "锁模式和死锁行为。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "pg-docs-transaction",
+          "type": "official",
+          "title": "PostgreSQL: Transaction Isolation",
+          "url": "https://www.postgresql.org/docs/current/transaction-iso.html",
+          "publisher": "PostgreSQL Documentation",
+          "relevance": "隔离级别与序列化异常。",
+          "verifiedAt": "2026-11-28"
+        }
+      ]
+    },
+    {
+      "id": "postgresql-index-explain",
+      "file": "33-postgresql-indexes-explain-performance.md",
+      "title": "PostgreSQL 索引、统计信息与 EXPLAIN 诊断",
+      "kind": "deep-dive",
+      "level": "intermediate",
+      "estimatedMinutes": 25,
+      "topics": [
+        "postgresql"
+      ],
+      "references": [
+        {
+          "id": "pg-docs-indexes",
+          "type": "official",
+          "title": "PostgreSQL: Indexes",
+          "url": "https://www.postgresql.org/docs/current/indexes.html",
+          "publisher": "PostgreSQL Documentation",
+          "relevance": "索引类型与使用场景。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "pg-docs-explain",
+          "type": "official",
+          "title": "PostgreSQL: EXPLAIN",
+          "url": "https://www.postgresql.org/docs/current/using-explain.html",
+          "publisher": "PostgreSQL Documentation",
+          "relevance": "查询计划和实际执行诊断。",
+          "verifiedAt": "2026-11-28"
+        }
+      ]
+    },
+    {
+      "id": "postgresql-vacuum-partition",
+      "file": "34-postgresql-vacuum-partitioning-storage.md",
+      "title": "PostgreSQL VACUUM、膨胀与分区表",
+      "kind": "deep-dive",
+      "level": "intermediate",
+      "estimatedMinutes": 22,
+      "topics": [
+        "postgresql"
+      ],
+      "references": [
+        {
+          "id": "pg-docs-vacuum",
+          "type": "official",
+          "title": "PostgreSQL: Routine Vacuuming",
+          "url": "https://www.postgresql.org/docs/current/routine-vacuuming.html",
+          "publisher": "PostgreSQL Documentation",
+          "relevance": "VACUUM、Autovacuum 和统计信息。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "pg-docs-partition",
+          "type": "official",
+          "title": "PostgreSQL: Table Partitioning",
+          "url": "https://www.postgresql.org/docs/current/ddl-partitioning.html",
+          "publisher": "PostgreSQL Documentation",
+          "relevance": "分区策略和分区裁剪。",
+          "verifiedAt": "2026-11-28"
+        }
+      ]
+    },
+    {
+      "id": "postgresql-backup-ha",
+      "file": "35-postgresql-backup-wal-replication-ha.md",
+      "title": "PostgreSQL 备份、WAL、PITR 与高可用",
+      "kind": "core",
+      "level": "advanced",
+      "estimatedMinutes": 26,
+      "topics": [
+        "postgresql"
+      ],
+      "references": [
+        {
+          "id": "pg-docs-backup",
+          "type": "official",
+          "title": "PostgreSQL: Backup and Restore",
+          "url": "https://www.postgresql.org/docs/current/backup.html",
+          "publisher": "PostgreSQL Documentation",
+          "relevance": "逻辑备份、基础备份与恢复方式。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "pg-docs-wal",
+          "type": "official",
+          "title": "PostgreSQL: WAL",
+          "url": "https://www.postgresql.org/docs/current/wal-intro.html",
+          "publisher": "PostgreSQL Documentation",
+          "relevance": "WAL、归档和恢复机制。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "pg-docs-replication",
+          "type": "official",
+          "title": "PostgreSQL: High Availability, Load Balancing, and Replication",
+          "url": "https://www.postgresql.org/docs/current/high-availability.html",
+          "publisher": "PostgreSQL Documentation",
+          "relevance": "复制和高可用架构。",
+          "verifiedAt": "2026-11-28"
+        }
+      ]
+    },
+    {
+      "id": "postgresql-connection-monitoring",
+      "file": "36-postgresql-connection-memory-monitoring.md",
+      "title": "PgBouncer、内存、并行查询与运行监控",
+      "kind": "deep-dive",
+      "level": "advanced",
+      "estimatedMinutes": 24,
+      "topics": [
+        "postgresql"
+      ],
+      "references": [
+        {
+          "id": "pg-docs-monitoring",
+          "type": "official",
+          "title": "PostgreSQL: Monitoring Database Activity",
+          "url": "https://www.postgresql.org/docs/current/monitoring.html",
+          "publisher": "PostgreSQL Documentation",
+          "relevance": "统计视图和运行活动监控。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "pgbouncer-docs",
+          "type": "official",
+          "title": "PgBouncer documentation",
+          "url": "https://www.pgbouncer.org/config.html",
+          "publisher": "PgBouncer",
+          "relevance": "连接池模式和配置约束。",
+          "verifiedAt": "2026-11-28"
+        }
+      ]
+    },
+    {
+      "id": "postgresql-extensions-integrations",
+      "file": "37-postgresql-extensions-integrations.md",
+      "title": "PostgreSQL 扩展、全文搜索与平台集成边界",
+      "kind": "deep-dive",
+      "level": "intermediate",
+      "estimatedMinutes": 18,
+      "topics": [
+        "postgresql"
+      ],
+      "references": [
+        {
+          "id": "pg-docs-extensions",
+          "type": "official",
+          "title": "PostgreSQL: Additional Supplied Modules",
+          "url": "https://www.postgresql.org/docs/current/contrib.html",
+          "publisher": "PostgreSQL Documentation",
+          "relevance": "官方扩展模块列表。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "pg-docs-text-search",
+          "type": "official",
+          "title": "PostgreSQL: Full Text Search",
+          "url": "https://www.postgresql.org/docs/current/textsearch.html",
+          "publisher": "PostgreSQL Documentation",
+          "relevance": "全文搜索数据类型和查询方式。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "pg-docs-fdw",
+          "type": "official",
+          "title": "PostgreSQL: Foreign Data Wrappers",
+          "url": "https://www.postgresql.org/docs/current/ddl-foreign-data.html",
+          "publisher": "PostgreSQL Documentation",
+          "relevance": "外部数据访问机制。",
+          "verifiedAt": "2026-11-28"
+        }
+      ]
+    }
+  ]
+}
