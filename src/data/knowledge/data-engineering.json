@@ -102,14 +102,20 @@
     "area": "data-platform",
     "topic": "data-engineering",
     "priority": "P1",
-    "summary": "关联阶段时间、查询执行、血缘和批次版本进行诊断。",
+    "summary": "围绕数据产品 SLO，使用 Freshness/DMF 监控质量，并结合 Dynamic Table/Task 历史、Query Profile、Data Lineage 和 Access History 定位数据交付问题。",
     "required": [
-      "新鲜度不等于作业成功状态。",
-      "关联 Query Profile、版本、质量结果和批次标识。"
+      "区分事件时间、到达时间、数据更新时间和业务截止时间，定义可验收的新鲜度目标。",
+      "使用 ROW_COUNT、NULL_COUNT、DUPLICATE_COUNT、FRESHNESS 等 DMF 监控数据质量，并配置 Expectation 或 Anomaly Detection。",
+      "使用 Dynamic Table Refresh History 或 TASK_HISTORY 区分执行成功、刷新完成和业务批次完整。",
+      "区分对象/列级 Data Lineage、Access History 与 Query Profile 各自能证明的内容和可见性限制。",
+      "将 DMF、源批次、Query ID、刷新数据时间戳和业务控制总额关联到同一故障诊断过程。"
     ],
     "misconceptions": [
-      "只用退出码判断业务正确性。",
-      "将敏感数据和凭据写入共享日志。"
+      "把 Task 成功或 Dynamic Table SUCCEEDED 当成业务数据完整",
+      "只监控 ROW_COUNT，忽略键重复、NULL 和业务口径",
+      "把 Anomaly Detection 当成自动业务规则或准确性证明",
+      "将 Data Lineage、Access History 与 Query Profile 混为一种证据",
+      "认为 DMF 失败会自动阻止下游发布"
     ],
     "angles": [
       "mechanism",
