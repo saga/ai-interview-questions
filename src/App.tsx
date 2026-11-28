@@ -14,7 +14,7 @@ import {
 import { questionBank as bank } from './data/questionBank';
 import { knowledgeNodes } from './data/knowledgeMap';
 import { getLearningTrack, isLearningTrackId, type LearningTrackId } from './data/learningTracks';
-import { knowledgeForTrack, profileForTrack, questionBankForTrack } from './domain/learningTracks';
+import { knowledgeForTrack, profileForTrack, questionBankForTrack, questionsForKnowledgeNode } from './domain/learningTracks';
 import LearningTrackSelector from './components/home/LearningTrackSelector';
 import type { InterviewDefinition } from './schemas/interview';
 import type { LearnerProfile } from './schemas/learner';
@@ -274,13 +274,18 @@ export default function App() {
             questions={trackBank.questions}
             onGoTrain={(nodeId) => {
               const node = trackNodes.find((item) => item.id === nodeId);
+              const questionIds = questionsForKnowledgeNode(trackBank.questions, nodeId).map((question) => question.id);
+              if (questionIds.length === 0) {
+                message.info('当前知识点暂无可用题目');
+                return;
+              }
               startSession({
                 title: getLearningTrack(runtimeTrackId).shortTitle + ' · ' + (node?.name ?? nodeId) + ' 专项训练',
-                topic: nodeId,
+                questionIds,
                 categories: [],
                 difficulties: [],
                 formats: ['choice', 'open'],
-                count: 10,
+                count: Math.min(10, questionIds.length),
                 useAI: configReady,
                 scoringRubric: { correctness: 0.4, completeness: 0.2, architecture: 0.2, communication: 0.2 },
                 mode: 'course',
