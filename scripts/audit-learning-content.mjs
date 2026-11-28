@@ -93,12 +93,13 @@ const paragraphIndex = new Map();
 const changedIds = new Set(targets.map((doc) => doc.id));
 const pendingSources = [];
 for (const doc of docs) {
+  const isTarget = !strict || changedIds.has(doc.id);
   if (doc.missing) {
-    missing.push({ id: doc.id, path: doc.path, problem: '文件不存在' });
+    if (isTarget) missing.push({ id: doc.id, path: doc.path, problem: '文件不存在' });
     continue;
   }
   for (const heading of required[doc.kind]) {
-    if (!doc.sections.has(heading) || !doc.sections.get(heading)) {
+    if (isTarget && (!doc.sections.has(heading) || !doc.sections.get(heading))) {
       missing.push({ id: doc.id, path: doc.path, problem: `缺少内容章节：${heading}` });
     }
     for (const paragraph of paragraphs(doc.sections.get(heading) ?? '')) {
