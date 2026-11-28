@@ -38,7 +38,7 @@ When writing or materially revising a Snowflake lesson, concept explainer, archi
 
 ## Source and schema requirements
 
-Every new canonical question must include `courseId: "snowflake"`, `knowledgeId` equal to a valid knowledge node ID, `source.materialId` and `source.section` for its primary course/module, and `source.relatedMaterials` for authoritative documentation cross-checks. Use a globally unique question ID, a valid `angle`, and both `formats.choice` and `formats.open`.
+Every new canonical question must include `courseId: "snowflake"`, `knowledgeId` equal to a valid knowledge node ID, and `topic` equal to that same `KnowledgeNode.id`. Do not put the shared `KnowledgeNode.topic` classification into `Question.topic`. Also include `source.materialId` and `source.section` for its primary course/module, and `source.relatedMaterials` for authoritative documentation cross-checks. Use a globally unique question ID, a valid `angle`, and both `formats.choice` and `formats.open`.
 
 Choice questions must contain 4–6 balanced options. Answer indexes must be in range. `misconceptionMap` must have the same length as `options`; every correct option maps to `null`, and any numeric map entry must index a valid question-level misconception.
 
