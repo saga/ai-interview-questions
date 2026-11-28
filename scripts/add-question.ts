@@ -120,6 +120,12 @@ for (const question of incoming) {
   if (question.courseId && !question.knowledgeId) {
     errors.push(`${question.id}: 课程题必须填写精确的 knowledgeId`);
   }
+  if (question.courseId === 'snowflake') {
+    if (!question.source?.section?.trim()) errors.push(`${question.id}: Snowflake 课程题缺 source.section`);
+    if (!question.source?.relatedMaterials?.length) {
+      errors.push(`${question.id}: Snowflake 课程题缺 source.relatedMaterials`);
+    }
+  }
   if (topicCandidates.length > 1 && !hasKnowledgeTarget(question, nodes)) {
     errors.push(
       `${question.id}: topic "${question.topic}" 对应多个 KnowledgeNode，必须通过 knowledgeId、concepts 或 subtopic 明确关联；候选：${topicCandidates.map((node) => node.id).join(', ')}`,
