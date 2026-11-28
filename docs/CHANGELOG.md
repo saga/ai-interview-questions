@@ -1,7 +1,7 @@
 ## 2026-11-28 · Snowflake 学习模式 POC
 
 - 新增独立学习入口与课程导览，Snowflake 课程树复用现有 KnowledgeNode / LearningTrack，不复制知识体系。
-- 为五个基础主干 P0 节点新增核心教材，包含架构图、SQL 示例、常见误区、自检问题和 Snowflake 官方资料引用；案例明确区分教学场景与公开客户案例。
+- 为五个基础主干 P0 节点新增核心教材，包含架构图、SQL 示例、常见误区、自检问题和 Snowflake 官方资料引用；补入 Order.co 工作负载隔离、Chocolate Finance 数据摄取两条公开客户案例，并区分教学场景与客户案例。
 - 新增 Dexie `studyProgress` 表（v5），独立保存文章阅读位置与完成状态，不改变考试掌握度。
 - 教材页面可从当前 KnowledgeNode 进入专项训练；Interview Engine 普通组卷与自适应选题均按 `definition.topic` 严格过滤题池。
 - 新增学习内容覆盖、来源和阅读进度测试；完整实施说明见 `docs/snowflake-learning-mode-poc.md`。
