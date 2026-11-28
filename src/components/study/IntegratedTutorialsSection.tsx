@@ -1,12 +1,24 @@
-import { useMemo, useState } from 'react';
+import { isValidElement, useMemo, useState, type ReactNode } from 'react';
 import { Button, Card, Collapse, Col, Divider, Modal, Row, Space, Tag, Typography } from 'antd';
 import { Mermaid } from '@ant-design/x';
-import { XMarkdown } from '@ant-design/x-markdown';
+import { XMarkdown, type ComponentProps as MarkdownComponentProps } from '@ant-design/x-markdown';
 import '@ant-design/x-markdown/themes/light.css';
 import type { KnowledgeNode } from '../../schemas/knowledge';
 import { SNOWFLAKE_INTEGRATED_TUTORIALS } from '../../data/learning/snowflake';
 
-const MARKDOWN_COMPONENTS = { mermaid: Mermaid };
+function mermaidSource(node: ReactNode): string {
+  if (typeof node === 'string') return node;
+  if (typeof node === 'number') return String(node);
+  if (Array.isArray(node)) return node.map(mermaidSource).join('');
+  if (isValidElement<{ children?: ReactNode }>(node)) return mermaidSource(node.props.children);
+  return '';
+}
+
+function MarkdownMermaid({ children, className, style }: MarkdownComponentProps) {
+  return <Mermaid className={className} style={style}>{mermaidSource(children)}</Mermaid>;
+}
+
+export const MARKDOWN_COMPONENTS = { mermaid: MarkdownMermaid };
 
 interface Props {
   nodes: KnowledgeNode[];
