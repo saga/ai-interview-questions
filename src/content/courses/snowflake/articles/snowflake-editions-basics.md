@@ -119,4 +119,4 @@ WHERE account_name = CURRENT_ACCOUNT();
 ## 参考资料
 
 - [Snowflake editions](https://docs.snowflake.com/en/user-guide/intro-editions)
-- [Working with account editions](https://docs.snowflake.com/en/user-guide/admin-account-management)
+- [Working with account editions](https://docs.snowflake.com/en/user-guide/organizations-manage-accounts-editions)
