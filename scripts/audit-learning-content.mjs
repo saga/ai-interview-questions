@@ -31,19 +31,19 @@ const boilerplatePatterns = [
 function normalize(text) {
   return text
     .normalize('NFKC')
-    .replace(/\\x60{3}[\\s\\S]*?\\x60{3}/g, ' ')
-    .replace(/~~~[\\s\\S]*?~~~/g, ' ')
-    .replace(/\\|[^\\n]*\\|/g, ' ')
-    .replace(/[#>*_~\\-\\s]+/g, ' ')
-    .replace(/[，。；、,.!:：？?（）()\\[\\]{}"'“”‘’]/g, '')
+    .replace(/\x60{3}[\s\S]*?\x60{3}/g, ' ')
+    .replace(/~~~[\s\S]*?~~~/g, ' ')
+    .replace(/\|[^\n]*\|/g, ' ')
+    .replace(/[#>*_~\-\s]+/g, ' ')
+    .replace(/[，。；、,.!:：？?（）()\[\]{}"'“”‘’]/g, '')
     .trim()
     .toLocaleLowerCase();
 }
 function sections(markdown) {
   const result = new Map();
   let current = null;
-  for (const line of markdown.split('\\n')) {
-    const heading = line.match(/^##\\s+(.+?)\\s*$/);
+  for (const line of markdown.split('\n')) {
+    const heading = line.match(/^##\s+(.+?)\s*$/);
     if (heading) {
       current = heading[1].trim();
       result.set(current, []);
@@ -51,11 +51,11 @@ function sections(markdown) {
       result.get(current).push(line);
     }
   }
-  return new Map([...result].map(([key, lines]) => [key, lines.join('\\n').trim()]));
+  return new Map([...result].map(([key, lines]) => [key, lines.join('\n').trim()]));
 }
 function paragraphs(text) {
-  return text.split(/\\n\\s*\\n/)
-    .map((part) => part.replace(/^\\s*(?:[-*+] |\\d+[.)] )/gm, '').trim())
+  return text.split(/\n\s*\n/)
+    .map((part) => part.replace(/^\s*(?:[-*+] |\d+[.)] )/gm, '').trim())
     .filter((part) => part.length >= 100)
     .map((raw) => ({ raw, normalized: normalize(raw) }))
     .filter((part) => part.normalized.length >= 100);
@@ -88,7 +88,7 @@ if (strict) {
   try {
     changed = new Set(execFileSync('git', [
       'diff', '--name-only', '--diff-filter=ACMRT', \`\${base}...HEAD\`,
-    ], { encoding: 'utf8' }).split('\\n').filter(Boolean));
+    ], { encoding: 'utf8' }).split('\n').filter(Boolean));
   } catch (error) {
     console.error(\`无法计算教程变更文件（base=\${base}）：\${error instanceof Error ? error.message : String(error)}\`);
     process.exit(2);
@@ -133,10 +133,10 @@ for (const doc of docs) {
     const scenario = doc.sections.get('场景分析') ?? '';
     const misconceptions = doc.sections.get('常见误区') ?? '';
     const tests = doc.sections.get('自测') ?? '';
-    const h3Count = countMatches(core, /^###\\s+/gm);
-    const stepCount = countMatches(steps, /^\\s*\\d+[.)]\\s+/gm);
-    const misconceptionCount = countMatches(misconceptions, /^\\s*[-*+]\\s+/gm);
-    const testCount = countMatches(tests, /^\\s*\\d+[.)]\\s+/gm);
+    const h3Count = countMatches(core, /^###\s+/gm);
+    const stepCount = countMatches(steps, /^\s*\d+[.)]\s+/gm);
+    const misconceptionCount = countMatches(misconceptions, /^\s*[-*+]\s+/gm);
+    const testCount = countMatches(tests, /^\s*\d+[.)]\s+/gm);
     const checks = [
       [problem.length >= 70, '问题定义少于 70 字符'],
       [core.length >= 450 && h3Count >= 2, \`核心机制不足（\${core.length} 字符，\${h3Count} 个小节）\`],
@@ -163,7 +163,7 @@ const duplicates = [...paragraphIndex.values()]
 console.log(\`学习内容审计：\${targets.length} 篇教程；\${duplicates.length} 组跨文档重复段落；\${structureProblems.length} 处结构问题；\${qualityProblems.length} 处内容质量问题；\${pendingSources.length} 篇含待核验来源；\${sourceMissing.length} 篇缺少来源元数据。\`);
 for (const item of duplicates.slice(0, 20)) {
   console.log(\`  重复段落 [\${item.kind} / \${item.heading}] · \${item.ids.length} 篇：\${item.ids.slice(0, 8).join(', ')}\`);
-  console.log(\`    \${item.paragraph.replace(/\\n/g, ' ').slice(0, 180)}\`);
+  console.log(\`    \${item.paragraph.replace(/\n/g, ' ').slice(0, 180)}\`);
 }
 for (const item of structureProblems.slice(0, 30)) {
   console.log(\`  内容结构 [\${item.id}]：\${item.problem}\`);
