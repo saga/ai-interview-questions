@@ -1,61 +1,90 @@
-# 掩码策略、对象标签与数据分类
+# 标签分类与 Tag-based Masking Policy
 
-## 本节要解决的问题
+## 新增一张客户表，为什么敏感列没有自动脱敏
 
-标记敏感数据并通过策略控制敏感内容的可见方式.
+数据平台为 Email 列创建了 Masking Policy，又在另一张表上手工绑定一次。半年后有十几张表使用同一列名，策略逐渐不一致。问题在于标签只用于分类，还是被真正连接到掩码策略；两者不是一回事。
 
-企业数据架构与治理。先定义业务实体、事实粒度、指标口径和访问责任，再决定物理模型、语义定义与权限策略。
+Tag-based Masking Policy 将对象标签与 Dynamic Data Masking 关联。列或其父级对象带有相应标签、且数据类型匹配时，策略可以自动应用到该列。它适合统一保护一类数据，但不能替代分类审核、策略测试和权限治理。
 
-本教程只对应知识点 `snowflake-masking-tagging-policies`。目标是理解其机制、适用边界和验证方法，不把相邻知识点合并成一个大章。
+## 先统一敏感级别，再建立标签
 
-## 核心知识
+例如组织定义三类标签：PUBLIC、INTERNAL 和 SENSITIVE。标签值是分类元数据，不是访问权限本身。真正的查询返回结果仍由 Masking Policy、Role、条件函数和对象授权决定。
 
-### 标记敏感数据并通过策略控制敏感内容的可见方式.
+Tag-based Masking Policies 需要 Enterprise Edition。部署前应确认账户版本，并由治理角色拥有创建 Tag、Masking Policy、关联策略以及给目标对象赋标签所需权限。
 
-模型输出先作为候选结果处理。分别验证格式/Schema、业务不变量、证据来源、低置信结果和异常样本，并记录模型/提示版本、输入范围、延迟和成本。
+## 一个基于字符串类型的策略例子
 
-### 按治理需要组合对象标签、分类信息与行/列保护策略.
+先创建标签和 Masking Policy：
 
-模型输出先作为候选结果处理。分别验证格式/Schema、业务不变量、证据来源、低置信结果和异常样本，并记录模型/提示版本、输入范围、延迟和成本。
+~~~sql
+CREATE TAG GOVERNANCE.CLASSIFICATION.SENSITIVITY
+  COMMENT = 'Column sensitivity classification';
 
-### 标签用于描述和分类对象，掩码和行访问策略负责数据访问时的保护行为.
+CREATE MASKING POLICY GOVERNANCE.POLICIES.MASK_SENSITIVE_STRING
+AS (VAL STRING)
+RETURNS STRING ->
+  CASE
+    WHEN IS_ROLE_IN_SESSION('PII_READER') THEN VAL
+    ELSE '***'
+  END;
 
-模型输出先作为候选结果处理。分别验证格式/Schema、业务不变量、证据来源、低置信结果和异常样本，并记录模型/提示版本、输入范围、延迟和成本。
+ALTER TAG GOVERNANCE.CLASSIFICATION.SENSITIVITY
+  SET MASKING POLICY GOVERNANCE.POLICIES.MASK_SENSITIVE_STRING;
+~~~
 
-## 工程实施步骤
+之后可以在列上标记分类：
 
-1. 写清业务实体、事实粒度、关系基数、指标口径、敏感级别和 owner。
-2. 将业务定义映射到物理模型、语义对象、角色授权和数据质量规则。
-3. 用 Golden Queries、允许/拒绝访问测试和变更审查验证结果。
+~~~sql
+ALTER TABLE ANALYTICS.CUSTOMERS
+  MODIFY COLUMN EMAIL
+  SET TAG GOVERNANCE.CLASSIFICATION.SENSITIVITY = 'SENSITIVE';
+~~~
 
-## 场景分析
+示例只保护 STRING 类型的列。若同一标签还要保护 NUMBER 或 DATE，需要分别创建匹配类型签名的 Masking Policy。一个标签对每种数据类型只能关联一条 Masking Policy；不能给同一标签配置两条 STRING policy 再期望它们都执行。
 
-业务、财务和分析团队对同一个指标给出不同结果。请确认事实粒度、关系、过滤条件和时间口径，再决定模型与治理规则。
+Tag-based policy 也可以附加到 Database、Schema 或 Table。将标签放到父级对象会扩大继承/应用范围，必须先评估同一容器里是否存在不应该被保护或不同数据类型的列。
 
-将场景转换为明确输入、状态变化和预期输出。逐项检查本节核心要求，区分配置事实、运行证据和待验证假设。缺少权限、版本、数据样本或官方行为证据时，明确记录未知项，不用猜测补齐。
+## 直接策略、标签策略与条件参数的优先关系
 
-## 常见误区
+如果某列已经直接绑定 Masking Policy，而标签又关联了 Tag-based Policy，直接绑定的列级策略优先。不能仅凭在表上打了标签就断定该列正在使用标签策略。
 
-- **误区：** 对象标签本身会自动隐藏所有敏感列值
-  **纠正：** 模型输出先作为候选结果处理。分别验证格式/Schema、业务不变量、证据来源、低置信结果和异常样本，并记录模型/提示版本、输入范围、延迟和成本。
-- **误区：** 掩码策略用于压缩底层数据文件
-  **纠正：** 文件入口、文件解析和目标表写入必须分别验证。检查路径与文件清单、格式选项、列匹配、拒绝行、加载历史和目标行数；失败重跑前先确认之前是否已部分提交。
-- **误区：** 行访问策略只用于给对象添加描述性标签
-  **纠正：** 模型输出先作为候选结果处理。分别验证格式/Schema、业务不变量、证据来源、低置信结果和异常样本，并记录模型/提示版本、输入范围、延迟和成本。
+Conditional Masking Policy 还会要求辅助列满足命名和类型匹配。策略签名中的 secondary argument 与目标表列不匹配时，策略可能处于未生效或冲突状态。通过 Account Usage 的 TAG_REFERENCES 和 POLICY_REFERENCES 检查实际标签与策略引用，比只看 DDL 更可靠。
 
-## 完成标准
+Row Access Policy 控制行是否可见，Masking Policy 控制列值如何返回。两者都能用来表达数据保护，但必须在同一数据集上组合测试，尤其是按租户隔离与按列脱敏同时存在时。不要把列脱敏当成行级授权。
 
-- [ ] 能说明：标记敏感数据并通过策略控制敏感内容的可见方式.
-- [ ] 能说明：按治理需要组合对象标签、分类信息与行/列保护策略.
-- [ ] 能说明：标签用于描述和分类对象，掩码和行访问策略负责数据访问时的保护行为.
-- [ ] 能指出本知识点的适用前提和不适用场景。
-- [ ] 能提供至少一项运行、数据或配置证据支持判断。
-- [ ] 能描述失败后的恢复、回滚或人工升级路径。
+## 对标签策略做完整验收
+
+部署后应至少检查：
+
+1. Tag 是否附着到预期列或父级对象。
+2. 列数据类型是否与 Masking Policy 参数一致。
+3. 是否存在直接绑定策略覆盖 Tag-based Policy。
+4. PII_READER 和普通分析角色看到的值是否符合预期。
+5. 新增列或新建表是否按分类流程补齐标签。
+6. 角色继承变化后，IS_ROLE_IN_SESSION 的判断是否符合访问模型。
+
+如果策略被挂到 Tag 上，Tag 或 Masking Policy 在解除关联前不能随意删除；相关父级 Schema/Database 也可能受约束。标签治理需要作为 Schema 变更流程的一部分，而不是临时加一条 ALTER TABLE。
+
+## 常见错误
+
+- 只创建标签，没有将 Masking Policy 关联到标签。
+- 把字符串策略用于 NUMBER/DATE 列，忽略签名的数据类型限制。
+- 同一个标签给相同数据类型挂多条 Masking Policy。
+- 忽略直接列策略优先级，误判标签策略已经生效。
+- 将 Tag 分类当成访问控制本身。
+- 未分别测试行级过滤与列级脱敏的组合结果。
 
 ## 自测
 
-1. 如何在实际系统中验证“标记敏感数据并通过策略控制敏感内容的可见方式.”？
-2. 当“按治理需要组合对象标签、分类信息与行/列保护策略.”不成立时，最可能需要检查哪些边界和证据？
-3. 为什么不能采用“对象标签本身会自动隐藏所有敏感列值”这一做法？
+1. 为什么把 SENSITIVE 标签附加到 Table 后，不一定能保护所有列？
+2. 一个标签已经关联 STRING Masking Policy，为什么不能再给它关联第二条 STRING Policy？
+3. 列直接设置 Masking Policy 后，Tag-based Policy 的执行优先级如何？
+4. 如何验证标签策略是否真的应用到新建列？
+5. Row Access Policy 与 Masking Policy 分别解决什么问题？
 
-回答时需要给出判断依据和验证方法，而不只是复述定义。
+## 参考资料
+
+- [Tag-based masking policies](https://docs.snowflake.com/en/user-guide/tag-based-masking-policies)
+- [Work with object tags](https://docs.snowflake.com/en/user-guide/object-tagging/introduction)
+- [Tag inheritance](https://docs.snowflake.com/en/user-guide/object-tagging/inheritance)
+- [Access control privileges](https://docs.snowflake.com/en/user-guide/security-access-control-privileges)
