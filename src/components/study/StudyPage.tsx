@@ -3,6 +3,7 @@ import {
   Alert,
   Button,
   Card,
+  Collapse,
   Col,
   Divider,
   Empty,
@@ -196,18 +197,18 @@ export default function StudyPage({ trackId, nodes, questions, onGoTrain, onAskT
           )
           .map((node) => {
             const done = completedNode(node.id);
-            const hasArticle = isSnowflake && contentByNode.has(node.id);
             return {
               key: `node:${node.id}`,
               title: (
                 <Space size={6} wrap>
                   <Typography.Text>{node.name}</Typography.Text>
                   {node.priority === 'P0' && <Tag color="red">P0</Tag>}
-                  {done
-                    ? <CheckCircleFilled style={{ color: '#389e0d' }} />
-                    : hasArticle
-                      ? <Tag color="blue">独立教程</Tag>
-                      : <Tag>知识摘要</Tag>}
+                  {done && (
+                    <CheckCircleFilled
+                      style={{ color: '#389e0d' }}
+                      title="已完成学习资料"
+                    />
+                  )}
                 </Space>
               ),
             };
@@ -232,7 +233,7 @@ export default function StudyPage({ trackId, nodes, questions, onGoTrain, onAskT
   const courseObjectives = isSnowflake ? SNOWFLAKE_LEARNING_OVERVIEW.objectives : [];
   const courseRoadmap = isSnowflake ? SNOWFLAKE_LEARNING_OVERVIEW.roadmap : [];
   const articleBody = useMemo(
-    () => selectedArticle?.content.replace(/^#\\s+[^\\r\\n]+(?:\\r?\\n)+/, '') ?? '',
+    () => selectedArticle?.content.replace(/^#\s+[^\r\n]+(?:\r?\n)+/, '') ?? '',
     [selectedArticle?.content],
   );
 
