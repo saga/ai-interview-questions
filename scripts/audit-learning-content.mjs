@@ -90,7 +90,7 @@ if (strict) {
       'diff', '--name-only', '--diff-filter=ACMRT', base + '...HEAD',
     ], { encoding: 'utf8' }).split('\n').filter(Boolean));
   } catch (error) {
-    console.error(\`无法计算教程变更文件（base=\${base}）：\${error instanceof Error ? error.message : String(error)}\`);
+    console.error(`无法计算教程变更文件（base=${base}）：${error instanceof Error ? error.message : String(error)}`);
     process.exit(2);
   }
 }
@@ -114,10 +114,10 @@ for (const doc of docs) {
   }
   for (const heading of required[doc.kind]) {
     if (isTarget && (!doc.sections.has(heading) || !doc.sections.get(heading))) {
-      structureProblems.push({ id: doc.id, path: doc.path, problem: \`缺少内容章节：\${heading}\` });
+      structureProblems.push({ id: doc.id, path: doc.path, problem: `缺少内容章节：${heading}` });
     }
     for (const paragraph of paragraphs(doc.sections.get(heading) ?? '')) {
-      const key = \`\${doc.kind}::\${heading}::\${paragraph.normalized}\`;
+      const key = `${doc.kind}::${heading}::${paragraph.normalized}`;
       const group = paragraphIndex.get(key) ?? { kind: doc.kind, heading, paragraph: paragraph.raw, ids: [] };
       group.ids.push(doc.id);
       paragraphIndex.set(key, group);
@@ -139,18 +139,18 @@ for (const doc of docs) {
     const testCount = countMatches(tests, /^\s*\d+[.)]\s+/gm);
     const checks = [
       [problem.length >= 70, '问题定义少于 70 字符'],
-      [core.length >= 450 && h3Count >= 2, \`核心机制不足（\${core.length} 字符，\${h3Count} 个小节）\`],
-      [steps.length >= 260 && stepCount >= 3, \`实施步骤不足（\${steps.length} 字符，\${stepCount} 项）\`],
-      [scenario.length >= 220, \`场景分析不足（\${scenario.length} 字符）\`],
-      [misconceptionCount >= 2, \`常见误区不足（\${misconceptionCount} 项）\`],
-      [testCount >= 3, \`自测题不足（\${testCount} 题）\`],
+      [core.length >= 450 && h3Count >= 2, `核心机制不足（${core.length} 字符，${h3Count} 个小节）`],
+      [steps.length >= 260 && stepCount >= 3, `实施步骤不足（${steps.length} 字符，${stepCount} 项）`],
+      [scenario.length >= 220, `场景分析不足（${scenario.length} 字符）`],
+      [misconceptionCount >= 2, `常见误区不足（${misconceptionCount} 项）`],
+      [testCount >= 3, `自测题不足（${testCount} 题）`],
       [doc.refs.length >= 1 && doc.refs.every((reference) => reference.verifiedAt !== '待核验'), '缺少已核验来源引用'],
     ];
     for (const [passed, message] of checks) {
       if (!passed) qualityProblems.push({ id: doc.id, path: doc.path, problem: message });
     }
     for (const [name, pattern] of boilerplatePatterns) {
-      if (pattern.test(doc.markdown)) qualityProblems.push({ id: doc.id, path: doc.path, problem: \`模板残留：\${name}\` });
+      if (pattern.test(doc.markdown)) qualityProblems.push({ id: doc.id, path: doc.path, problem: `模板残留：${name}` });
     }
   }
 }
@@ -160,22 +160,22 @@ const duplicates = [...paragraphIndex.values()]
   .map((group) => ({ ...group, ids: [...new Set(group.ids)] }))
   .sort((a, b) => b.ids.length - a.ids.length || a.heading.localeCompare(b.heading));
 
-console.log(\`学习内容审计：\${targets.length} 篇教程；\${duplicates.length} 组跨文档重复段落；\${structureProblems.length} 处结构问题；\${qualityProblems.length} 处内容质量问题；\${pendingSources.length} 篇含待核验来源；\${sourceMissing.length} 篇缺少来源元数据。\`);
+console.log(`学习内容审计：${targets.length} 篇教程；${duplicates.length} 组跨文档重复段落；${structureProblems.length} 处结构问题；${qualityProblems.length} 处内容质量问题；${pendingSources.length} 篇含待核验来源；${sourceMissing.length} 篇缺少来源元数据。`);
 for (const item of duplicates.slice(0, 20)) {
-  console.log(\`  重复段落 [\${item.kind} / \${item.heading}] · \${item.ids.length} 篇：\${item.ids.slice(0, 8).join(', ')}\`);
-  console.log(\`    \${item.paragraph.replace(/\n/g, ' ').slice(0, 180)}\`);
+  console.log(`  重复段落 [${item.kind} / ${item.heading}] · ${item.ids.length} 篇：${item.ids.slice(0, 8).join(', ')}`);
+  console.log(`    ${item.paragraph.replace(/\n/g, ' ').slice(0, 180)}`);
 }
 for (const item of structureProblems.slice(0, 30)) {
-  console.log(\`  内容结构 [\${item.id}]：\${item.problem}\`);
+  console.log(`  内容结构 [${item.id}]：${item.problem}`);
 }
 for (const item of qualityProblems.slice(0, 50)) {
-  console.log(\`  内容质量 [\${item.id}]：\${item.problem}\`);
+  console.log(`  内容质量 [${item.id}]：${item.problem}`);
 }
 if (pendingSources.length) {
-  console.log(\`  来源待复核：\${pendingSources.slice(0, 16).join(', ')}\${pendingSources.length > 16 ? ' …' : ''}\`);
+  console.log(`  来源待复核：${pendingSources.slice(0, 16).join(', ')}${pendingSources.length > 16 ? ' …' : ''}`);
 }
 if (sourceMissing.length) {
-  console.log(\`  来源元数据缺失：\${sourceMissing.slice(0, 16).join(', ')}\${sourceMissing.length > 16 ? ' …' : ''}\`);
+  console.log(`  来源元数据缺失：${sourceMissing.slice(0, 16).join(', ')}${sourceMissing.length > 16 ? ' …' : ''}`);
 }
 if (strict && (duplicates.length > 0 || structureProblems.length > 0 || qualityProblems.length > 0)) {
   console.error('学习内容质量门禁失败：变更教程存在重复、结构缺失、内容薄弱或模板残留。');
