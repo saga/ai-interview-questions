@@ -51,6 +51,10 @@ description: "把一篇技术文章转成题库题目。用户提供文章链接
 5. 运行 `npm run questions:manage -- coverage`，确认这些题解决的是真实缺口而不是已饱和的 topic × angle 组合；如果发现更值得补的缺口，改用 **fill-coverage-gap** skill 的蓝图再决定题目方向。
 6. 把草稿交给 **add-question-to-bank** skill 的完整校验与写入流程（`question:add --check`、去重、语义重复检查、`validate:questions`、`typecheck`、`test`）。本 skill 不重复实现写入逻辑。
 
+## 表达质量审查
+
+将候选 Concept 转成题目草稿后、交给 `add-question-to-bank` 之前，应用 `skills/unslop/SKILL.md` 的 review-and-fix，逐题检查题干、选项、解析和开放题参考答案。重点清理模板化题干、无用场景铺垫、翻译腔、泛化顾问话术和重复解析。不得改变考察的 Concept、答案集合、事实边界或难度；不要为“自然”而把技术术语换成不准确的中文。中文表达例子见 `skills/unslop/references/chinese-patterns.md`。
+
 ## 内容质量把关
 
 内容要求的完整表述见 `docs/question-content-spec.md`；下面只列**文章转题特有**的风险点。
