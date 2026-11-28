@@ -1,7 +1,7 @@
 import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from './db';
-import { getStudyProgress, markArticleCompleted, recordArticleOpened } from './study';
+import { getStudyProgress, markArticleCompleted, markNodeReviewed, recordArticleOpened } from './study';
 
 describe('storage/study', () => {
   beforeEach(async () => {
@@ -34,5 +34,14 @@ describe('storage/study', () => {
     await markArticleCompleted('ai', 'same-node', 'article-2');
     expect((await getStudyProgress('snowflake')).map((row) => row.completedArticleIds)).toEqual([['article-1']]);
     expect((await getStudyProgress('ai')).map((row) => row.completedArticleIds)).toEqual([['article-2']]);
+  });
+  it('记录无独立教程的知识摘要复习状态，且不写入考试掌握度', async () => {
+    await markNodeReviewed('sap-it-service-consultant', 'sap-client-communication');
+    const [row] = await getStudyProgress('sap-it-service-consultant');
+    expect(row).toMatchObject({
+      nodeId: 'sap-client-communication',
+      completedNode: true,
+      completedArticleIds: [],
+    });
   });
 });

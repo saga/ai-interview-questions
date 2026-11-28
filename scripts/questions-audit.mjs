@@ -11,6 +11,7 @@ const checks = [
   ["Misconception coverage", ["node", "scripts/misconception-coverage.ts"]],
   ["Question coverage", ["node", "scripts/question-coverage.ts"]],
   ["Knowledge coverage", ["vite-node", "scripts/audit-knowledge-question-coverage.ts"]],
+  ["Learning content", ["node", "scripts/audit-learning-content.mjs"]],
 ];
 
 for (const [label, command] of checks) {

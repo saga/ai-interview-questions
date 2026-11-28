@@ -30,6 +30,15 @@ jobs:
           else
             node scripts/check-question-identity.ts --gate --since HEAD~1
           fi
+      - name: Learning content quality gate (changed tutorials)
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            node scripts/audit-learning-content.mjs --strict --base ${{ github.event.pull_request.base.sha }}
+          elif [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]; then
+            node scripts/audit-learning-content.mjs --strict --base ${{ github.event.before }}
+          else
+            node scripts/audit-learning-content.mjs --strict --base HEAD~1
+          fi
       - name: Validate variants
         run: npx vite-node scripts/validate-variants.ts
 
