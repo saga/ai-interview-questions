@@ -63,12 +63,12 @@ export function knowledgeForTrack(
 function sessionBelongsToTrack(
   session: SessionRecord,
   trackId: LearningTrackId,
-  topicIds: ReadonlySet<string>,
+  topicKeys: ReadonlySet<string>,
 ): boolean {
   if (session.courseId) return session.courseId === trackId;
   // Backward compatibility for records saved before courseId existed: infer from their topic IDs.
   return session.questionResults.length > 0 && session.questionResults.every((result) =>
-    result.courseId ? result.courseId === trackId : topicIds.has(result.topic),
+    result.courseId ? result.courseId === trackId : topicKeys.has(result.topic),
   );
 }
 
