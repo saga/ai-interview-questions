@@ -45,6 +45,38 @@ For every new or substantially revised article:
 
 A useful review question is: could a reader reproduce the example, recognize the failure in their own system, and explain why the corrected design works? If not, the article is not ready even when every required heading is present.
 
+## Hard quality gate before publishing a lesson
+
+This is a content gate, not a formatting checklist. Every new or substantially rewritten lesson must pass all of the following. If any critical item is missing, do not publish the article as complete.
+
+### Research and scope
+- Read the exact KnowledgeNode, its required concepts/angles, course module mapping, existing neighboring lessons and relevant source material before drafting.
+- Write down the one concrete learner problem the article solves. Confirm that each core section belongs to this node; do not pad it with generic Snowflake, AI, governance or data-engineering material.
+- Verify every Snowflake-specific behavior against the current official documentation. Distinguish product facts, engineering recommendations and teaching assumptions.
+
+### Technical explanation
+- Explain the mechanism, not just the product feature name. Describe what is stored/executed/compared, when it applies, what it does not do, and how the behavior can be observed.
+- Include one complete example that belongs to this topic: input data or request, SQL/code/configuration, resulting output and interpretation. For conceptual topics, use a concrete case, decision table or counterexample when code is not meaningful.
+- Use internally consistent sample data. Recalculate sample outputs; check SQL syntax, column names, data types, join cardinality and time semantics.
+- Explain at least one plausible failure or wrong implementation, why it fails, and how to diagnose or correct it.
+- Make implementation guidance executable. Name the object, command/query or evidence to inspect; explain a normal result, a failure signal and the next step.
+
+### Editorial rejection tests
+- Reject generic openers, self-referential tutorial prose, filler introductions, generic scenarios, template self-tests and paragraphs copied across unrelated nodes.
+- Do not reuse a paragraph merely because the current node shares courseId, topic, product or audience with another node. Reuse only stable facts or genuinely shared definitions, and link to the canonical lesson where appropriate.
+- Do not force every article to have the same count of subsections, steps, tables, diagrams, misconceptions or questions. A heading is not content.
+- Do not add code, Mermaid, tables, bullet lists or word count solely to satisfy an audit. Every artifact must explain or verify a point that prose alone would make harder to understand.
+- Ask whether a paragraph could be pasted into an unrelated lesson unchanged. If yes, replace it with a topic-specific explanation or remove it.
+- Self-tests must require reasoning about the article's own example, output, trade-off or failure mode. Questions that merely restate a heading are not acceptable.
+- Do not call a source verified because its URL looks official. Open the source and confirm it supports the specific behavior stated; keep unknown or version-dependent behavior explicit.
+
+### Final review
+1. Read the whole article from the learner's perspective; do not audit only headings or keyword matches.
+2. Trace every important claim to a source or clearly labeled teaching assumption.
+3. Run sample SQL/code mentally or in a real test environment where possible; verify arithmetic and expected output.
+4. Check that the core explanation is not repeated in the implementation, scenario and misconception sections.
+5. Apply skills/unslop/SKILL.md to expression after the substantive content is correct.
+6. Only then update manifest metadata and mark references as verified. If the article still feels like a prompt answer assembled from stock paragraphs, rewrite it before publishing.
 ## Source and schema requirements
 
 Every new canonical question must include `courseId: "snowflake"`, `knowledgeId` equal to a valid knowledge node ID, and `topic` equal to that same `KnowledgeNode.id`. Do not put the shared `KnowledgeNode.topic` classification into `Question.topic`. Also include `source.materialId` and `source.section` for its primary course/module, and `source.relatedMaterials` for authoritative documentation cross-checks. Use a globally unique question ID, a valid `angle`, and both `formats.choice` and `formats.open`.
