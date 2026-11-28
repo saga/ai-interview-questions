@@ -28,7 +28,7 @@ Official documentation IDs such as `docs-snowflake-architecture`, `docs-time-tra
 
 ## Learning article authoring and expression review
 
-A lesson is for someone trying to understand a system, not for someone checking whether a list of headings exists. Keep the required top-level sections in the article contract, but let the explanation inside them follow the problem.
+A lesson is for someone trying to understand a system, not for someone checking a list of headings. Do not impose a universal heading template. Keep only sections that serve the specific learning problem; preserve a heading only when the renderer or data contract explicitly requires it. Merge, rename or remove empty sections instead of filling them with generic text. Any structural constraint must be documented separately from the article's content design.
 
 For every new or substantially revised article:
 
@@ -50,7 +50,7 @@ A useful review question is: could a reader reproduce the example, recognize the
 This is a content gate, not a formatting checklist. Every new or substantially rewritten lesson must pass all of the following. If any critical item is missing, do not publish the article as complete.
 
 ### Research and scope
-- Read the exact KnowledgeNode, its required concepts/angles, course module mapping, existing neighboring lessons and relevant source material before drafting.
+- Read the exact KnowledgeNode, its required concepts, course module mapping, existing neighboring lessons and relevant source material before drafting. The node's required concepts define what the lesson must teach. Its angles describe question-bank coverage dimensions, not a mandatory article outline; use only the angles that genuinely help explain this topic, and never force every angle into the lesson.
 - Write down the one concrete learner problem the article solves. Confirm that each core section belongs to this node; do not pad it with generic Snowflake, AI, governance or data-engineering material.
 - Verify every Snowflake-specific behavior against the current official documentation. Distinguish product facts, engineering recommendations and teaching assumptions.
 
