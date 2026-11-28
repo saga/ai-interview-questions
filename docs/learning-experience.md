@@ -22,6 +22,27 @@
 
 严格模式只审查本次提交修改的教程。历史内容可以先通过全库报告逐批修复，不会因为无关代码修改而阻断 CI。新教程若复制其他知识点的大段通用说明或场景、留下模板占位文字、缺少实质步骤或只有泛化场景，会被门禁拦截。
 
+## 从学习内容到知识点检测
+
+Snowflake 的节点教程以 KnowledgeNode 为单位。教程自测用于阅读后的主动回忆；页面上的“知识点检测”从题库中按 `knowledgeId` 取当前节点题目，再把精确的 question ID 列表交给现有组卷器。多个 KnowledgeNode 可以属于同一个 topic，不能用 topic 代替节点 ID，否则会混入同主题的其他知识点，或筛不到题。
+
+训练结束后，选择题按答案索引确定性评分；开放题使用已配置的 AI 评分。正式作答结果进入 Learner Profile，参与薄弱项和掌握度估计。阅读进度、摘要复习、Copilot 讲解与自评复习都不直接增加考试掌握度。
+
 ## 题目生产与事实核验
 
-新题必须提供 cognitiveTask 和 source.materialId；CI 会比较本次变更的题目对象，仅检查新增或实际修改的题目。历史题的 schema 兼容性保留，不要求一次性回填历史数据。新题发布前应独立求解，再依据真实来源摘录核验每个选项、答案和解析；无证据的题目保持待复核，不以模型自报置信度作为 VERIFIED。
+推荐的节点级生产顺序是：
+
+1. 识别目标 KnowledgeNode 和需要测量的工程判断，先筛掉只有名词记忆价值的材料细节。
+2. 建立 Assessment Blueprint：明确核心 Concept、`knowledgeId`、`cognitiveTask`、考察角度、难度、assessment target、关键误区和答案边界。
+3. 从真实教学材料或官方资料生成自包含题目草稿，填写稳定的 `source.materialId`；不得猜测或编造来源 ID。
+4. 通过现有题目写入流程执行 Schema、题型、答案索引、去重、语义重复、表达质量和覆盖缺口检查。
+5. 独立解题并进行事实核验：先隐藏题库答案和解析，再逐项评估选项；使用来源摘录检查题干、选项、解析和开放题参考答案。
+6. 有冲突或证据不足时保留 REVIEW / NEEDS_EVIDENCE，不以模型置信度替代来源证据。
+
+现有生产入口为 `questions:manage -- blueprint`、`skills/article-to-questions/SKILL.md` 和 `skills/add-question-to-bank/SKILL.md`。事实核验入口为 `questions:manage -- verify --knowledge-id=<id> --evidence-file=<file> --gate`；按题目 ID 运行时使用 `--ids`。
+
+CI 对本次新增/修改题目执行 `cognitiveTask`、`source.materialId` 元数据门禁，并运行题库身份、结构、质量、覆盖和变体检查。**元数据门禁不等于事实核验**：需要真实来源摘录的逐项事实核验由上面的 verify 流程执行，未提供证据不能判为 VERIFIED。完整校验入口为 `npm run check`；题目专项审计可用 `npm run questions:manage -- validate`、`quality`、`coverage`、`verify`。
+
+## 诊断能力边界
+
+当前使用题目与知识节点映射、误区记录、作答分数和复习记录形成学习信号；尚未实现完整 IRT / Q-matrix 校准。题库数量或阅读完成率不能直接代表掌握度，诊断效果还取决于映射准确性、题目质量、误区区分度和重复测量。
