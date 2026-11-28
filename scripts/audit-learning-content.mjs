@@ -97,24 +97,36 @@ if (strict) {
   }
   try {
     changed = new Set(execFileSync('git', [
-      'diff', '--name-only', '--diff-filter=ACMRT', base + '...HEAD',
+      'diff', '--name-only', '--diff-filter=ACDMRT', base + '...HEAD',
     ], { encoding: 'utf8' }).split('\n').filter(Boolean));
   } catch (error) {
     console.error(`无法计算教程变更文件（base=${base}）：${error instanceof Error ? error.message : String(error)}`);
     process.exit(2);
   }
 }
-const targets = changed ? docs.filter((doc) => changed.has(doc.path)) : docs;
-if (changed && targets.length === 0) {
-  console.log('学习内容审计：本次变更没有课程教程文件，跳过增量门禁。');
+const articleManifestChanged = !strict || changed.has('src/content/courses/snowflake/index.json');
+const integratedManifestChanged = !strict || changed.has('src/content/courses/snowflake/integrated/index.json');
+const hasLearningContentChanges = !strict || [...changed].some((path) =>
+  path.startsWith(articleRoot) ||
+  path.startsWith(integratedRoot) ||
+  path === 'src/content/courses/snowflake/index.json' ||
+  path === 'src/content/courses/snowflake/integrated/index.json',
+);
+if (strict && !hasLearningContentChanges) {
+  console.log('学习内容审计：本次变更没有课程教程或教材索引文件，跳过增量门禁。');
   process.exit(0);
 }
+const targets = changed
+  ? docs.filter((doc) =>
+    changed.has(doc.path) ||
+    (doc.kind === 'article' && articleManifestChanged) ||
+    (doc.kind === 'integrated' && integratedManifestChanged),
+  )
+  : docs;
 
 const structureProblems = [];
 const qualityProblems = [];
 const reviewNotes = [];
-const articleManifestChanged = !strict || changed.has('src/content/courses/snowflake/index.json');
-const integratedManifestChanged = !strict || changed.has('src/content/courses/snowflake/integrated/index.json');
 if (articleManifestChanged && manifest.nodes.length !== 194) {
   structureProblems.push({ id: 'snowflake-course', path: 'src/content/courses/snowflake/index.json', problem: `KnowledgeNode 数量应为 194，实际为 ${manifest.nodes.length}` });
 }
@@ -165,6 +177,7 @@ for (const doc of docs) {
 
   if (isTarget && doc.kind === 'article') {
     const sectionText = [...doc.sections.values()].join('\n');
+    const problem = doc.sections.get('本节要解决的问题') ?? '';
     const scenario = doc.sections.get('场景分析') ?? '';
     const tests = doc.sections.get('自测') ?? '';
     const scenarioHasPlaceholder = /将场景转换为明确输入|逐项检查本节核心要求|请拆分对象、执行和访问边界/.test(scenario);

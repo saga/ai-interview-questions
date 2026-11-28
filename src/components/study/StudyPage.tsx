@@ -7,6 +7,7 @@ import {
   Col,
   Divider,
   Empty,
+  Input,
   List,
   Progress,
   Row,
@@ -22,6 +23,7 @@ import {
   ClockCircleOutlined,
   ReadOutlined,
   RocketOutlined,
+  SearchOutlined,
   RobotOutlined,
 } from '@ant-design/icons';
 import { XMarkdown } from '@ant-design/x-markdown';
@@ -92,6 +94,7 @@ export default function StudyPage({ trackId, nodes, questions, onGoTrain, onAskT
   const [selectedNodeId, setSelectedNodeId] = useState(nodes[0]?.id ?? '');
   const [progress, setProgress] = useState<StoredStudyProgress[]>([]);
   const [loadingProgress, setLoadingProgress] = useState(true);
+  const [nodeSearch, setNodeSearch] = useState('');
 
   const isSnowflake = trackId === 'snowflake';
   const contentByNode = useMemo(
@@ -166,9 +169,30 @@ export default function StudyPage({ trackId, nodes, questions, onGoTrain, onAskT
     });
   }, [trackId, selectedNode?.id, selectedArticle?.id, loadingProgress]);
 
+  const filteredNodes = useMemo(() => {
+    const keyword = nodeSearch.trim().toLocaleLowerCase();
+    if (!keyword) return nodes;
+    return nodes.filter((node) => {
+      const searchableText = [
+        node.id,
+        node.name,
+        labelForTopic(node.topic),
+        node.summary,
+        ...node.required,
+        ...node.misconceptions,
+      ].join(' ').toLocaleLowerCase();
+      return searchableText.includes(keyword);
+    });
+  }, [nodes, nodeSearch]);
+
+  const expandedTopicKeys = useMemo(
+    () => [...new Set(filteredNodes.map((node) => `topic:${node.topic}`))],
+    [filteredNodes],
+  );
+
   const treeData = useMemo<DataNode[]>(() => {
     const grouped = new Map<string, KnowledgeNode[]>();
-    for (const node of nodes) {
+    for (const node of filteredNodes) {
       const group = grouped.get(node.topic) ?? [];
       group.push(node);
       grouped.set(node.topic, group);
@@ -214,7 +238,7 @@ export default function StudyPage({ trackId, nodes, questions, onGoTrain, onAskT
             };
           }),
       }));
-  }, [nodes, progressByNode, trackId, contentByNode]);
+  }, [filteredNodes, progressByNode, trackId, contentByNode]);
 
   const handleComplete = async () => {
     if (!selectedNode) return;
@@ -271,13 +295,32 @@ export default function StudyPage({ trackId, nodes, questions, onGoTrain, onAskT
               className="study-directory-card"
               styles={{ body: { maxHeight: 'calc(100dvh - 220px)', overflowY: 'auto' } }}
             >
+              <div style={{ marginBottom: 10 }}>
+                <Input
+                  allowClear
+                  size="middle"
+                  prefix={<SearchOutlined />}
+                  placeholder="搜索知识点、主题或关键词"
+                  value={nodeSearch}
+                  onChange={(event) => setNodeSearch(event.target.value)}
+                />
+                <Typography.Text type="secondary" style={{ display: 'block', marginTop: 6, fontSize: 12 }}>
+                  {nodeSearch.trim()
+                    ? `匹配 ${filteredNodes.length} / ${nodes.length} 个知识点`
+                    : `${nodes.length} 个知识点`}
+                </Typography.Text>
+              </div>
               {loadingProgress ? (
                 <Typography.Text type="secondary">正在加载学习进度…</Typography.Text>
+              ) : filteredNodes.length === 0 ? (
+                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="没有匹配的知识点" />
               ) : (
                 <Tree
                   blockNode
                   defaultExpandAll={false}
                   defaultExpandedKeys={nodes[0] ? [`topic:${nodes[0].topic}`] : []}
+                  expandedKeys={nodeSearch.trim() ? expandedTopicKeys : undefined}
+                  autoExpandParent={Boolean(nodeSearch.trim())}
                   selectedKeys={selectedNode ? [`node:${selectedNode.id}`] : []}
                   treeData={treeData}
                   onSelect={(keys) => {

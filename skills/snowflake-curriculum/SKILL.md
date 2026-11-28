@@ -45,6 +45,17 @@ For every new or substantially revised article:
 
 A useful review question is: could a reader reproduce the example, recognize the failure in their own system, and explain why the corrected design works? If not, the article is not ready even when every required heading is present.
 
+## Reading flow and explanation
+
+Write a technical lesson that can be read from beginning to end, not a sequence of disconnected reference notes.
+
+- Start with a specific operational question, observed result, or engineering choice. Avoid generic course introductions and self-referential statements about what the lesson will cover.
+- Build a line of reasoning: show the symptom or requirement, explain the mechanism that produces it, compare the viable choices, then show how to verify the result.
+- Carry a relevant example through the explanation. Give concrete inputs and outputs, explain intermediate state where it matters, and return to the same example when discussing failure or trade-offs.
+- Use paragraphs to explain causes, consequences and design decisions. Reserve lists for actual enumerations, steps, configuration items and checks; do not turn the entire lesson into bullet points.
+- Vary the outline to fit the node. Do not make the 194 lessons read like copies of one template with different product nouns.
+- Make reading engaging through a useful technical surprise, a consequential boundary, or a failure that the reader can reproduce. Do not invent customers, project anecdotes or performance results.
+
 ## Hard quality gate before publishing a lesson
 
 This is a content gate, not a formatting checklist. Every new or substantially rewritten lesson must pass all of the following. If any critical item is missing, do not publish the article as complete.

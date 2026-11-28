@@ -40,10 +40,18 @@ describe('Snowflake one-to-one course tutorials', () => {
       expect(nodeById.has(article.nodeId), article.nodeId).toBe(true);
       expect(article.title).toBe(nodeById.get(article.nodeId)?.name);
       expect(article.content.length, article.id).toBeGreaterThan(900);
-      expect(article.content).toContain('## 本节要解决的问题');
-      expect(article.content).toContain('## 核心知识');
-      expect(article.content).toContain('## 常见误区');
-      expect(article.content).toContain('## 自测');
+      expect(article.content).toMatch(/^#\s+\S/m);
+      const headings = [...article.content.matchAll(/^##\s+(.+?)\s*$/gm)]
+        .map((match) => match[1].trim());
+      expect(headings.length, article.id).toBeGreaterThanOrEqual(5);
+      expect(headings).toContain('本节要解决的问题');
+      expect(headings).toContain('常见误区');
+      expect(headings).toContain('自测');
+      const genericHeadings = new Set([
+        '本节要解决的问题', '核心知识', '工程实施步骤', '场景分析',
+        '常见误区', '完成标准', '自测', '参考资料',
+      ]);
+      expect(headings.some((heading) => !genericHeadings.has(heading))).toBe(true);
     }
   });
 

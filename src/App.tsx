@@ -50,12 +50,23 @@ function pageFromPath(pathname: string): Page {
   return (VALID_PAGES as string[]).includes(seg) ? (seg as Page) : 'train';
 }
 
+const PAGE_TITLES: Record<Page, string> = {
+  learn: '选择课程',
+  study: '知识点学习',
+  train: '课程训练',
+  progress: '学习进度',
+  map: '知识地图',
+  interview: '面试',
+  agent: 'Agent 面试',
+  settings: '设置',
+};
+
 const NAV_ITEMS = [
-  { key: 'learn', icon: <BookOutlined />, label: '学习体系' },
-  { key: 'study', icon: <BookOutlined />, label: '学习' },
+  { key: 'learn', icon: <BookOutlined />, label: '选择课程' },
+  { key: 'study', icon: <BookOutlined />, label: '知识点学习' },
   { key: 'train', icon: <ThunderboltOutlined />, label: '课程训练' },
-  { key: 'progress', icon: <BarChartOutlined />, label: '进度' },
-  { key: 'map', icon: <ApartmentOutlined />, label: '学习地图' },
+  { key: 'progress', icon: <BarChartOutlined />, label: '学习进度' },
+  { key: 'map', icon: <ApartmentOutlined />, label: '知识地图' },
   { key: 'interview', icon: <CommentOutlined />, label: '面试' },
   { key: 'agent', icon: <RobotOutlined />, label: 'Agent 面试' },
   { key: 'settings', icon: <SettingOutlined />, label: '设置' },
@@ -409,7 +420,9 @@ export default function App() {
         }}
       >
         <Typography.Title level={4} style={{ margin: 0, whiteSpace: 'nowrap' }}>
-          {isMobile ? '学习训练' : activeTrack ? `学习训练 · ${activeTrack.shortTitle}` : '选择学习体系'}
+          {selectedTrackId
+            ? `${PAGE_TITLES[page]} · ${activeTrack?.shortTitle ?? getLearningTrack(runtimeTrackId).shortTitle}`
+            : PAGE_TITLES[page]}
         </Typography.Title>
         <Space size={8} wrap>
           {remaining != null && (
