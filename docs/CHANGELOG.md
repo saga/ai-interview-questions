@@ -1,3 +1,11 @@
+## 2026-11-28 · 新增中文 Unslop 内容表达 Skill
+
+- 新增 `skills/unslop/SKILL.md` 和中文表达例子库，覆盖学习文章、技术教材、题干、选项、解析和参考答案。
+- 参考 `theclaymethod/unslop` 的上下文判断、最小范围修改、事实与引用保护、无缺陷不改写等思想；未复制其英文扫描器、禁词表或评分实现。
+- 明确区分表达校正与题目语义规范：表达由 Unslop 处理，题目知识边界和答案质量仍由 `docs/question-content-spec.md` 决定。
+- 将 Skill 接入 AGENTS.md、Part 1 / Part 2 生成 Prompt、文章转题、新题入库、覆盖缺口补题、存量题改写和 Snowflake 课程维护流程。
+- 不新增自动禁词扫描或硬门禁；技术术语、必要限定、否定、教学结构和真实操作顺序均按上下文保留。
+
 ## 2026-11-28 · Snowflake 学习模式 POC
 
 - 新增独立学习入口与课程导览，Snowflake 课程树复用现有 KnowledgeNode / LearningTrack，不复制知识体系。
