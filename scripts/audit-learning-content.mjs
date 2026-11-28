@@ -246,7 +246,7 @@ const duplicates = [...paragraphIndex.values()]
   }))
   .sort((a, b) => b.ids.length - a.ids.length || a.heading.localeCompare(b.heading));
 
-console.log(`学习内容审计：${targets.length} 篇教程；${duplicates.length} 组跨文档重复段落；${structureProblems.length} 处结构问题；${qualityProblems.length} 处内容质量问题；${pendingSources.length} 篇含待核验来源；${sourceMissing.length} 篇缺少来源元数据。`);
+console.log(`学习内容审计：${targets.length} 篇教程；${duplicates.length} 组重复段落（含同篇复用）；${structureProblems.length} 处结构问题；${qualityProblems.length} 处内容质量问题；${pendingSources.length} 篇含待核验来源；${sourceMissing.length} 篇缺少来源元数据。`);
 for (const item of duplicates.slice(0, 20)) {
   console.log(`  ${item.repeatedWithinArticle ? '同篇重复' : '跨篇重复'} [${item.kind} / ${item.heading}] · ${item.ids.length} 篇 / ${item.occurrences} 次：${item.ids.slice(0, 8).join(', ')}`);
   console.log(`    ${item.paragraph.replace(/\n/g, ' ').slice(0, 180)}`);
