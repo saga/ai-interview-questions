@@ -71,7 +71,7 @@ description: "写新题并落库。用户要求新增面试题、起草题目或
 1. **题干和选项不得泄露答案。** quiz 模式只保留题干首行、hint 模式保留题干+选项；任何"正确项天然更完整 / 更专业 / 更多条件"的写法，都会在 hint 下直接漏题——与 §4.2 的长度抗泄题是同一条规则，只是现在后果从"降低难度"变成"绕过 assessment boundary"。
 2. **`explanation` 必须能脱离上下文被引用。** Copilot 会原样拼进 prompt 并附 `[Q] <题干>` 引用标记；写成"见上文""该题应选 B"这类指代表述，引用出去就是废话。
 3. **`misconceptions` 必须填。** 它是 hint 模式下唯一能说明"用户错在哪"的证据；缺失时 Copilot 只能讲通用知识，诊断价值归零。选择题同步填 `choice.misconceptionMap`（存量可用 `npm run backfill:misconceptions` 回填）。
-4. **`topic` 必须使用仓库登记的主题/检索键**，与对应 KnowledgeNode 的 `topic` 或历史 `id` 约定一致。课程题的唯一节点归属以 `knowledgeId` 为准；不要把共享 topic 当成单一知识点。旧题库中 `topic` 本身就是 node ID 的记录继续兼容。
+4. **`topic` 对应 KnowledgeNode 时必须使用该节点的 `id`**，与覆盖矩阵和 Blueprint 使用同一索引。`KnowledgeNode.topic` 是共享上级分类，不能填入新题的 `topic`。旧题库保持原值，不批量迁移；新课程题由 `courseId`、`knowledgeId` 和 `topic === knowledgeId` 一起确定节点。
 5. **`tags` 复用既有词表**，它参与 metadata 评分；同义、单复数、大小写变体会稀释命中。
 
 ## 内容设计
