@@ -2,159 +2,214 @@
 
 ## 本节要解决的问题
 
-客服问：“客户在 11 月 12 日提交的退款申请，为什么还没有到账？”知识库里有退款政策、支付服务商说明、客服操作手册和客户订单事件。简单向量检索可能返回一篇讲“退款通常需要 3–5 个工作日”的旧政策，却漏掉适用于该支付方式的新流程；更严重的是，客服只能查看自己负责的客户，但 Search Service 可能索引了其他团队的受限文档。
+客服问：“客户在 11 月 12 日提交的银行卡退款申请，为什么还没有到账？”知识库里有通用退款政策、支付服务商说明、地区操作手册和客户争议档案。简单语义检索可能找到一篇旧政策，却漏掉适用于该支付方式的新流程；如果检索服务索引了全公司材料，还可能把客服无权访问的档案返回给模型。
 
-Cortex Search 负责从文本和结构化属性中召回相关内容。它不是完整的 RAG 应用，也不会自动替你完成业务事实校验、用户级授权和答案引用检查。上线前要同时设计文档索引、查询过滤、权限边界、刷新策略和评测。
+Cortex Search 负责建立可查询的文本检索服务。RAG 应用还需要自己处理身份授权、业务事实查询、有效版本、上下文组装、引用核验和失败状态。检索排名高不代表文档适用，更不代表最终回答正确。
 
 ## 核心知识
 
-### Search Service 的 source query 决定索引里有什么
+### Source query 决定搜索服务能看到哪些行和字段
 
-Cortex Search Service 由一条源查询定义。源查询应准备检索文本、用于过滤的属性、返回引用所需的字段，以及稳定的文档标识。
+Cortex Search Service 基于一条 SQL 源查询构建索引。源查询至少要准备搜索文本、查询时要返回的字段，以及可能参与过滤的属性。建议把文档拆成可独立引用的 Chunk，并为每个 Chunk 分配稳定标识：
 
-例如，退款知识库可以将已批准的政策段落和元数据整理为：
+| 字段 | 示例 | 用途 |
+|---|---|---|
+| CHUNK_ID | refund-policy-jp-2026-v3-p04-c02 | 单个检索片段的稳定键 |
+| DOCUMENT_ID | refund-policy-jp-2026-v3 | 文档版本标识 |
+| SEARCH_TEXT | 退款政策某一章节的正文 | 搜索内容 |
+| TITLE / SECTION / PAGE_NO | 文件标题、章节和页码 | 回答引用与原文定位 |
+| PAYMENT_METHOD / REGION | CARD、JP | 业务过滤 |
+| EFFECTIVE_FROM / EFFECTIVE_TO | 2026-10-01、9999-12-31 | 判断历史日期适用性 |
+| ACCESS_DOMAIN | CUSTOMER_SUPPORT_JP | 授权域元数据 |
+| PUBLICATION_STATUS | PUBLISHED / WITHDRAWN | 发布与撤销状态 |
 
-| 字段 | 用途 |
-|---|---|
-| DOCUMENT_ID | 文档或段落稳定标识 |
-| SEARCH_TEXT | 供向量与文本检索使用的正文 |
-| TITLE / SECTION | 回答时展示的来源标题和章节 |
-| PUBLISHED_AT / EFFECTIVE_FROM | 判断材料是否过期或尚未生效 |
-| PAYMENT_METHOD | 按支付方式筛选 |
-| REGION | 按适用地区筛选 |
-| ACCESS_DOMAIN | 文档所属的授权域 |
-
-创建服务时，指定主搜索列、过滤属性、刷新 Warehouse 和 Target Lag：
+创建服务时将主搜索列、Primary Key、过滤属性、Warehouse 和 TARGET_LAG 写清楚：
 
 ~~~sql
 CREATE OR REPLACE CORTEX SEARCH SERVICE support_docs_search
   ON SEARCH_TEXT
-  ATTRIBUTES PAYMENT_METHOD, REGION, ACCESS_DOMAIN, EFFECTIVE_FROM
+  PRIMARY KEY (CHUNK_ID)
+  ATTRIBUTES PAYMENT_METHOD, REGION, EFFECTIVE_FROM, EFFECTIVE_TO, ACCESS_DOMAIN
   WAREHOUSE = SEARCH_REFRESH_WH
   TARGET_LAG = '1 hour'
-  PRIMARY KEY (DOCUMENT_ID)
 AS
 SELECT
+  CHUNK_ID,
   DOCUMENT_ID,
   SEARCH_TEXT,
   TITLE,
   SECTION,
+  PAGE_NO,
   PAYMENT_METHOD,
   REGION,
-  ACCESS_DOMAIN,
-  EFFECTIVE_FROM
+  EFFECTIVE_FROM,
+  EFFECTIVE_TO,
+  ACCESS_DOMAIN
 FROM ANALYTICS.KNOWLEDGE.APPROVED_SUPPORT_CHUNKS
 WHERE PUBLICATION_STATUS = 'PUBLISHED';
 ~~~
 
-示例假设 DOCUMENT_ID 对每个索引行唯一，且 ACCESS_DOMAIN 已由文档治理流程确定。实际切分成多个 Chunk 时，主键应能唯一标识 Chunk，而不是所有段落共用一个文件 ID。关键文档撤销或新版本发布时，源查询应能体现其状态和新版本关系。
+Primary Key 是可选的，但如果要使用增量优化刷新或 Data Governance Policy Inheritance，就需要定义。主键列必须为 TEXT，组合值必须在源查询结果中唯一；重复的主键值不会作为多条独立记录保留在最终 Search Index 中。因此，不能把文件级 DOCUMENT_ID 直接作为多段 Chunk 的主键，除非源查询每个文件只输出一行。
 
-### ATTRIBUTES 让查询按元数据过滤，不是任意 SQL WHERE
+源查询必须满足 Dynamic Table Incremental Refresh 的候选条件。不能随意把复杂窗口、非确定表达式或不支持的 SQL 结构放进源查询；需要复杂解析和版本选择时，先在上游物化成稳定的 Chunk 表，再由 Search Service 查询它。
 
-Search Service 只能对创建服务时列入 ATTRIBUTES 的列进行过滤。过滤表达式支持等值、范围、数组包含和逻辑组合等操作。例如限定支付方式和地区：
+### Chunk 粒度会影响召回和引用质量
+
+Cortex Search 使用 Embedding Model 对搜索列进行向量化。搜索列超过所选模型的上下文窗口时，向量化输入会被截断；关键段落如果落在截断部分，就可能无法被语义检索准确召回。Snowflake 对一般场景建议将文本切分为不超过 512 tokens 的 Chunk；更长上下文模型存在，但不代表越长越好。
+
+研究报告和退款政策不应简单按固定字符数切分。应尽可能沿标题、章节、条款、表格和段落切分，并保留：
+- 文档版本、标题和章节层级；
+- PDF 页码、表格标题、脚注与引用编号；
+- 业务日期、地区、支付方式和生效区间；
+- 原始文件 URI 和稳定 Chunk ID。
+
+表格要把列标题、单位和适用期间带进文本，例如“退款金额｜币种：JPY｜处理时限：3–5 个工作日”，不能只把单元格值抽取出来。一个 Chunk 最好能独立表达一个条款或事实，同时保留理解它必需的前置条件。
+
+### ATTRIBUTES 过滤的是已建索引的元数据，不是通用 SQL WHERE
+
+查询只能过滤创建服务时声明在 ATTRIBUTES 中的列。支持的常见匹配包括：
+- @eq：TEXT 或 NUMERIC 等值；
+- @contains：ARRAY 包含；
+- @gte / @lte：NUMERIC、DATE、TIMESTAMP 范围；
+- @and、@or、@not：组合条件；
+- @primarykey：按已配置的主键查找。
+
+例如，查询 2026-11-12 时适用于日本地区银行卡的材料：
 
 ~~~json
 {
   "@and": [
     { "@eq": { "PAYMENT_METHOD": "CARD" } },
     { "@eq": { "REGION": "JP" } },
-    { "@lte": { "EFFECTIVE_FROM": "2026-11-12" } }
+    { "@lte": { "EFFECTIVE_FROM": "2026-11-12" } },
+    { "@gte": { "EFFECTIVE_TO": "2026-11-12" } }
   ]
 }
 ~~~
 
-DATE 和 TIMESTAMP 类型的过滤值有规定格式；如果省略时区，Timestamp 会按 UTC 解释。范围筛选也不能自动处理有效期结束时间，查询端还要加上 EFFECTIVE_TO 为空或大于业务日期的条件，前提是该列也加入 ATTRIBUTES。
+示例使用 9999-12-31 表示尚未结束的有效期，避免把 NULL 结束日期留给过滤表达式处理。DATE 过滤值使用 YYYY-MM-DD；TIMESTAMP 需要使用规定的时间格式，省略时区时按 UTC 解释。对于历史问题，检索过滤应使用问题对应的业务日期，而不是当前日期。
 
-过滤属性是业务检索的关键。只把正文作为搜索列，而不提供文档类型、发布日期、地区、支付方式和有效状态，模型就很难准确排除过期或不适用的材料。
+ACCESS_DOMAIN 作为 ATTRIBUTES 可以用于业务范围筛选，但过滤条件本身不是授权边界。如果客户端可以任意修改 ACCESS_DOMAIN，不能把它当作用户级安全策略。
 
-### Search Service 使用 Owner’s Rights，底层表策略不会自动变成用户级检索授权
+### 默认 Owner’s Rights 的检索服务不会自动执行调用者的底表策略
 
-这是部署时必须处理的权限边界。
+默认情况下，Cortex Search Service 以服务所有者的权限构建并提供索引。拥有 Search Service、Database 和 Schema 的 USAGE 权限的调用角色，可以检索服务索引中的数据；调用角色不需要对源查询引用的底层表拥有同样权限。底表的 Row Access Policy 和 Masking Policy 默认不会在查询时按调用者身份重新执行。
 
-Cortex Search Service 执行查询时使用服务所有者的权限。查询角色拥有 Search Service、Database 和 Schema 的 USAGE 后，可以检索服务索引的内容；它不需要对源查询引用的底层表拥有相同权限。特别是，底层表的 Row Access Policy 或 Masking Policy 不会自动按调用用户身份过滤 Search Service 已索引的行。
+因此，一个能读全公司档案的服务所有者创建了单一 Search Service，客服角色即使无法查询法务底表，也可能通过该 Search Service 得到已索引的法务内容。向查询请求添加 REGION = 'JP' 只能限制结果，不应单独作为安全控制。
 
-因此，如果一个服务所有者可以读全公司所有客户文档，而客服角色只有某个地区的源表访问权限，不能据此推断客服通过 Search Service 只会看到自己地区的文档。给 Query API 传入一个 REGION 过滤器，也不应被当成唯一的访问控制边界；如果调用者可以直接查询服务并修改过滤条件，就可能尝试扩大检索范围。
+生产环境可以选择两种方案：
 
-可行的设计是先按数据访问域划分索引和服务，再用对象权限控制哪些角色能够查询哪些服务。确实需要在一个应用层服务中共享搜索服务时，应由可信后端根据已认证身份构造过滤条件，并避免给终端用户直接查询受限 Search Service 的权限。对高敏感文档，使用按授权域拆分的独立索引/服务，通常比依赖客户端过滤更容易审计。
+1. **按授权域拆分服务。** 例如法务档案、客户支持手册和公开政策分别建立独立服务，再用对象 USAGE 权限限制谁能查询。
+2. **评估 Data Governance Policy Inheritance（Preview）。** 启用后，Search Service 可继承底表 Row Access Policy 和 Masking Policy，使结果按调用会话的权限重新取回和过滤。
 
-### Target Lag 是索引新鲜度目标，Primary Key 影响刷新路径
+Data Governance Policy Inheritance 需要满足以下条件：
+- INHERIT_DATA_GOVERNANCE_POLICIES = TRUE；
+- Search Service 声明 Primary Key，供索引候选结果按主键回查底表；
+- 服务 Owner Role 能读到所有应进入索引的源行；Row Access Policy 需要允许专用服务 Owner Role 读取完整索引范围；
+- 查询必须使用 CORTEX_SEARCH_RETRIEVE 或 CORTEX_SEARCH_BATCH SQL 函数。启用该功能的服务不能通过 REST API、Python API 或 SEARCH_PREVIEW 查询。
 
-Cortex Search 的 TARGET_LAG 决定索引内容相对源数据的目标最大滞后时间。它不是固定 Cron 周期，也不是严格 SLA。刷新需要使用指定 Warehouse 执行源查询和索引维护；若索引刷新停滞，即使搜索服务仍可查询，返回的内容也可能是旧版本。
+配置示意：
 
-指定 Primary Key 后，服务可以采用优化刷新路径，只处理自上次刷新以来变化的行，而不是每次都重新 embedding 全部内容。Primary Key 列必须是 TEXT，且组合值应唯一；重复键会影响索引结果。主键变更要在后续源数据变化与刷新后才生效。
+~~~sql
+CREATE CORTEX SEARCH SERVICE support_docs_governed
+  ON SEARCH_TEXT
+  PRIMARY KEY (CHUNK_ID)
+  ATTRIBUTES PAYMENT_METHOD, REGION, ACCESS_DOMAIN
+  WAREHOUSE = SEARCH_REFRESH_WH
+  TARGET_LAG = '1 hour'
+  INHERIT_DATA_GOVERNANCE_POLICIES = TRUE
+AS
+SELECT
+  CHUNK_ID,
+  SEARCH_TEXT,
+  PAYMENT_METHOD,
+  REGION,
+  ACCESS_DOMAIN
+FROM ANALYTICS.KNOWLEDGE.APPROVED_SUPPORT_CHUNKS;
+~~~
 
-服务有独立的 Indexing 和 Serving 状态：
-- Indexing 暂停时，Serving 仍可继续返回旧索引，但不会反映新的源数据。
-- Serving 暂停时，Indexing 仍可以刷新；恢复 Serving 后才会对用户提供新索引。
-- 重要政策刚更新时，可以使用手动 REFRESH 促使索引尽快检查并处理变化。
+启用前要验证底表策略的 Owner Role 例外、Masking Policy 是否遮罩了搜索列或过滤列，以及调用用户实际激活的主/次级角色。若被 Masking 的列恰好参与搜索或过滤，匹配结果可能被丢弃，或查询直接被拒绝。该能力目前是 Preview；架构决策要将其成熟度和 API 限制纳入考虑。
 
-可通过 DESCRIBE CORTEX SEARCH SERVICE 或 SHOW CORTEX SEARCH SERVICES 检查 Target Lag、索引时间戳、Warehouse、Indexing/Serving 状态和错误信息。
+### TARGET_LAG 是刷新目标，Primary Key 可优化索引更新
 
-### RAG 要分别评估检索、上下文和最终回答
+TARGET_LAG 描述 Search Index 相对源数据的目标新鲜度，不是固定 Cron，也不是严格 SLA。Search Service 会根据源查询的变化执行刷新；实际更新时间还受 Warehouse、源查询复杂度、变化量和服务规模影响。
 
-检索返回正确文档，并不代表最终答案正确。应分开检查三个阶段：
+定义 Primary Key 后，Search Service 可以使用优化的刷新路径，只处理有变化的行，降低重复 Embedding 的计算量。长期增量更新会产生分段索引，服务还会周期性执行全量索引重建以压缩索引段；FULL_INDEX_BUILD_INTERVAL_DAYS 是软目标，不应被当作精确的全量重建排期。
 
-1. **检索召回**：正确文档是否进入候选结果，过期文档是否被排除。
-2. **上下文构建**：是否保留章节、页码、版本、适用地区和关键条件，有没有因截断丢掉例外条款。
-3. **回答生成**：回答中的每项事实是否能被引用片段支持，是否把推测写成事实。
+重要文档刚刚撤销或更新时，应先检查源表状态和 Search Service 的最后刷新信息；手动 REFRESH 不是“把任意旧版本立即删掉”的同步事务。需要验证新版本已可检索、旧版本已从源查询排除，并在应用端防止缓存旧引用。
 
-例如，政策说“银行卡退款一般在 3–5 个工作日到账”，但支付服务商对某些跨境交易要求 7–10 个工作日。若只检索到通用政策，回答就会遗漏支付渠道的例外。应把支付方式和地区作为结构化过滤条件，再核验引用的适用范围。
+### RAG 应分别评估召回、上下文和最终回答
+
+检索返回正确 Chunk，不代表最终回答正确。至少分开检查三个环节：
+
+1. **检索召回**：正确文档是否进入 Top-K，过期版本是否被排除；比较 Recall@K 和 Precision@K。
+2. **上下文构建**：是否保留章节、页码、版本、支付方式、地区和例外条款；是否因 Token 限制截断关键信息。
+3. **回答生成**：每项事实是否能由引用片段支持；是否把检索推测写成确定事实；是否说明未覆盖的证据。
+
+例如，通用政策说银行卡退款通常需要 3–5 个工作日，但跨境退款需要 7–10 个工作日。只检索到通用政策时，不应回答客户的跨境退款已经超时。要先匹配支付方式、交易地区、退款提交日期和该政策的生效版本，再结合交易状态表判断资金是否实际到账。
 
 ## 工程实施步骤
 
-1. 定义检索内容的业务范围、授权域、文档类型、版本、发布日期、生效期和撤销状态。
-2. 设计稳定 DOCUMENT_ID/CHUNK_ID，确认每条索引记录有唯一主键，并保留标题、章节、页码和原始链接。
-3. 先通过源查询过滤已批准材料，再创建 Cortex Search Service；仅将真正需要过滤的列放入 ATTRIBUTES。
-4. 按敏感级别和访问团队划分服务/索引，避免把不同授权域的文档混入同一个可由宽泛角色查询的服务。
-5. 使用最小角色授予 Search Service、Database 和 Schema 的 USAGE；检查服务所有者对源表的读取范围和策略效果。
-6. 如果由应用代为查询，服务端从认证上下文确定允许的服务和过滤条件，不信任用户提交任意 ACCESS_DOMAIN 或 REGION 值。
-7. 为重要更新、文档撤销和政策生效设定 Target Lag；用 DESCRIBE/SHOW 检查 DATA_TIMESTAMP、Indexing/Serving 状态和错误。
-8. 建立查询集，覆盖同义词、错误码、支付方式、地区、历史版本和过期政策；分别评估 Recall@K、Precision@K、排序和回答引用。
-9. 对无权访问的文档做负向测试，确认用户无法通过直接调用 Search Service 或修改过滤条件取得其他授权域的内容。
-10. 保存查询文本、服务版本/定义、过滤条件、文档 ID、Chunk ID、来源版本和最终答案引用，便于复核。
-11. 重要文档更新后对照源表与索引数据时间戳，若索引未及时刷新，按流程触发 REFRESH 并验证新版本已可检索。
-12. 将无法检索、无权限、索引过期和回答证据不足区分为不同状态，不把它们统一解释成“没有相关资料”。
+1. 定义文档类型、业务范围、授权域、版本、发布日期、生效期和撤销状态。
+2. 为每个 Chunk 建立稳定 CHUNK_ID，确保源查询结果中主键唯一且为 TEXT；保留 DOCUMENT_ID、标题、页码和原始 URI。
+3. 先在上游表完成文档解析、Chunk 切分、条款版本整理和撤销处理，再创建 Search Service。
+4. 设计 Search Column 和 ATTRIBUTES；不要把任意业务字段都放进过滤属性。
+5. 为查询用户选择授权方案：按访问域拆分服务，或评估 Preview 的 Data Governance Policy Inheritance。
+6. 使用专用、最小权限的 Service Owner Role；确认它能够索引所需数据，又不会将服务所有权交给普通业务用户。
+7. 按目标新鲜度设置 TARGET_LAG，监控刷新时间、失败、Warehouse 消耗和源数据变化。
+8. 建立查询集，覆盖同义词、地区、支付方式、政策变更、无效版本和边界日期；分别测量召回与排序。
+9. 对直接查询服务、修改过滤条件、跨授权域访问和 Masking Policy 做负向测试。
+10. 生成回答前核验引用中的文档版本、页码、适用范围和业务状态；无证据时明确输出“无法确认”。
+11. 保存请求 ID、服务定义、查询过滤、Chunk ID、源版本和引用列表，支持事后回放。
+12. 对索引停更、文档撤销和历史版本误召回建立专门的告警与恢复流程。
 
 ## 场景分析
 
-客服 A 负责东京地区银行卡退款。知识库中有三份材料：通用退款政策、东京地区银行卡操作手册，以及只供法务查看的客户争议档案。
+客服 A 负责东京地区银行卡退款。知识库有通用退款政策、东京地区银行卡操作手册，以及只供法务查看的客户争议档案。
 
-A 的问题是：“客户 C123 在 11 月 12 日的银行卡退款为什么还没有到账？”
+A 问：“客户 C123 在 11 月 12 日的银行卡退款为什么还没有到账？”
 
-系统应只在 A 有权使用的索引中检索，并通过结构化交易数据确认退款状态、金额和处理时间。Cortex Search 找到东京地区银行卡手册后，还要确认其有效版本；通用退款政策可以作为背景，不能覆盖渠道专属例外。法务争议档案不应仅因为语义相似就出现在 A 的结果中。
+系统先从受权限控制的交易视图获取退款申请时间、支付方式、地区、当前状态和交易 ID；再从 Search Service 查找适用于该交易日期的退款政策与东京操作手册。检索出的材料必须带有版本、生效日期和页码。通用政策只作为背景，不能覆盖渠道专属例外。
 
-如果 A 直接调用同一个包含全公司文档的 Search Service，而该 Service 以拥有全量源表权限的角色运行，底层 Row Access Policy 并不能自动保护索引里的记录。应通过服务/索引授权域隔离，或者由受控后端代理检索。只有当访问边界经过负向测试，才可以把检索结果交给生成模型。
+法务争议档案要么位于独立 Search Service，要么在满足要求时使用 Data Governance Policy Inheritance。不能把一个 Owner Role 能读取全公司内容的 Search Service 直接共享给客服，再指望模型忽略无权材料。
+
+如果 governed service 启用了 Preview 功能，调用链必须使用 CORTEX_SEARCH_RETRIEVE SQL 函数；原来通过 REST 或 Python Search API 的调用不能照搬。若应用必须使用 REST API，则采用服务隔离或可信后端方案，不要假设 Preview 功能对所有调用方式都有效。
 
 ## 常见误区
 
-- **把 Search Service 当成通用 RAG 应用。** 它负责检索服务，不负责业务事实校验、完整引用和人工审批。
-- **只索引正文，不索引发布日期、版本、地区和文档类型。** 模型就难以区分当前规则与过期材料。
-- **认为查询过滤等同于用户权限。** Cortex Search 使用 Owner’s Rights，底层行策略不会自动按调用用户执行。
-- **让拥有全量权限的 Search Service 直接暴露给所有业务用户。** 应按授权域拆分服务或由可信后端控制服务访问和过滤。
-- **把 Target Lag 当成准点刷新承诺。** 要检查实际 DATA_TIMESTAMP、Indexing 和 Serving 状态。
-- **认为有 Primary Key 就一定刷新正确。** 主键必须唯一且为 TEXT；重复键会影响索引，定义变更要等待刷新生效。
-- **检索命中就认为最终答案正确。** 仍需检查上下文、适用日期、引用片段和答案事实是否匹配。
+- **把 Search Service 当成完整 RAG 应用。** 它负责召回和排序，业务事实、证据核验和最终回答仍由应用负责。
+- **只索引正文，不保存版本、页码和生效期。** 检索结果就无法判断材料是否适用于历史交易。
+- **把 ACCESS_DOMAIN 过滤器当成用户授权。** 客户端可控过滤不构成安全边界。
+- **忽略 Owner’s Rights。** 默认服务可能让调用人看到服务 Owner Role 可访问的全部索引数据。
+- **认为底表 Row Access Policy 默认会作用于 Search Index 查询。** 默认不会；只有满足条件并启用 Preview 的 Data Governance Policy Inheritance 才能继承。
+- **启用 Policy Inheritance 后仍调用 REST/Python API。** 该模式只允许通过 CORTEX_SEARCH_RETRIEVE / CORTEX_SEARCH_BATCH SQL 查询。
+- **把 TARGET_LAG 当成刷新 SLA。** 需要查看实际数据时间戳与刷新状态。
+- **把主键设成文件 ID。** 多个 Chunk 共享一个文件 ID 会破坏行标识；主键必须逐 Chunk 唯一且为 TEXT。
+- **认为 Primary Key 的存在会自动修复重复数据。** 重复键记录可能被忽略，必须在源查询层保证唯一。
+- **把相似度排名当成业务适用性。** 地区、支付方式、交易日期和政策版本必须由元数据过滤与业务校验共同确认。
 
 ## 完成标准
 
-- [ ] 能从 source query 设计搜索正文、属性列和稳定主键。
-- [ ] 能使用 ATTRIBUTES 构造地区、类型、发布日期等查询过滤条件。
-- [ ] 能解释 Cortex Search Owner’s Rights 对源表 Row Access/Masking Policy 的影响。
-- [ ] 能设计按授权域拆分索引/服务或可信后端代理检索。
-- [ ] 能通过 Target Lag、DATA_TIMESTAMP 和 Indexing/Serving 状态监控新鲜度。
-- [ ] 能分别评估检索召回、上下文构建和最终回答引用。
+- [ ] 能设计 Search Service 的 source query、搜索列、属性列和稳定 Chunk 主键。
+- [ ] 能解释 Chunk 粒度、Embedding Context Window 与引用质量之间的关系。
+- [ ] 能正确构造 @eq、@gte、@lte 和逻辑组合过滤。
+- [ ] 能解释默认 Owner’s Rights 对底表行/列策略的影响。
+- [ ] 能说明 Data Governance Policy Inheritance 的 Preview 状态、Primary Key 要求和 SQL 查询限制。
+- [ ] 能监控 TARGET_LAG、索引刷新和服务成本。
+- [ ] 能分别评估检索召回、上下文保留和回答忠实度。
 
 ## 自测
 
-1. Search Service 的 Owner Role 能读取所有地区文档，调用人只能读取东京地区源表。为什么不能假设 Search Service 也会自动只返回东京文档？
-2. ATTRIBUTES 只能过滤创建服务时声明的列。若需要按地区、支付方式和政策生效日期筛选，创建服务时要准备什么？
-3. Target Lag 设置为 5 分钟，是否保证用户看到的数据最多只落后 5 分钟？还要检查哪些状态？
-4. 文档主键由 FILE_ID 改为 CHUNK_ID 后，为什么不能立即认为现有索引已经按新主键优化刷新？
-5. 检索没有结果、检索服务无权限、索引未刷新和答案缺少引用，为什么要呈现为不同状态？
+1. 一份政策文档切成 20 个 Chunk。为什么 DOCUMENT_ID 不能直接作为唯一 Primary Key？主键列有什么数据类型要求？
+2. 退款申请发生在 11 月 12 日，政策有 11 月 1 日和 12 月 1 日两个版本。怎样用 ATTRIBUTES 筛选历史上适用的版本？
+3. 一个 Search Service 的 Owner Role 能读取所有地区文档，调用人只能访问东京源表。默认查询行为是什么？为什么传入 REGION='JP' 仍然不能单独作为安全保证？
+4. Data Governance Policy Inheritance 启用后，为什么 REST API 和 Python API 不能继续使用？实时 RAG 和批量离线检索应分别使用什么 SQL 函数？
+5. Search Service TARGET_LAG 为 5 分钟，但索引仍返回旧政策。应该检查哪些源查询、刷新与 Serving 证据？
 
 ## 参考资料
 
-- [CREATE CORTEX SEARCH SERVICE](https://docs.snowflake.com/en/sql-reference/sql/create-cortex-search)
+- [Cortex Search overview](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-search/cortex-search-overview)
 - [Query a Cortex Search Service](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-search/query-cortex-search-service)
+- [Data governance policy inheritance for Cortex Search](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-search/cortex-search-data-governance-inheritance)
+- [CREATE CORTEX SEARCH SERVICE](https://docs.snowflake.com/en/sql-reference/sql/create-cortex-search)
 - [ALTER CORTEX SEARCH SERVICE](https://docs.snowflake.com/en/sql-reference/sql/alter-cortex-search)
-- [DESCRIBE CORTEX SEARCH SERVICE](https://docs.snowflake.com/en/sql-reference/sql/desc-cortex-search)
