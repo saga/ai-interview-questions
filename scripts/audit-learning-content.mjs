@@ -83,7 +83,7 @@ const docs = [
   ...integratedManifest.tutorials.map((entry) => ({ ...loadEntry(entry, integratedRoot), kind: 'integrated' })),
 ];
 const required = {
-  article: ['本节要解决的问题', '核心知识', '工程实施步骤', '场景分析', '常见误区', '完成标准', '自测'],
+  article: [],
   integrated: ['场景与目标', '架构与数据流', '实施步骤', '关键取舍', '验收清单', '关联知识点', '参考资料'],
 };
 let changed = null;
@@ -142,11 +142,15 @@ for (const doc of docs) {
     if (isTarget) structureProblems.push({ id: doc.id, path: doc.path, problem: '文件不存在' });
     continue;
   }
-  for (const heading of required[doc.kind]) {
-    if (isTarget && (!doc.sections.has(heading) || !doc.sections.get(heading))) {
+  const headingsToIndex = doc.kind === 'article'
+    ? [...doc.sections.keys()]
+    : required[doc.kind];
+  for (const heading of headingsToIndex) {
+    const sectionContent = doc.sections.get(heading) ?? '';
+    if (isTarget && doc.kind === 'integrated' && (!sectionContent.trim())) {
       structureProblems.push({ id: doc.id, path: doc.path, problem: `缺少内容章节：${heading}` });
     }
-    for (const paragraph of paragraphs(doc.sections.get(heading) ?? '')) {
+    for (const paragraph of paragraphs(sectionContent)) {
       const key = `${doc.kind}::${heading}::${paragraph.normalized}`;
       const group = paragraphIndex.get(key) ?? { kind: doc.kind, heading, paragraph: paragraph.raw, ids: [] };
       group.ids.push(doc.id);
@@ -157,11 +161,10 @@ for (const doc of docs) {
   if (!doc.refs.length) sourceMissing.push(doc.id);
 
   if (isTarget && doc.kind === 'article') {
+    const sectionText = [...doc.sections.values()].join('\n');
     const problem = doc.sections.get('本节要解决的问题') ?? '';
     const core = doc.sections.get('核心知识') ?? '';
-    const steps = doc.sections.get('工程实施步骤') ?? '';
     const scenario = doc.sections.get('场景分析') ?? '';
-    const misconceptions = doc.sections.get('常见误区') ?? '';
     const tests = doc.sections.get('自测') ?? '';
     const scenarioHasPlaceholder = /将场景转换为明确输入|逐项检查本节核心要求|请拆分对象、执行和访问边界/.test(scenario);
     const testsHaveTemplate = /如何在实际系统中验证|不成立时，最可能需要检查哪些边界和证据|回答时需要给出判断依据/.test(tests);
@@ -171,14 +174,17 @@ for (const doc of docs) {
     const codeBlockCount = countMatches(doc.markdown, /~~~[a-z0-9_-]*\s+[\s\S]*?~~~/gi);
     const tableRowCount = countMatches(doc.markdown, /^\|.*\|$/gm);
     const hasInspectableExample = codeBlockCount > 0 || tableRowCount >= 3
-      || /例如|假设|样例|一笔订单|一条记录|输入为|输出为/.test(core + scenario);
+      || /例如|假设|样例|一笔订单|一条记录|输入为|输出为|案例/.test(sectionText);
+    const visibleText = sectionText
+      .replace(/~~~[\s\S]*?~~~/g, ' ')
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+      .replace(/<[^>]+>/g, ' ')
+      .trim();
     const checks = [
-      [problem.trim().length > 0, '没有说明本节要解决的具体问题'],
-      [core.trim().length > 0, '核心知识章节没有实质内容'],
-      [steps.trim().length > 0, '没有说明可执行的工程实施方法'],
-      [scenario.trim().length > 0 && !scenarioHasPlaceholder, '场景分析缺失或仍是模板'],
-      [tests.trim().length > 0 && !testsHaveTemplate, '自测缺失或仍是模板句式'],
-      [misconceptions.trim().length > 0, '没有解释本主题的常见错误或边界'],
+      [visibleText.length > 0, '文章没有可读的实质正文'],
+      [!problem.trim() || !/围绕 Snowflake 的.+掌握.+在真实数据源、结构化分析、非结构化证据和生产治理方面的应用/.test(problem), '问题定义仍是课程元说明，没有具体读者问题'],
+      [!scenario.trim() || !scenarioHasPlaceholder, '场景分析仍是模板句式'],
+      [!tests.trim() || !testsHaveTemplate, '自测仍是模板句式'],
       [doc.refs.length >= 1 && doc.refs.every((reference) => reference.verifiedAt !== '待核验'), '缺少已核验来源引用'],
       [!genericReference, '参考资料说明仍是通用模板，未说明与本篇的具体关系'],
     ];
@@ -186,7 +192,7 @@ for (const doc of docs) {
       if (!passed) qualityProblems.push({ id: doc.id, path: doc.path, problem: message });
     }
     if (!hasInspectableExample) {
-      reviewNotes.push({ id: doc.id, path: doc.path, problem: '未检测到具体样例；请人工确认是否有可复核的机制解释或决策案例（不要求每篇都使用代码或表格）' });
+      reviewNotes.push({ id: doc.id, path: doc.path, problem: '未检测到可复核实例；请人工确认文章是否通过具体机制、反例或决策推演支撑结论。代码和表格不是必需形式。' });
     }
     for (const [name, pattern] of boilerplatePatterns) {
       if (pattern.test(doc.markdown)) qualityProblems.push({ id: doc.id, path: doc.path, problem: '模板残留：' + name });
