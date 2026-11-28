@@ -52,6 +52,7 @@ export async function buildSession(
   let pool = bank.questions;
   if (config?.disabledCategories?.length) pool = pool.filter((q) => !config.disabledCategories.includes(q.category));
   if (validDef.categories.length > 0) pool = pool.filter((q) => validDef.categories.includes(q.category));
+  if (validDef.topic) pool = pool.filter((q) => q.topic === validDef.topic);
   if (validDef.difficulties.length > 0) pool = pool.filter((q) => validDef.difficulties.includes(q.difficulty));
   // 形态过滤：题目具备至少一种允许形态即入池；完全无可用形态的题剔除
   pool = pool.filter((q) => availableFormats(q, formats).length > 0);
@@ -99,6 +100,7 @@ export async function nextAdaptiveStep(
   let pool = bank.questions;
   if (config?.disabledCategories?.length) pool = pool.filter((q) => !config.disabledCategories.includes(q.category));
   if (def.categories.length > 0) pool = pool.filter((q) => def.categories.includes(q.category));
+  if (def.topic) pool = pool.filter((q) => q.topic === def.topic);
   if (def.difficulties.length > 0) pool = pool.filter((q) => def.difficulties.includes(q.difficulty));
   pool = pool.filter((q) => availableFormats(q, formats).length > 0);
   const asked = new Set(session.questions.map((sq) => sq.question.id));
