@@ -249,6 +249,7 @@ function adjudicate(
 }
 
 const ids = (arg('ids') ?? '').split(',').map((value) => value.trim()).filter(Boolean);
+const knowledgeId = arg('knowledge-id');
 const topic = arg('topic');
 const limit = Math.max(1, Math.min(100, Number(arg('limit') ?? 10) || 10));
 const concurrency = Math.max(1, Math.min(4, Number(arg('concurrency') ?? 2) || 2));
@@ -258,13 +259,15 @@ const gate = has('gate');
 const dryRun = has('dry-run');
 const model = process.env.QUESTION_VERIFIER_MODEL?.trim() || 'hy4flash-free';
 
-if (ids.length === 0 && !topic) {
-  console.error('必须指定 --ids=id1,id2 或 --topic=<knowledge-node-id>，防止意外核验整个题库。');
+if (ids.length === 0 && !knowledgeId && !topic) {
+  console.error('必须指定 --ids=id1,id2、--knowledge-id=<KnowledgeNode-id> 或旧参数 --topic=<topic>，防止意外核验整个题库。');
   process.exit(2);
 }
-const targets = questionBank.questions.filter((question) =>
-  ids.length > 0 ? ids.includes(question.id) : question.topic === topic,
-).slice(0, limit);
+const targets = questionBank.questions.filter((question) => {
+  if (ids.length > 0) return ids.includes(question.id);
+  if (knowledgeId) return question.knowledgeId === knowledgeId || (!question.knowledgeId && question.topic === knowledgeId);
+  return question.topic === topic;
+}).slice(0, limit);
 if (targets.length === 0) {
   console.error('没有匹配到题目。');
   process.exit(2);
