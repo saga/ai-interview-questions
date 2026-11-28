@@ -318,16 +318,21 @@
     "area": "data-platform",
     "topic": "snowflake-agent-ml",
     "priority": "P1",
-    "summary": "显式保存任务状态、证据引用和中间结果，避免上下文丢失后重复或错误继续执行。",
+    "summary": "将 Cortex Agent Thread 与应用业务任务状态分开管理；使用 message_id 续接/分叉对话，评估 Compact API 压缩上下文，并通过幂等副作用和任务检查点实现断线后的安全恢复。",
     "required": [
-      "将持久化任务状态与临时 prompt context 分开",
-      "记录每个步骤的输入、工具调用、输出和状态转换",
-      "恢复运行前校验状态版本、权限和已提交副作用"
+      "解释 Thread、message_id、parent_message_id 和 Agent Run 的关系，能够从最后成功的 Assistant 消息续接或从历史消息分叉。",
+      "区分 Thread 对话记录、Compact 摘要与应用自己的任务状态、审批状态和证据存储。",
+      "解释 Inline/Thread Compaction、COMPACTION message、end_message_id、原始消息保留及 Preview/API 限制。",
+      "设计可恢复状态机、检查点、状态版本、证据引用和失败状态，避免依赖 Prompt 承载全部任务状态。",
+      "在恢复前对账请求、Thread、工具执行和外部副作用，使用稳定 Idempotency Key 防止重复操作，并重新验证权限与数据版本。"
     ],
     "misconceptions": [
-      "把会话上下文当作唯一持久化状态",
-      "压缩上下文时丢掉证据来源和关键约束",
-      "重启后不检查副作用就从第一步盲目重跑"
+      "将 Thread 当作订单/工单等业务主状态库",
+      "使用 User message_id 而非最后成功的 Assistant message_id 续聊",
+      "认为 Thread 分支会复制或撤销外部副作用",
+      "把 Compact 当作删除历史，或把摘要当成事实/审批记录",
+      "在客户端超时后盲目重跑未确认结果的外部写操作",
+      "恢复任务时不检查当前授权、Agent 版本和数据快照"
     ],
     "angles": [
       "mechanism",
