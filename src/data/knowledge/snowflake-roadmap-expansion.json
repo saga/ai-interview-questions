@@ -240,16 +240,22 @@
     "area": "data-platform",
     "topic": "snowflake-genai",
     "priority": "P1",
-    "summary": "用真实业务问法、金标准 SQL/结果及失败类别验证语义模型和生成查询的稳定性。",
+    "summary": "以 Semantic View 关联的 Verified Queries 建立 Cortex Analyst SQL Correctness 回归集，覆盖真实问法、歧义、日期边界、Join 粒度和不可回答问题；分析 Accuracy、Regressions、Latency 及评测权限。",
     "required": [
-      "覆盖常用、歧义、边界和不可回答的问题",
-      "分别比较生成 SQL、执行结果、语义等价与性能",
-      "每次修改语义定义或模型配置后运行同一套回归"
+      "为每条 VQ 保存真实业务问题和经业务 owner 验证的 SQL，使用 Semantic View 逻辑表/逻辑列并说明口径、粒度和日期。",
+      "覆盖常用指标、歧义、Join、过滤、日期边界、历史维度和不可回答问题，不用重复近义句凑测试量。",
+      "解释 Cortex Analyst Evaluations 执行生成 SQL 并比较结果，而非要求 SQL 文本逐字一致；当前支持 SQL Correctness 指标。",
+      "理解被选作 Ground Truth 的 VQ 会从临时 Semantic View 副本移除，未选 VQ 仍能作为运行时指导。",
+      "固定绝对日期、数据快照和 Metric Version，分别观察 Accuracy、Regressions 和 Latency。",
+      "检查 Evaluation Role 的 CORTEX_USER、USE AI FUNCTIONS、EXECUTE TASK、CREATE TASK、CREATE DATASET、SELECT 和 MONITOR 权限，并确保所有权限属于同一 Primary Role。"
     ],
     "misconceptions": [
-      "只测 SQL 字符串是否完全一致",
-      "只用 happy-path 问题验证语义模型",
-      "把执行成功视为聚合、过滤和 Join 口径正确"
+      "只比较生成 SQL 字符串是否完全相同",
+      "只使用简单的 happy-path 问题",
+      "把任何 SQL 都视为已验证的 Ground Truth",
+      "在同一轮 Evaluation 中让被测 VQ 同时指导生成并作为 Ground Truth",
+      "使用相对日期和持续变化的数据作为固定金标准而不控制快照",
+      "把 SQL Correctness Evaluation 当作完整 Cortex Agent 工具/权限/回答测试"
     ],
     "angles": [
       "mechanism",
@@ -292,16 +298,21 @@
     "area": "data-platform",
     "topic": "snowflake-agent-ml",
     "priority": "P1",
-    "summary": "把多步骤数据任务拆成可检查的子目标，以工具约束、终止条件和失败路径避免无界循环。",
+    "summary": "用 Orchestration Model 将请求拆成子任务，并通过工具契约、planning instructions、预算和明确完成条件控制工具选择；区分模型规划与应用层必须确定执行的流程。",
     "required": [
-      "为每个工具声明输入输出、权限和失败语义",
-      "设置步骤预算、重试上限和明确完成条件",
-      "根据任务所需证据而非工具数量决定是否调用工具"
+      "解释 Orchestration Model 根据用户请求和可用 Tool Specs 拆分任务、选择工具；planning instructions 是引导，不是确定性工作流或权限规则。",
+      "为工具定义适用请求、输入、输出、来源字段和失败语义；按任务所需证据选择工具，避免工具数量膨胀。",
+      "使用 orchestration.budget 设置编排 seconds/tokens，并说明 Token 统计范围、检查时机及工具执行可能超过预算的边界。",
+      "按任务是否允许部分结果配置 orchestration.tool_not_accessible 的 accept/reject，并检查 Warning 和必需工具证据。",
+      "以业务输出、数据日期、引用和工具结果定义完成条件；预算耗尽、缺权和证据不一致时标记未完成或人工复核。"
     ],
     "misconceptions": [
-      "允许 Agent 无限规划和重复调用工具",
-      "将所有数据问题都交给同一无边界工具",
-      "以生成了计划文本作为任务完成证据"
+      "认为 Agent 会机械执行 Prompt 里的固定步骤",
+      "将 Tool Description 当作装饰文字，不定义输入输出和失败语义",
+      "以工具数量替代任务分析，给每张表都创建一个工具",
+      "认为 orchestration.budget 会硬性终止已经运行的工具并限制全部工具成本",
+      "忽略默认 accept 造成的部分结果和工具 Warning",
+      "把模型写完计划文本当作业务任务完成证明"
     ],
     "angles": [
       "mechanism",
@@ -349,16 +360,21 @@
     "area": "data-platform",
     "topic": "snowflake-agent-ml",
     "priority": "P0",
-    "summary": "为 Agent 工具调用绑定可审计身份，并使模型决策不能绕过 Snowflake 的授权和数据策略。",
+    "summary": "基于 Cortex Agent 调用者 Snowflake Role、Agent 对象权限和工具对象权限建立最小授权；区分 Analyst、Search、Custom Tool 的权限边界，并在真实用户 Role 下做正向与负向验证。",
     "required": [
-      "将授权决策留在执行端而不是模型提示中",
-      "限制工具允许的对象、语句和资源范围",
-      "记录调用身份、参数、审批和实际访问结果"
+      "说明 Token、X-Snowflake-Role、Default Role 和激活的 Secondary Roles 如何决定 Cortex Agent 请求身份。",
+      "区分 CORTEX_USER、CORTEX_AGENT_USER 和 CORTEX_ANALYST_USER，并列出 Agent USAGE、Database/Schema USAGE、Warehouse USAGE 和工具对象权限。",
+      "按 Cortex Analyst Semantic View、Cortex Search Service 和 Custom Tool/Stored Procedure 列出各自的访问权限与执行身份。",
+      "解释 Cortex Search 默认 Owner's Rights 与底表 Row Access/Masking Policy 的边界，并评估服务隔离或 Policy Inheritance。",
+      "用真实业务 Role 做正向/负向访问测试，验证工具缺权、Secondary Role、数据策略和 Agent Warning/reject 行为。"
     ],
     "misconceptions": [
-      "通过 prompt 要求模型遵守权限即可替代后端授权",
-      "使用宽权限服务角色执行所有用户的请求",
-      "把工具输出中的指令视为可信权限变更"
+      "通过 Prompt 要求模型守规就当成后端授权",
+      "只授 Agent USAGE，不授工具对象权限",
+      "认为 CORTEX_AGENT_USER 默认包含 Cortex Analyst",
+      "用宽泛 CORTEX_USER 或 Builder Role 替代最小权限设计",
+      "认为底表 Row Access Policy 默认会过滤 Owner's Rights Search 结果",
+      "只使用 Agent Owner Role 做权限验收"
     ],
     "angles": [
       "mechanism",
