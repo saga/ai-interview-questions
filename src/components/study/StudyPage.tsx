@@ -106,6 +106,7 @@ export default function StudyPage({ nodes, questions, onGoTrain }: Props) {
   }, []);
 
   useEffect(() => {
+    if (loadingProgress) return;
     if (!selectedNode || !selectedPack?.articles.length) {
       setSelectedArticleId(undefined);
       return;
@@ -121,9 +122,7 @@ export default function StudyPage({ nodes, questions, onGoTrain }: Props) {
         updated,
       ]);
     });
-  // The selected node is the navigation boundary; progress changes are handled by the completion action.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedNode?.id, selectedPack, selectedProgress?.lastArticleId]);
+  }, [selectedNode?.id, selectedPack, selectedProgress?.lastArticleId, loadingProgress]);
 
   const treeData = useMemo<DataNode[]>(() => {
     const knownTopics = new Set(SNOWFLAKE_COURSE_TOPICS.map((topic) => topic.id));
