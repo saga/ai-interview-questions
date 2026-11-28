@@ -87,7 +87,7 @@ if (strict) {
   }
   try {
     changed = new Set(execFileSync('git', [
-      'diff', '--name-only', '--diff-filter=ACMRT', \`\${base}...HEAD\`,
+      'diff', '--name-only', '--diff-filter=ACMRT', base + '...HEAD',
     ], { encoding: 'utf8' }).split('\n').filter(Boolean));
   } catch (error) {
     console.error(\`无法计算教程变更文件（base=\${base}）：\${error instanceof Error ? error.message : String(error)}\`);
