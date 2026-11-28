@@ -30,14 +30,21 @@
     "area": "data-platform",
     "topic": "data-engineering",
     "priority": "P0",
-    "summary": "通过稳定键、版本规则、MERGE 和回补处理重复投递。",
+    "summary": "使用 Stream 消费源表变更，并在同一事务中以去重后的源记录 MERGE 到目标表；处理重复投递、迟到版本、任务重试和 Stream stale。",
     "required": [
-      "区分事件时间与处理时间，定义去重和冲突规则。",
-      "事务、offset、目标更新与重试应组成可恢复流程。"
+      "说明 Stream offset 何时推进、查询与 DML 消费的区别，以及事务提交/回滚对 offset 的影响。",
+      "区分 Append-only Stream 与 Standard Stream 的变更语义，正确处理 METADATA$ACTION、METADATA$ISUPDATE 和 METADATA$ROW_ID。",
+      "在 MERGE 前按业务键和源版本去重，避免重复 INSERT 与非确定 UPDATE。",
+      "区分重复投递、迟到事件和修订版本，设计业务版本排序与回补策略。",
+      "区分 Snowflake 事务原子性与跨系统副作用幂等，并监控 Stream STALE_AFTER 与恢复窗口。"
     ],
     "misconceptions": [
-      "假设上游只投递一次。",
-      "把去重责任推给报表消费者。"
+      "认为 SELECT 查询 Stream 会推进 offset",
+      "让多个独立消费者共用一个 Stream",
+      "认为 MERGE 会自动消除源表重复业务键",
+      "按最后到达时间判断业务版本最新",
+      "把 Snowflake DML 事务当成跨系统 Exactly Once",
+      "认为 Task 默认无限重试且 Stream 可长期积压"
     ],
     "angles": [
       "mechanism",
