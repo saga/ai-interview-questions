@@ -23,6 +23,7 @@ import {
   ReadOutlined,
   RocketOutlined,
 } from '@ant-design/icons';
+import { Mermaid } from '@ant-design/x';
 import { XMarkdown } from '@ant-design/x-markdown';
 import '@ant-design/x-markdown/themes/light.css';
 import type { KnowledgeNode } from '../../schemas/knowledge';
@@ -38,6 +39,8 @@ import {
   recordArticleOpened,
 } from '../../storage/study';
 import type { StoredStudyProgress } from '../../storage/db';
+
+const MARKDOWN_COMPONENTS = { mermaid: Mermaid };
 
 interface Props {
   nodes: KnowledgeNode[];
@@ -336,7 +339,7 @@ export default function StudyPage({ nodes, questions, onGoTrain }: Props) {
                   </Space>
                   <Divider style={{ marginBlock: 12 }} />
                   <div className="study-article">
-                    <XMarkdown content={selectedArticle.content} />
+                    <XMarkdown content={selectedArticle.content} components={MARKDOWN_COMPONENTS} className="x-markdown-light" />
                   </div>
                   <Divider />
                   <Space style={{ width: '100%', justifyContent: 'space-between' }} wrap>
