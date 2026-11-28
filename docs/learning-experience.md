@@ -24,7 +24,7 @@
 
 ## 从学习内容到知识点检测
 
-Snowflake 的节点教程以 KnowledgeNode 为单位。教程自测用于阅读后的主动回忆；页面上的“知识点检测”从题库中按 `knowledgeId` 取当前节点题目，再把精确的 question ID 列表交给现有组卷器。多个 KnowledgeNode 可以属于同一个 topic，不能用 topic 代替节点 ID，否则会混入同主题的其他知识点，或筛不到题。
+Snowflake 的节点教程以 KnowledgeNode 为单位。教程自测用于阅读后的主动回忆；页面上的“知识点检测”从题库中按 `knowledgeId` 取当前节点题目，再把精确的 question ID 列表交给现有组卷器。课程题的 `Question.topic` 与 `knowledgeId` 都指向唯一的 `KnowledgeNode.id`；`KnowledgeNode.topic` 才是可由多个节点共享的上级分类。
 
 训练结束后，选择题按答案索引确定性评分；开放题使用已配置的 AI 评分。正式作答结果进入 Learner Profile，参与薄弱项和掌握度估计。阅读进度、摘要复习、Copilot 讲解与自评复习都不直接增加考试掌握度。
 
@@ -34,7 +34,7 @@ Snowflake 的节点教程以 KnowledgeNode 为单位。教程自测用于阅读�
 
 1. 识别目标 KnowledgeNode 和需要测量的工程判断，先筛掉只有名词记忆价值的材料细节。
 2. 建立 Assessment Blueprint：明确核心 Concept、`knowledgeId`、`cognitiveTask`、考察角度、难度、assessment target、关键误区和答案边界。
-3. 从真实教学材料或官方资料生成自包含题目草稿。课程题必须填写 `courseId` 和精确 `knowledgeId`；`topic` 仍是题库主题键，可以被多个节点共享。填写稳定的 `source.materialId`，并按课程要求记录 `section`、`page` 和 `relatedMaterials`；不得猜测或编造节点 ID、材料 ID 或官方来源 ID。
+3. 从真实教学材料或官方资料生成自包含题目草稿。课程题必须填写 `courseId` 和精确 `knowledgeId`；并保证 `topic === knowledgeId === KnowledgeNode.id`。`KnowledgeNode.topic` 是共享上级分类，不填入课程题的 `Question.topic`。填写稳定的 `source.materialId`，并按课程要求记录 `section`、`page` 和 `relatedMaterials`；不得猜测或编造节点 ID、材料 ID 或官方来源 ID。
 4. 通过现有题目写入流程执行 Schema、题型、答案索引、去重、语义重复、表达质量和覆盖缺口检查。
 5. 独立解题并进行事实核验：先隐藏题库答案和解析，再逐项评估选项；使用来源摘录检查题干、选项、解析和开放题参考答案。
 6. 有冲突或证据不足时保留 REVIEW / NEEDS_EVIDENCE，不以模型置信度替代来源证据。
