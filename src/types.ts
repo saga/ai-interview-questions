@@ -22,7 +22,11 @@ export type AnswerValue = number[] | string;
  * 题目蓝图（ADR-032 慢速生产管线）
  */
 export interface QuestionBlueprint {
+  /** Question.topic：现有题库使用的精确 KnowledgeNode.id。 */
   topic: string;
+  /** 课程题显式携带课程与节点身份；非课程题保持缺省。 */
+  courseId?: string;
+  knowledgeId?: string;
   angle: QuestionAngle;
   difficulty: Difficulty;
   format: FormatId;
