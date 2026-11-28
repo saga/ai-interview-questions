@@ -58,6 +58,8 @@ curate-question-bank     = Transform   （本 skill：按诊断动手 + 重新�
    - 同 `topic × angle` 已有 ≥ 3 题时，改写后的题必须带来新的考察侧重、场景、
      典型 misconception 或难度层次（见 `fill-coverage-gap` 的题量控制）。
 
+REWRITE 草稿完成后、重新验证前，必须应用 `skills/unslop/SKILL.md` 对题干、选项、解析和参考答案做一次最小化表达校正。只处理确认存在的套话、翻译腔、重复表达和无效背景；保持原题的核心 Knowledge、答案逻辑和 assessment identity 不变。若表达修订导致 angle / difficulty / assessment contract 改变，仍按本 skill 的 fork 规则处理。
+
 4. **改写内部 Prompt（10 条硬约束）**
    > 你正在维护一个已有的 AI/ML 面试题库。任务不是简单换句话说，而是在保留核心知识的前提下提高面试价值与诊断价值：
    > 1. 保留原题真正考察的核心知识（`spec §1`）。
