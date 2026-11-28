@@ -67,7 +67,7 @@ export interface KnowledgeSearchQuery {
   query: string;
   scope?: RetrievalScope;
   mode?: RetrievalMode;
-  /** 主题 slug（= knowledgeId） */
+  /** 主题键；可为共享主题分组。精确节点由 knowledgeId 单独指定。 */
   topic?: string;
   area?: KnowledgeArea;
   /** 锁定单个知识节点 */
