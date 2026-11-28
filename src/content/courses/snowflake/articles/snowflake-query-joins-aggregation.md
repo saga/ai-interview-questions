@@ -98,16 +98,18 @@ HAVING SUM(order_total) > 1000;
 如果订单、支付和明细都是独立事实表，不要把三个明细层直接连接后再求和。先确定最终报表的粒度，例如“客户 × 业务日期”，然后分别聚合：
 
 ~~~sql
+下面的例子假设支付事实中已经有按业务确认的 `REPORT_DATE`。如果财务要求按实际收款日期分析，就应保留 `PAYMENT_DATE`；不能为了能 Join，直接把支付日期改写成下单日期。
+
 WITH order_daily AS (
   SELECT customer_id, order_date, SUM(order_total) AS order_amount
   FROM fact_order
   GROUP BY customer_id, order_date
 ),
 payment_daily AS (
-  SELECT customer_id, payment_date AS order_date, SUM(paid_amount) AS paid_amount
+  SELECT customer_id, report_date, SUM(paid_amount) AS paid_amount
   FROM fact_payment
   WHERE payment_status = 'SUCCESS'
-  GROUP BY customer_id, payment_date
+  GROUP BY customer_id, report_date
 )
 SELECT
   o.customer_id,
@@ -117,7 +119,7 @@ SELECT
 FROM order_daily o
 LEFT JOIN payment_daily p
   ON p.customer_id = o.customer_id
- AND p.order_date = o.order_date;
+ AND p.report_date = o.order_date;
 ~~~
 
 这里的聚合键必须和业务问题一致。如果报表要看订单级别，就不能提前汇总到客户级；如果支付发生在订单之后的另一天，也不能把支付日期悄悄替换成下单日期。
