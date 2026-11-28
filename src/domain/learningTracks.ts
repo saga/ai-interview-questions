@@ -37,6 +37,22 @@ export function questionBankForTrack(
   return { questions, categories: [...new Set(questions.map((question) => question.category))] };
 }
 
+/**
+ * Select questions for one KnowledgeNode.
+ * Newer question records carry an explicit knowledgeId; it is authoritative.
+ * Legacy records without knowledgeId retain the old topic=nodeId convention.
+ */
+export function questionsForKnowledgeNode(
+  questions: Question[],
+  knowledgeNodeId: string,
+): Question[] {
+  return questions.filter((question) =>
+    question.knowledgeId
+      ? question.knowledgeId === knowledgeNodeId
+      : question.topic === knowledgeNodeId,
+  );
+}
+
 export function knowledgeForTrack(
   nodes: KnowledgeNode[],
   trackId: LearningTrackId,
