@@ -2,7 +2,7 @@
 
 **会记住你的训练表现，并根据薄弱项动态调整下一次训练的 AI 面试教练。**
 
-Vite + React 19 + TypeScript + Ant Design 单页应用（五个页面：训练 / 进度 / 面试 / Agent 面试 / 设置，外加常驻的面试 Copilot 侧栏）。集成 [`@earendil-works/pi-ai`](https://github.com/earendil-works/pi) 做题目变体与开放题评分，并引入 [`@earendil-works/pi-agent-core`](https://github.com/earendil-works/pi) 作为面试（Chat Copilot 与独立面试页）的统一决策运行时。内部采用 Interview Engine + Learner Memory 架构（声明式 `InterviewDefinition` → `InterviewSession` → 多维 `EvaluationResult` → `LearnerProfile` 教练推荐）。
+Vite + React 19 + TypeScript + Ant Design 单页应用，包含学习体系、学习、训练、进度、学习地图、面试、Agent 面试和设置页面，并提供常驻的面试 Copilot 侧栏。集成 [`@earendil-works/pi-ai`](https://github.com/earendil-works/pi) 做题目变体与开放题评分，并引入 [`@earendil-works/pi-agent-core`](https://github.com/earendil-works/pi) 作为面试（Chat Copilot 与独立面试页）的统一决策运行时。内部采用 Interview Engine + Learner Memory 架构（声明式 `InterviewDefinition` → `InterviewSession` → 多维 `EvaluationResult` → `LearnerProfile` 教练推荐）。
 
 ## 功能
 
