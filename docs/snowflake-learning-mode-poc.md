@@ -27,7 +27,7 @@
 - 打开教程只记录最近阅读活动。
 - 显式标记已读，更新 `studyProgress`；不写入 `LearnerProfile` 的考试掌握度。
 - 结构化摘要的“标记已复习”也只属于学习资料进度。
-- 专项检测复用现有 Interview Engine。学习页按 `knowledgeId` 找到当前节点的题目，并将精确的题目 ID 列表传给组卷器；不再把 KnowledgeNode ID 错当成题目 `topic`。
+- 专项检测复用现有 Interview Engine。学习页按 `knowledgeId` 找到当前节点的题目，并将精确的题目 ID 列表传给组卷器；课程题的 `Question.topic` 与 `knowledgeId` 都是 `KnowledgeNode.id`；`KnowledgeNode.topic` 是共享上级分类，不是题目的节点 ID。
 - 选择题按题库答案确定性评分；开放题在 AI 配置可用时按现有评分规则评分。训练记录进入 Learner Profile，作为掌握度和薄弱项分析的依据。
 - 题目自评与间隔复习只安排复习，不替代正式答题记录。
 
@@ -38,11 +38,11 @@
 - 目标 KnowledgeNode / `knowledgeId` 和主题；
 - 核心 Concept、考察角度、难度和 `cognitiveTask`；
 - 题目要测量的判断或操作，以及可接受答案的依据；
-- 课程归属（`courseId: "snowflake"`）、唯一知识点 ID（`knowledgeId`）、共享主题键（`topic`）；
+- 课程归属（`courseId: "snowflake"`）、唯一知识点 ID（`knowledgeId`），且课程题满足 `topic === knowledgeId === KnowledgeNode.id`；共享上级分类保留在 `KnowledgeNode.topic`；
 - 主来源 `source.materialId`、适用章节 `source.section`，有页码时记录 `source.page`，并提供至少一条登记在课程路线中的官方文档 ID（`source.relatedMaterials`）；
 - 应覆盖的关键误区，以及题目能否区分这些误区。
 
-随后按 Part 1 / Part 2 Prompt 生成题目草稿。转换器必须保留 `courseId`、`knowledgeId` 和完整来源字段；`blueprintKnowledgeId` 只用于核对 Blueprint 与最终 `knowledgeId` 一致，不与共享 `topic` 比较。`question:add --check` 和 CI 会检查课程节点及来源字段。候选 Concept 应先按工程价值筛选，不能因为材料中出现某个术语就机械出题。题目应能脱离原文独立作答；版本敏感事实需要明确范围。
+随后按 Part 1 / Part 2 Prompt 生成题目草稿。转换器必须保留 `courseId`、`knowledgeId` 和完整来源字段；并校验 `topic === knowledgeId`；`blueprintKnowledgeId` 只用于核对 Blueprint 与最终 `knowledgeId` 一致。`question:add --check` 和 CI 会检查课程节点及来源字段。候选 Concept 应先按工程价值筛选，不能因为材料中出现某个术语就机械出题。题目应能脱离原文独立作答；版本敏感事实需要明确范围。
 
 现有入口：
 
