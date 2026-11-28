@@ -153,6 +153,6 @@ predictions.show()
 ## 参考资料
 
 - [Snowflake Model Registry](https://docs.snowflake.com/en/developer-guide/snowflake-ml/model-registry/overview)
-- [Model Registry SQL](https://docs.snowflake.com/en/developer-guide/snowflake-ml/model-registry/sql)
-- [Model Inference](https://docs.snowflake.com/en/developer-guide/snowflake-ml/model-registry/model-inference)
-- [Model observability](https://docs.snowflake.com/en/developer-guide/snowflake-ml/model-observability)
+- [Model Registry SQL](https://docs.snowflake.com/en/sql-reference/commands-model)
+- [Model Inference](https://docs.snowflake.com/en/developer-guide/snowflake-ml/inference/inference-overview)
+- [Model observability](https://docs.snowflake.com/en/developer-guide/snowflake-ml/model-registry/model-observability)
