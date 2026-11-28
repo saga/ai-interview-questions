@@ -1342,3 +1342,15 @@ INCORRECT
 The verifier is an evidence-producing system, not an oracle.
 
 Human review remains the final authority for P0 and unresolved cases.
+
+
+## Executable workflow
+
+The repository now provides `npm run questions:manage -- verify` as the executable evidence-backed path. It does not silently modify the question bank.
+
+```bash
+npm run questions:manage -- verify --ids=<id1,id2> --evidence-file=reports/question-evidence.json
+npm run questions:manage -- verify --ids=<id1,id2> --evidence-file=reports/question-evidence.json --gate
+```
+
+The evidence file must contain actual source excerpts whose IDs match `source.materialId` or `source.relatedMaterials`. The first model call receives no stored answer or explanation. The second call verifies every option and the explanation against the supplied excerpts. Quote matching is deterministic; missing or unmatched evidence cannot yield `VERIFIED`. `--gate` returns a failure unless every target question is `VERIFIED`.

@@ -24,7 +24,7 @@ const tasks = {
   "cognitive-task": ["node", "scripts/backfill-cognitive-task.ts"],
   "variant-rehash": ["node", "scripts/refresh-variant-hash.ts"],
   "verify-candidates": ["node", "--experimental-strip-types", "scripts/verify-question-candidates.ts"],
-  verify: ["node", "--experimental-strip-types", "scripts/verify-question-correctness.ts"],
+  verify: ["vite-node", "scripts/verify-question-correctness.ts"],
   "refresh-node-index": ["node", "scripts/refresh-prompt-node-index.ts"],
 };
 
