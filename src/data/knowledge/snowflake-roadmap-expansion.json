@@ -221,16 +221,22 @@
     "area": "data-platform",
     "topic": "snowflake-genai",
     "priority": "P1",
-    "summary": "将源表变化、服务刷新、可搜索字段、过滤字段和访问策略纳入检索链路治理。",
+    "summary": "监控 Cortex Search 从源表提交到索引可查询的实际滞后，诊断 Indexing/Serving、刷新失败和增量重建，并按授权域隔离 Owner’s Rights 搜索或验证 Data Governance Policy Inheritance。",
     "required": [
-      "测量源数据提交到检索可见的端到端延迟",
-      "在检索前后验证租户/行权限过滤",
-      "通过回归查询检查刷新后召回与引用证据"
+      "区分源表提交时间、刷新时间、DATA_TIMESTAMP 和检索时间，使用 TARGET_LAG 作为目标而不是 SLA。",
+      "使用 DESCRIBE CORTEX SEARCH SERVICE 与 CORTEX_SEARCH_REFRESH_HISTORY 诊断 Indexing/Serving 状态、刷新耗时、失败原因、增量/全量动作和 Warehouse 影响。",
+      "解释 Primary Key 的 Chunk 唯一性、增量刷新、完整索引重建软目标及主键变更生效时机。",
+      "区分默认 Owner's Rights 与调用者底表 Row Access/Masking Policy，按服务授权域隔离或评估 Data Governance Policy Inheritance Preview。",
+      "在不同业务 Role 下验证文档可见范围、Masking、属性过滤、有效版本、引用完整性和检索新鲜度。"
     ],
     "misconceptions": [
-      "认为源表更新后检索结果必然立即同步",
-      "把 UI 隐藏结果当作服务端授权",
-      "只看服务运行状态而不测检索新鲜度"
+      "把 TARGET_LAG 当作实际刷新 SLA",
+      "只检查 SERVING_STATE 而不检查 Indexing 和 DATA_TIMESTAMP",
+      "认为手动 REFRESH 命令返回就代表新内容已可查询",
+      "认为底表 Row Access Policy 默认作用于 Owner's Rights Search 索引",
+      "把客户端属性过滤器当成用户授权",
+      "用非唯一 Document ID 作为多 Chunk 主键",
+      "只评估 Recall@K，不验证有效日期、授权范围和来源引用"
     ],
     "angles": [
       "mechanism",
