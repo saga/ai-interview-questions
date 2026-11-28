@@ -1,48 +1,65 @@
 # Streams、Tasks 与 CDC 事务语义
 
-## 本节要解决的问题
+## 先看 Stream 交付给消费者的是什么
 
-理解 Snowflake Stream 如何表示源对象自某个事务版本以来的变更，Task 如何触发消费，以及为什么“读取到变更”不等于“已经消费变更”。本节聚焦 Snowflake 内部的变更跟踪与任务编排；外部数据库到 Snowflake 的 CDC Connector 属于另一段链路。
+订单表当前只有一条记录：
 
-## 核心知识
+| ORDER_ID | STATUS |
+| --- | --- |
+| 82013 | CREATED |
 
-### Stream 保存 offset，不保存一份完整变更表
+后来状态被改成 PAID，再改成 SHIPPED。下游需要维护一张当前状态表，审计系统则要保留每次变更。
 
-Stream 记录源表或视图的事务位置，并根据源对象的 Change Tracking 信息提供该位置之后的变更记录。Stream 本身不保存完整的源表数据副本，也不是可以无限期查询的历史日志。
+如果把 Stream 想成一张永久保存所有事件的日志表，就会设计错消费者。Stream 保存的是源对象的一个 offset，并根据 Change Tracking 提供该位置之后的变更视图；它本身不保存一份完整数据副本，也不是长期审计日志。
 
-标准 Stream 可用于捕获插入、更新和删除产生的变更。更新通常以旧行删除记录和新行插入记录表现，并通过 \`METADATA$ACTION\`、\`METADATA$ISUPDATE\` 等元数据列区分。Append-only Stream 则只关注插入变化，不能用于需要完整更新/删除语义的场景。
+## Offset 决定消费者从哪里开始看
 
-### 读取与消费是两种不同操作
+创建 Stream 时，Snowflake 为源对象初始化一个时间位置。之后源表发生并提交 DML，Stream 就能提供 offset 之后的变更记录。
 
-单独执行 SELECT 读取 Stream 不会推进 offset。Stream 在 DML 语句中被消费，并且事务成功提交后，offset 才推进到该事务读取的版本。若消费事务回滚，变更仍可在后续事务中处理。
+标准 Stream 会记录插入、更新和删除。更新通常表现为旧行的 DELETE 记录和新行的 INSERT 记录，两条记录都可以通过 METADATA$ISUPDATE = TRUE 识别。只看 METADATA$ACTION = 'DELETE' 就删除目标业务行，会把一次状态更新误当成真正的业务删除。
 
-一个 Stream 不适合被多个独立消费者轮流当作各自的消费游标：先提交的消费者会推进 offset，后续消费者看到的增量就会变化。需要多个消费者独立处理同一源对象时，为每个消费者创建独立 Stream。
+如果消费者只关心新增行，可以考虑 Append-only Stream；如果需要更新和删除语义，就不能用它替代标准 Stream。
 
-Stream 还受源表的数据保留窗口影响。长期不消费会使 Stream 接近或进入 stale 状态；应监控 \`STALE_AFTER\`，并在保留窗口内稳定消费。
+## SELECT 不消费变更，提交 DML 才会推进 offset
 
-### Task 负责调度，不替代事务与幂等设计
+这是 Stream 最容易被误用的地方。
 
-Task 可以按时间计划运行，也可以在 Stream 有待处理变更时触发。Task 创建后初始为 suspended，需要显式 RESUME。Task 的成功状态只说明任务执行成功，不证明目标业务状态正确；仍要验证去重、删除、乱序、重试和数据质量。
+单独执行 SELECT * FROM RAW.ORDER_STREAM 可以查看当前变更，但不会推进 offset。即使放在显式事务中，单独 SELECT 也不等于消费。只有 DML 在事务中读取 Stream，并且事务成功提交，offset 才会推进。
 
-## 工程实施步骤
+可以把它理解为一个提交边界：
 
-1. **确定变更语义。** 明确源对象、业务主键、需要捕获的 INSERT/UPDATE/DELETE，以及下游是维护当前态、追加历史还是生成审计日志。
-2. **创建并检查 Stream。** 确认源表 Change Tracking、Stream 类型、创建位置和消费角色权限；通过 DESCRIBE STREAM/SHOW STREAMS 检查 offset 和 STALE_AFTER。
-3. **为消费者划分 offset。** 每个独立处理流程使用自己的 Stream，避免多个 Task 或脚本争用同一消费游标。
-4. **让消费 DML 与目标写入处在同一事务边界。** 优先使用一次 INSERT/MERGE 完成 Stream 读取和目标写入；多语句处理需明确 BEGIN/COMMIT 和失败回滚行为。
-5. **保留足够的变更证据。** 在需要审计或回放时，将变更标识、源主键、操作类型、更新时间及来源信息写入受控的变更日志表。
-6. **配置事件触发 Task。** 通过 WHEN SYSTEM$STREAM_HAS_DATA('...') 触发；若使用用户管理的 Warehouse，要配置 WAREHOUSE。Task 运行前还要确认执行角色有权读取 Stream 和写入目标表。
-7. **验证失败恢复。** 模拟 Task 失败、Warehouse 暂停、重复提交和 Stream 长时间无人消费，检查是否能重试、是否推进 offset，以及是否需要重建 Stream 和回补数据。
+| 操作 | Stream offset |
+| --- | --- |
+| 执行 SELECT 查看 Stream | 不变 |
+| DML 读取 Stream，但事务回滚 | 不推进 |
+| DML 读取 Stream，事务成功提交 | 推进到本次事务所消费的位置 |
 
-以下示例把变更写入持久化变更日志。它演示 Stream 被 DML 消费的边界，不是完整的业务主表 MERGE 方案：
+这个区别决定了失败恢复方式。若目标写入和 Stream 消费处于同一事务，失败回滚后，变更仍可以在下一次消费中处理。若把消费和目标写入拆成两个互不关联的步骤，就必须自行处理两者之间的失败窗口。
+
+## 两个消费者要各自拥有 offset
+
+回到订单例子：一个消费者维护当前状态，另一个消费者写审计日志。它们需要独立的消费进度，因此应为同一个源表创建两个 Stream：
 
 ~~~sql
-CREATE STREAM RAW.ORDER_STREAM
+CREATE STREAM RAW.ORDER_CURRENT_STREAM
   ON TABLE RAW.ORDERS;
 
+CREATE STREAM RAW.ORDER_AUDIT_STREAM
+  ON TABLE RAW.ORDERS;
+~~~
+
+Stream 保存的是 offset，而不是整份源表数据；为不同消费者建立独立 Stream，是把消费游标分开，并不等于复制两份完整数据。
+
+消费者 A 可以按业务主键将 INSERT、UPDATE 和 DELETE 应用到当前表。消费者 B 则把操作类型、更新时间和需要保留的前后状态写入审计表。两者各自推进自己的 offset，不会因为其中一个先提交而让另一个丢掉同一批变更。
+
+## Task 只负责何时运行，不替你保证数据正确
+
+Task 可以按计划运行，也可以由 Stream 中出现待处理数据来触发。事件触发的任务通常用 SYSTEM$STREAM_HAS_DATA 作为 WHEN 条件：
+
+~~~sql
 CREATE TASK RAW.CAPTURE_ORDER_CHANGES
   WAREHOUSE = ETL_WH
-  WHEN SYSTEM$STREAM_HAS_DATA('RAW.ORDER_STREAM')
+  WHEN SYSTEM$STREAM_HAS_DATA('RAW.ORDER_AUDIT_STREAM')
 AS
   INSERT INTO RAW.ORDER_CHANGE_LOG
     (ORDER_ID, STATUS, ACTION, IS_UPDATE, CAPTURED_AT)
@@ -52,43 +69,34 @@ AS
     METADATA$ACTION,
     METADATA$ISUPDATE,
     CURRENT_TIMESTAMP()
-  FROM RAW.ORDER_STREAM;
+  FROM RAW.ORDER_AUDIT_STREAM;
 
 ALTER TASK RAW.CAPTURE_ORDER_CHANGES RESUME;
 ~~~
 
-## 场景分析
+Task 创建后初始为 suspended，需要显式启动。执行身份、Warehouse、Stream 权限和目标表权限都要检查。Task 显示执行成功，只说明 SQL 运行完成；是否正确处理了重复事件、真实删除、迟到数据和业务主键，仍要靠数据校验。
 
-订单表会出现新增订单、状态更新和订单删除。下游需要维护当前订单表，同时审计团队要求保留每次状态变化。
+## 生产消费前，至少演练这几种变化
 
-可以让一个 Stream/Task 消费者维护当前态，另一个独立 Stream/Task 消费者写入变更日志。两个消费者不应共用同一个 Stream，否则先消费的事务会推进 offset，另一个消费者就无法按自己的节奏取得同一批变更。
+在测试环境中分别插入一行、更新一行和删除一行，观察 Stream 的 ACTION 与 ISUPDATE。然后故意让消费事务失败，再重试，检查 offset 是否符合预期。
 
-当前态处理要把 UPDATE 的新行应用为更新；对于真正删除，应根据 DELETE 语义删除目标行或标记为已删除。不要把 UPDATE 对应的旧行删除记录误判成业务删除。审计日志则应保存操作类型和更新标记，保留需要的前后状态信息。
+还要模拟两个消费者误用同一个 Stream 的情况：第一个消费者提交 DML 后，offset 已推进，第二个消费者不再拥有自己独立的那批变更。生产中应从设计上避免这种竞争，而不是等到日志少了一段再补救。
 
-验收时至少执行：新增一行、更新一行、删除一行、消费事务回滚、Task 暂停后恢复、同一 Stream 被两个消费者误用的演练。检查目标状态和日志记录，并确认 Stream offset 在提交和回滚后的行为符合预期。
+长期审计需要把消费后的记录写入持久化日志或历史表，并定义保存期限、业务键和回放规则。Stream 的源对象保留窗口和 STALE_AFTER 也要持续监控，不能把它当成无限期缓存。
 
-## 常见误区
+## 容易混淆的边界
 
-- **把 Stream 当作完整历史表。** Stream 提供当前 offset 之后的变更视图；需要长期审计时应将记录写入持久化日志或历史表。
-- **SELECT 后就认为 offset 已推进。** 仅查询不会消费；offset 在 DML 消费事务提交后推进。
-- **多个消费者共用一个 Stream。** 每个消费者需要独立的 offset，应创建独立 Stream。
-- **把 UPDATE 的旧行记录当成 DELETE。** 需要结合 ACTION 和 ISUPDATE 识别更新事件。
-- **认为 Task 执行成功就代表数据正确。** 还需要核对目标行、业务键、重复和删除处理。
-- **忽略 STALE_AFTER。** 长时间不消费可能导致 Stream stale，不能将 Stream 当无限期缓存。
-
-## 完成标准
-
-- [ ] 能解释 Stream 的 offset、变更视图与源表数据保留窗口。
-- [ ] 能说明 SELECT 与 DML 消费对 offset 的不同影响。
-- [ ] 能区分 INSERT、真实 DELETE 和 UPDATE 产生的变更记录。
-- [ ] 能为多个消费者设计独立 Stream。
-- [ ] 能说明 Task 的触发、执行身份、事务和失败恢复边界。
+- Stream 是带 offset 的变更视图，不是长期事件日志。
+- SELECT 只读取，不推进 offset；提交 DML 才消费变更。
+- UPDATE 会产生带有更新标记的旧行和新行，不能把旧行记录直接当成业务 DELETE。
+- 多个独立消费者需要独立 Stream。
+- Task 负责触发和执行，不负责替业务定义幂等、删除和审计策略。
 
 ## 自测
 
-1. SELECT 查询 Stream 后，另一个消费者是否仍可看到相同的变更？如果第一个消费者执行 DML 并提交，又会怎样？
-2. 标准 Stream 中出现 ACTION=DELETE 且 ISUPDATE=TRUE 的记录，为什么不能直接删除业务目标行？
-3. 如何设计两个消费者，使一个维护当前订单状态，另一个长期保留 CDC 审计日志？
+1. 一个事务 SELECT 了 Stream，随后回滚。另一个事务还能看到这批变更吗？为什么？
+2. Stream 返回 ACTION = 'DELETE' 且 ISUPDATE = TRUE 的记录，为什么不能直接删除当前状态表中的订单？
+3. 如何设计两个独立消费者，让一个维护订单当前状态，另一个保存审计历史？
 
 ## 参考资料
 

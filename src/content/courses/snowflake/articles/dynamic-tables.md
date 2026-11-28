@@ -1,39 +1,45 @@
 # Dynamic Tables 与刷新新鲜度目标
 
-## 本节要解决的问题
+## 先问清楚十分钟指什么
 
-使用声明式 SQL 构建可持续刷新的数据转换链路，并根据业务允许的数据陈旧程度设置 TARGET_LAG。Dynamic Tables 将依赖关系和刷新编排交给 Snowflake，但不会自动保证任意复杂链路都满足指定延迟或成本目标。
+运营看板要求订单数据“十分钟内更新”。团队建立了一组 Dynamic Tables，并为每张表设置 TARGET_LAG = '10 minutes'。上线后有人发现，某次刷新用了十几分钟，于是认为 Snowflake 没有遵守配置。
 
-## 核心知识
+这里混淆了两个概念：十分钟是数据允许陈旧的目标，不是每十分钟准点启动一次刷新，也不是对每次刷新耗时的承诺。实际 lag 可能超过目标，必须监控和处理。
 
-### TARGET_LAG 表示新鲜度目标，不是固定刷新间隔
+## TARGET_LAG 描述数据新鲜度，不是调度周期
 
-例如 \`TARGET_LAG = '10 minutes'\` 表示希望动态表中的数据相对其源数据保持在十分钟以内的陈旧程度，并不意味着系统每十分钟准时执行一次刷新。Snowflake 根据依赖变化、刷新耗时和资源情况安排刷新；实际 lag 可能超过目标。
+Dynamic Tables 用声明式 SQL 描述持续转换关系。Snowflake 根据目标新鲜度、上游变化和刷新情况安排执行，而不是简单地按固定 Cron 间隔运行。
 
-对于多层 Dynamic Tables，调度会考虑依赖顺序。目标 lag 的含义与整条依赖链有关，不能只看某个中间节点的刷新时间来判断最终数据新鲜度。
+如果某次刷新尚未完成，调度器不会为了赶上下一次计划而并发启动同一张表的另一次刷新。刷新持续时间、数据量、SQL 复杂度、Warehouse 资源和依赖链都会影响最终 lag。把 TARGET_LAG 从 10 分钟改成 1 分钟，并不会自动让慢查询变快。
 
-### Refresh Mode 决定转换如何执行
+持续刷新目标的最小值为 60 秒。小于这一范围的设置会在校验时失败。设置目标时，应从消费者真正需要的数据新鲜度出发，而不是把数值越小当成越好。
 
-Dynamic Table 支持 Incremental、Full 和 Auto 等刷新模式。Incremental 尝试只处理变化部分；Full 重新计算结果。具体 SQL 是否支持增量刷新、刷新成本和数据变化规模都会影响选择。
+## 多层链路要看最终消费者，而不只是中间表
 
-生产环境应明确评估并设置所需的 Refresh Mode，而不是只依赖自动推断。创建后检查实际解析出的 refresh_mode 和 refresh_mode_reason，避免查询逻辑或功能变化导致刷新模式与预期不同。
+假设订单数据经过三步：
 
-### Dynamic Tables 与 Tasks 的职责不同
+1. Raw 层保留摄取结果；
+2. Curated 层完成清洗和统一口径；
+3. Mart 层按天、地区汇总，供看板使用。
 
-Dynamic Tables 适合用声明式 SELECT 描述持续转换和依赖关系；Tasks 适合按时间或事件触发 SQL、过程逻辑及多步骤作业。需要副作用、条件分支、外部调用或明确的过程控制时，不应为了统一工具而强行使用 Dynamic Tables。
+如果每一层都独立追求极短的刷新目标，可能造成不必要的刷新和成本。对于中间层，可以评估 TARGET_LAG = DOWNSTREAM，让它在下游消费者需要新数据时参与刷新，而不是维护一套不必要的独立目标。最终消费层仍应显式定义业务需要的新鲜度。
 
-## 工程实施步骤
+目标 lag 与依赖关系有关。多层表的调度需要按上游到下游的依赖顺序完成；判断看板是否新鲜，不能只看最后一张表是否刚刚刷新。
 
-1. **定义业务新鲜度。** 确认消费端可接受的最大数据延迟、峰值到达速率和超出目标时的降级方式。将目标 lag 与业务 SLA 分开记录。
-2. **划分转换层。** 明确源表、清洗层、中间动态表和面向消费者的输出表。每一层只保留实际需要的转换，避免过度拆分造成过长依赖链。
-3. **选择刷新模式。** 检查 SELECT 语法、连接方式、聚合、数据变化比例和预计刷新成本；使用代表性数据验证 Incremental 是否适用。
-4. **创建 Dynamic Table。** 明确目标 lag、Warehouse、Refresh Mode 和 owner role。配置应可复现并纳入版本管理。
-5. **核对实际运行状态。** 使用 SHOW DYNAMIC TABLES 检查 scheduling_state、refresh_mode、refresh_mode_reason 和 target_lag；通过 Refresh History 查看刷新耗时、结果和 lag。
-6. **观察链路而不是单表。** 对多层依赖检查上游是否失败、下游是否因依赖未更新而等待，以及各层刷新是否出现反复 full refresh。
-7. **建立成本与延迟告警。** 将实际 lag、刷新成功率、刷新耗时、Warehouse credits 和目标表质量放在一起观察。
-8. **演练暂停和恢复。** 模拟上游数据突增、仓库不可用、刷新失败和长期暂停，明确何时调整 lag、规格或刷新模式，何时需要重新初始化。
+## Refresh Mode 决定刷新工作怎样完成
 
-示例：
+Dynamic Tables 支持 Snowflake 管理的 ADAPTIVE、FULL、INCREMENTAL 和 AUTO 等模式；高级场景还有 CUSTOM_INCREMENTAL。不同模式的成本并不固定：
+
+- Incremental 尝试只处理变化部分，适合变化量和转换形态支持增量维护的场景。
+- Full 重新计算结果。数据变化比例很大或增量维护成本过高时，完整刷新未必更差。
+- Adaptive 可以根据内部判断在增量维护与重新初始化之间调整。
+- Auto 会根据查询和平台判断解析模式，生产环境应检查最终选择的 refresh_mode 与原因。
+
+不要只凭 SQL 看起来简单就假定 Incremental 一定可用，也不要把 AUTO 当成无需验证的保证。创建后要检查实际模式，并使用代表性数据和变化规模验证。
+
+## 一个可运行的例子
+
+下面将 Raw 订单按日期和地区汇总。实际字段类型、目标新鲜度和 Warehouse 名称应按环境替换。
 
 ~~~sql
 CREATE OR REPLACE DYNAMIC TABLE MART.ORDERS_10M
@@ -50,37 +56,47 @@ FROM RAW.ORDERS
 GROUP BY ORDER_DATE, REGION;
 ~~~
 
-创建后需要检查 SHOW DYNAMIC TABLES 的实际刷新模式和运行状态，而不能把 DDL 成功当作刷新已经按目标运行。
+DDL 创建成功只代表定义被接受，不表示之后的刷新一定持续满足十分钟目标。上线后要看调度状态、刷新模式、实际 lag 和刷新耗时。
 
-## 场景分析
+## 怎样判断链路是否达标
 
-订单数据进入 Raw 表后，需要依次清洗、汇总并供运营仪表板读取。业务方要求看板数据“最多十分钟延迟”。
+先用 SHOW DYNAMIC TABLES 查看当前状态。需要观察整个账户中动态表的 lag 时，可以使用 Information Schema 的动态表函数：
 
-先确定十分钟是业务新鲜度目标，而不是要求每十分钟启动一次刷新。然后测量数据到达速率、各层刷新时间和依赖深度。若单次刷新持续时间已超过目标，单纯缩短 TARGET_LAG 不会让链路变快；要检查刷新 SQL、Warehouse 容量、增量能力和依赖关系。
+~~~sql
+SELECT
+  NAME,
+  SCHEDULING_STATE,
+  LAST_COMPLETED_REFRESH_STATE,
+  TARGET_LAG_SEC,
+  TIME_WITHIN_TARGET_LAG_RATIO,
+  MAXIMUM_LAG_SEC
+FROM TABLE(INFORMATION_SCHEMA.DYNAMIC_TABLES())
+ORDER BY NAME;
+~~~
 
-对于纯 SQL 的增量转换，可以使用 Dynamic Tables；如果还需要发送通知、调用外部服务或执行有条件的多步骤操作，则应由 Task 或其他编排组件完成。验收应检查一段观察窗口内的实际 lag 分布、刷新失败比例、查询结果质量和成本。
+TIME_WITHIN_TARGET_LAG_RATIO 能帮助判断表在观察窗口内有多大比例的时间满足目标。出现 lag 超标时，再用 DYNAMIC_TABLE_REFRESH_HISTORY 查看刷新状态、错误、持续时间和触发方式，并结合依赖图定位上游瓶颈。
 
-## 常见误区
+如果刷新耗时已经超过目标，调整数字并不能解决根因。需要检查 SQL、数据变化比例、Refresh Mode、Warehouse 资源和依赖链长度，然后用一段稳定观察窗口验证调整结果。
 
-- **把 TARGET_LAG 当作定时器。** 它是数据新鲜度目标，Snowflake 会据此安排刷新，但不能保证按固定间隔准时执行。
-- **把目标 lag 当作 SLA 保证。** 资源不足、刷新耗时或依赖链过长都可能使实际 lag 超过目标。
-- **只查看最后一次刷新成功。** 成功状态不能代表整个观察窗口持续满足新鲜度，需要检查实际 lag 和刷新历史。
-- **认为 Incremental 总是比 Full 便宜。** 变化比例、查询形态和增量维护开销会影响成本，应以实际刷新结果为准。
-- **用 Dynamic Tables 替代所有 Tasks。** 声明式数据转换与过程编排解决不同问题，可以组合使用。
+## Dynamic Tables 与 Tasks 应该怎样分工
 
-## 完成标准
+Dynamic Tables 更适合声明式的 SQL 转换。若还需要条件分支、写入非动态目标、执行存储过程或调用外部系统，通常应让 Task 承担这些过程动作。
 
-- [ ] 能准确解释 TARGET_LAG 的含义及其非保证性。
-- [ ] 能根据查询逻辑和数据变化选择 Refresh Mode。
-- [ ] 能通过 SHOW DYNAMIC TABLES 和 Refresh History 检查实际行为。
-- [ ] 能判断依赖链、刷新耗时和 Warehouse 资源对 lag 的影响。
-- [ ] 能说明 Dynamic Tables 与 Tasks 的职责边界。
+两者可以组合：Dynamic Table 完成数据转换，Stream 暴露变化，Triggered Task 在有变化时执行后续副作用。不要为了让所有步骤都“自动刷新”而把外部调用硬塞进声明式查询。
+
+## 目标 lag 容易失守的情形
+
+- 单次刷新时间长于业务允许的陈旧窗口。
+- 上游数据增长或 SQL 复杂度改变，增量刷新成本明显上升。
+- 依赖链过长，中间表的目标设置不合理。
+- 仓库资源不足，或者刷新失败后持续重试。
+- 只看最后一次成功，没有观察一段时间内的实际 lag。
 
 ## 自测
 
-1. 设置 TARGET_LAG 为十分钟，为什么某次刷新仍可能超过十分钟？如何找到根因？
-2. 一条动态表链路由三层表组成，应该只监控最末端的刷新状态吗？还需要检查什么？
-3. 某个任务需要在数据更新后执行 SQL，再调用外部系统发通知；为什么不应把这两个动作都放进 Dynamic Table？
+1. 设置 TARGET_LAG = '10 minutes' 后，为什么实际数据仍可能超过十分钟没有更新？
+2. Curated 是 Mart 的中间层，为什么可以评估 TARGET_LAG = DOWNSTREAM？什么情况下不适合这么做？
+3. 一条链路需要在数据更新后调用外部服务。为什么应该考虑 Task，而不是把调用逻辑放进 Dynamic Table？
 
 ## 参考资料
 
