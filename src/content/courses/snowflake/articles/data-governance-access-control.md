@@ -60,7 +60,7 @@ CREATE OR REPLACE ROW ACCESS POLICY region_access
     OR EXISTS (
       SELECT 1
       FROM GOVERNANCE.ACCESS.REGION_ROLE_MAP m
-      WHERE m.ROLE_NAME = CURRENT_ROLE()
+      WHERE IS_ROLE_IN_SESSION(m.ROLE_NAME)
         AND m.REGION = row_region
     );
 ~~~
@@ -72,7 +72,7 @@ ALTER TABLE SALES.MART.DAILY_SALES
   ADD ROW ACCESS POLICY region_access ON (REGION);
 ~~~
 
-映射表记录角色和地区的授权关系。真实部署中要明确谁能维护这张表、谁能修改策略以及如何审计授权变更；如果使用角色继承，应使用 IS_ROLE_IN_SESSION 等上下文函数考虑会话中的角色关系，而不是假定 CURRENT_ROLE 总能代表全部授权来源。
+映射表记录角色和地区的授权关系。真实部署中要明确谁能维护这张表、谁能修改策略以及如何审计授权变更。这里用 IS_ROLE_IN_SESSION 检查当前会话激活的角色层级；若授权规则还依赖用户属性或次级角色启用状态，应在真实角色会话中回归验证。
 
 Row Access Policy 会控制 SELECT 返回的行，也会影响 UPDATE、DELETE 和 MERGE 所选中的行。但它不是写入约束：它不会阻止用户 INSERT 新行，也不会阻止用户修改或删除对其可见的行。需要数据变更限制时，仍要用对象权限、任务身份和受控写入流程。
 
