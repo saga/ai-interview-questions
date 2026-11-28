@@ -83,7 +83,10 @@ const docs = [
   ...integratedManifest.tutorials.map((entry) => ({ ...loadEntry(entry, integratedRoot), kind: 'integrated' })),
 ];
 const required = {
+  // Article headings are intentionally flexible. Index whatever sections exist and
+  // evaluate content/boilerplate; do not make every lesson use the same outline.
   article: [],
+  // Integrated tutorials currently have a separate page contract.
   integrated: ['场景与目标', '架构与数据流', '实施步骤', '关键取舍', '验收清单', '关联知识点', '参考资料'],
 };
 let changed = null;
@@ -162,8 +165,6 @@ for (const doc of docs) {
 
   if (isTarget && doc.kind === 'article') {
     const sectionText = [...doc.sections.values()].join('\n');
-    const problem = doc.sections.get('本节要解决的问题') ?? '';
-    const core = doc.sections.get('核心知识') ?? '';
     const scenario = doc.sections.get('场景分析') ?? '';
     const tests = doc.sections.get('自测') ?? '';
     const scenarioHasPlaceholder = /将场景转换为明确输入|逐项检查本节核心要求|请拆分对象、执行和访问边界/.test(scenario);
