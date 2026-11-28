@@ -40,21 +40,22 @@ Part 2 将把你的输出转换为最终题目。
 1. Topic / Knowledge Node
    ==================================================
 
-`topic` 表示该 Blueprint 所属的正式 Knowledge Node。
+`topic` 是题库沿用的主题/检索键；`knowledgeId` 是课程题唯一对应的 KnowledgeNode.id。两者不能混为一谈。
 
 重要：
 
-* `topic` 应优先使用仓库已经存在的、稳定的 Knowledge Node ID；
-* 不要使用 Domain / Area 作为 topic；
-* 不要把自然语言 Knowledge 名称机械当成正式 id；
-* 不要把 JSON 中的 `topic` 分组字段误认为 Knowledge Node `id`；
-* 不要为了看起来具体而创造长而复杂的新 id。
+* `topic` 沿用目标题库已有的稳定键。旧 AI 题库中它可能就是 KnowledgeNode ID；课程题中它也可能是多个节点共用的主题键；
+* `knowledgeId` 必须指向具体 KnowledgeNode，课程题必须输出这个字段；
+* 不要使用 Domain / Area 代替 `topic`；
+* 不要把自然语言 Knowledge 名称机械当成正式 ID；
+* 不要把共享 `topic` 当成唯一 KnowledgeNode；
+* 不要为了看起来具体而创造长而复杂的新 ID。
 
 本 Prompt 不接收完整的 Knowledge Node 清单。
 
-因此你无法保证某个候选 id 当前一定存在。
+因此你无法保证某个候选 `knowledgeId` 当前一定存在。
 
-不要声称已经验证某个 id 存在。
+不要声称已经验证某个 ID 存在。课程题只有在拿到真实课程节点清单后才能确定 `knowledgeId`；缺少清单时标记待确认，不得编造。
 
 如果 SOURCE 明显对应一个已有、成熟、常见的 Knowledge：
 
