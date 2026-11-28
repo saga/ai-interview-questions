@@ -28,13 +28,22 @@ Official documentation IDs such as `docs-snowflake-architecture`, `docs-time-tra
 
 ## Learning article authoring and expression review
 
-When writing or materially revising a Snowflake lesson, concept explainer, architecture note or case study:
+A lesson is for someone trying to understand a system, not for someone checking whether a list of headings exists. Keep the required top-level sections in the article contract, but let the explanation inside them follow the problem.
 
-1. Confirm the learning objective and technical behavior against the course source and current Snowflake documentation.
-2. Explain the mechanism, preconditions, limitations, operational impact and verification method. Keep product claims separate from examples and design recommendations.
-3. Use diagrams, SQL and tables only when they clarify a relationship, decision or procedure. Do not force every article into the same “definition / advantages / challenges / summary” template.
-4. Label invented teaching scenarios as teaching examples. A public customer story requires a traceable source; do not invent customer details, metrics or first-hand experience.
-5. Before finalizing, apply `skills/unslop/SKILL.md` to the Chinese prose. Preserve technical terminology, source attribution, figures, conditions, exceptions and uncertainty. The skill changes expression, not Snowflake semantics.
+For every new or substantially revised article:
+
+1. **Open with a recognizable problem.** Name the person or system affected, what they observed, and what decision they need to make. Avoid openings such as “本教程只对应知识点……” or generic platform introductions.
+2. **Carry one example through the explanation.** Use a small but complete data sample, SQL query, configuration, event sequence or architecture. Show the input, the operation and the resulting output. When explaining a bug, show the incorrect result before the correction.
+3. **Explain why the result happens.** Walk from the mechanism to the observable symptom. Do not replace the explanation with slogans such as “明确输入、状态变化和预期输出” or a list of abstract nouns.
+4. **Make engineering guidance executable.** State what to inspect, which query or command to run, what a healthy result looks like, what a failure looks like, and what to do next. If a step depends on a role, version, edition, permission or data assumption, say so.
+5. **Use counterexamples.** Explain at least one plausible wrong approach and the concrete way it fails. Avoid repeating the same generic paragraph under every concept or misconception.
+6. **End with useful questions.** Ask about the example, decision boundary, failure mode or verification result. Do not ask “如何在实际系统中验证本知识点” or merely restate a heading as a question.
+7. **Use diagrams and tables to carry information.** A diagram should show real components and relationships. A table should compare meaningful cases or data. Do not add a decorative diagram or a checklist just to satisfy a template.
+8. **Keep facts and teaching examples separate.** Label invented rows and scenarios as teaching data. Do not invent customer stories, performance numbers, product behavior or first-hand experience. Verify product claims against current Snowflake documentation and cite the relevant source next to the explanation.
+9. **Write like a technical author.** Prefer direct Chinese prose, specific nouns and verbs, and paragraphs that explain cause and consequence. Remove prompt instructions, self-description, generic disclaimers, repeated summaries, artificial transitions and phrases that talk about “this tutorial” rather than teach the subject.
+10. Before finalizing, apply `skills/unslop/SKILL.md` to the Chinese prose. Preserve technical terminology, source attribution, figures, conditions, exceptions and uncertainty. The skill changes expression, not Snowflake semantics.
+
+A useful review question is: could a reader reproduce the example, recognize the failure in their own system, and explain why the corrected design works? If not, the article is not ready even when every required heading is present.
 
 ## Source and schema requirements
 
