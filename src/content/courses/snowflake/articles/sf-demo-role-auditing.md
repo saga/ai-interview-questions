@@ -85,7 +85,8 @@ MFA 面向人类用户的认证保护。Snowflake 对密码登录的 MFA 要求�
 
 ~~~sql
 CREATE AUTHENTICATION POLICY require_mfa
-  AUTHENTICATION_METHODS = ('PASSWORD', 'SAML', 'OIDC')
+  CLIENT_TYPES = ('SNOWFLAKE_UI', 'SNOWFLAKE_CLI', 'SNOWSQL', 'DRIVERS')
+  AUTHENTICATION_METHODS = ('PASSWORD', 'SAML')
   SECURITY_INTEGRATIONS = ('CORP_SAML')
   MFA_ENROLLMENT = 'REQUIRED'
   MFA_POLICY = (
@@ -99,7 +100,7 @@ CREATE AUTHENTICATION POLICY require_mfa
 ALTER ACCOUNT SET AUTHENTICATION POLICY require_mfa;
 ~~~
 
-如果仅要求密码用户使用 MFA，而 SSO MFA 由企业 IdP 管理，策略设置就不同。服务用户也不应照搬人类用户的密码和 MFA 流程；应按服务身份场景使用适当的程序化认证方式。
+由于 MFA_ENROLLMENT 要求用户先在 Snowsight 注册，CLIENT_TYPES 必须包含 SNOWFLAKE_UI；示例同时允许 CLI、SnowSQL 和驱动客户端。实际允许的认证方式与 Security Integration 必须和账户配置一致。如果仅要求密码用户使用 MFA，而 SSO MFA 由企业 IdP 管理，策略设置就不同。服务用户也不应照搬人类用户的密码和 MFA 流程；应按服务身份场景使用适当的程序化认证方式。
 
 ## 工程实施步骤
 
