@@ -53,14 +53,22 @@
     "area": "data-platform",
     "topic": "data-architecture",
     "priority": "P0",
-    "summary": "区分平台短期恢复与长期业务历史保留。",
+    "summary": "设计可解释业务历史的事件、SCD2、周期快照与双时态模型，区分 Time Travel/Fail-safe/Clone 的短期恢复用途，并管理 Stream 保留、历史回补与对账。",
     "required": [
-      "多年审计需历史模型、留存策略和可追溯输入。",
-      "回补应定义键、有效时间、去重和对账。"
+      "按事件历史、状态属性、周期快照和双时态问题选择数据模型，定义一行粒度和业务键。",
+      "区分 EVENT_TIME、INGESTED_AT、VALID_TIME 和 RECORDED_TIME，能够还原业务有效状态及当时已知状态。",
+      "用 SCD Type 2 或双时态记录历史分类/政策修订，按半开有效区间查询并防止版本重叠。",
+      "说明 Time Travel 的 Edition/保留窗口、Fail-safe 和 Zero-copy Clone 的用途与限制，避免把它们当长期审计归档。",
+      "识别 Stream stale 风险，监控 STALE_AFTER，并将关键 CDC 变更持久化到独立历史模型。",
+      "为历史回补定义来源版本、批次范围、重复处理、下游重算和金额/行数对账。"
     ],
     "misconceptions": [
-      "把 Time Travel 当永久历史库。",
-      "将一次性回补当作可安全重复执行。"
+      "把 Time Travel 当永久历史库或把 Fail-safe 当成用户查询功能",
+      "认为 Zero-copy Clone 是独立长期备份",
+      "仅保存事件时间，忽略系统接收和修订时间",
+      "把 SCD2 等同于完整双时态审计",
+      "把 Stream 当作无限期 CDC 历史队列",
+      "通过覆盖历史记录完成回补而不保留修订轨迹"
     ],
     "angles": [
       "comparison",
