@@ -126,6 +126,8 @@ interface CopilotSidebarProps {
    */
   interviewContext?: ActiveInterviewContext | null;
   onInterviewContextConsumed?: () => void;
+  initialLearningPrompt?: { id: string; text: string } | null;
+  onLearningPromptConsumed?: () => void;
 }
 const CONVERSATION_CONTEXT_KEY = 'ai-interview-conversation-context-v1';
 function conversationContextStorageKey(trackId: LearningTrackId): string {
@@ -142,7 +144,7 @@ const role: BubbleListProps['role'] = {
   assistant: { placement: 'start', variant: 'borderless', style: { maxWidth: '94%', margin: '0 0 8px', boxShadow: 'none' }, classNames: { root: 'copilot-assistant-bubble', content: 'copilot-assistant-message' }, styles: { content: { boxShadow: 'none', padding: '10px 12px', maxWidth: '100%' } }, footer: (<Space size={0}><Button type="text" size="small" icon={<ReloadOutlined />} /><Button type="text" size="small" icon={<CopyOutlined />} /><Button type="text" size="small" icon={<LikeOutlined />} /><Button type="text" size="small" icon={<DislikeOutlined />} /></Space>) },
   user: { placement: 'end', style: { margin: '0 0 8px' }, styles: { content: { boxShadow: '0 1px 4px rgba(0,0,0,0.12)', borderRadius: 12 } } },
 };
-export default function CopilotSidebar({ open, onClose, config, profile, session, currentQuestion, onSessionComplete, agentInterview, interviewContext, onInterviewContextConsumed, trackId, bank, courseLabel }: CopilotSidebarProps) {
+export default function CopilotSidebar({ open, onClose, config, profile, session, currentQuestion, onSessionComplete, agentInterview, interviewContext, onInterviewContextConsumed, initialLearningPrompt, onLearningPromptConsumed, trackId, bank, courseLabel }: CopilotSidebarProps) {
   const persisted = loadConversationSession(trackId);
   const persistSession = (value: ConversationSession) => saveConversationSession(value, trackId);
   const clearTrackSession = () => clearConversationSession(trackId);
@@ -615,6 +617,17 @@ export default function CopilotSidebar({ open, onClose, config, profile, session
    * 用 ref 记录已消费的载荷（而非依赖 handleSend 的稳定性）：handleSend 每次渲染都是新函数，
    * 若把它放进依赖数组，effect 会每渲染重跑一次；靠 `consumedRef` 保证同一份载荷只触发一次。
    */
+  const consumedLearningPromptRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!open || !initialLearningPrompt) return;
+    if (consumedLearningPromptRef.current === initialLearningPrompt.id) return;
+    consumedLearningPromptRef.current = initialLearningPrompt.id;
+    onLearningPromptConsumed?.();
+    void handleSend(initialLearningPrompt.text, { asCopilot: true });
+    // handleSend is recreated each render; only consume each one-shot prompt once.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, initialLearningPrompt]);
+
   const consumedContextRef = useRef<ActiveInterviewContext | null>(null);
   useEffect(() => {
     if (!interviewContext) return;

@@ -52,6 +52,19 @@ export function markArticleCompleted(
   return updateProgress(trackId, nodeId, (current) => ({
     ...current,
     completedArticleIds: [...new Set([...current.completedArticleIds, articleId])],
+    completedNode: true,
     lastArticleId: articleId,
+  }));
+}
+
+
+/** Mark a structured KnowledgeNode summary as reviewed when no standalone article exists. */
+export function markNodeReviewed(
+  trackId: string,
+  nodeId: string,
+): Promise<StoredStudyProgress | null> {
+  return updateProgress(trackId, nodeId, (current) => ({
+    ...current,
+    completedNode: true,
   }));
 }

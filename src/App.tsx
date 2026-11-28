@@ -99,6 +99,7 @@ export default function App() {
    * 消费后立即清空，避免下一次无关提问误用上一次的评分。
    */
   const [askCopilotCtx, setAskCopilotCtx] = useState<ActiveInterviewContext | null>(null);
+  const [initialLearningPrompt, setInitialLearningPrompt] = useState<{ id: string; text: string } | null>(null);
   // 窄屏下的结构决策（标题文案、按钮只留图标、header 放开固定高度）由 JS 判定；
   // 纯数值型样式（内边距）交给 index.css 的 .app-header / .app-content。
   const isMobile = useIsMobile();
@@ -257,16 +258,17 @@ export default function App() {
     const trackBank = questionBankForTrack(bank, runtimeTrackId, knowledgeNodes);
     switch (page) {
       case 'learn':
-        return <LearningTrackSelector onSelect={(id) => navigate(id === 'snowflake' ? '/study?track=snowflake' : '/train?track=' + id)} />;
+        return <LearningTrackSelector onSelect={(id) => navigate('/study?track=' + id)} />;
       case 'study':
         return (
           <StudyPage
+            trackId={runtimeTrackId}
             nodes={trackNodes}
             questions={trackBank.questions}
             onGoTrain={(nodeId) => {
               const node = trackNodes.find((item) => item.id === nodeId);
               startSession({
-                title: 'Snowflake · ' + (node?.name ?? nodeId) + ' 专项训练',
+                title: getLearningTrack(runtimeTrackId).shortTitle + ' · ' + (node?.name ?? nodeId) + ' 专项训练',
                 topic: nodeId,
                 categories: [],
                 difficulties: [],
@@ -276,6 +278,23 @@ export default function App() {
                 scoringRubric: { correctness: 0.4, completeness: 0.2, architecture: 0.2, communication: 0.2 },
                 mode: 'course',
               });
+            }}
+            onAskTutor={(node, articleContent) => {
+              const article = articleContent?.trim()
+                ? '\n\n当前节点教程：\n' + articleContent
+                : '';
+              const text = [
+                '请作为本课程的老师，围绕指定知识点进行一次针对性教学。',
+                '课程：' + getLearningTrack(runtimeTrackId).title,
+                'KnowledgeNode：' + node.id + ' · ' + node.name,
+                '知识摘要：' + node.summary,
+                '需要掌握：\n' + node.required.map((item) => '- ' + item).join('\n'),
+                '常见误区：\n' + node.misconceptions.map((item) => '- ' + item).join('\n'),
+                article,
+                '教学要求：解释机制和边界，给一个具体例子，说明常见误区为什么错；然后提出一道开放问题让我独立回答。不要提前给出自测题答案。优先依据当前课程材料，事实不确定时明确说明。',
+              ].join('\n\n');
+              setInitialLearningPrompt({ id: node.id + ':' + Date.now(), text });
+              setCopilotOpen(true);
             }}
           />
         );
@@ -355,7 +374,6 @@ export default function App() {
   if (location.pathname === '/' || location.pathname === '') return <Navigate to="/learn" replace />;
   if (page !== 'learn' && !selectedTrackId) return <Navigate to="/learn" replace />;
   if ((page === 'interview' || page === 'agent') && runtimeTrackId !== 'ai') return <Navigate to={`/train?track=${runtimeTrackId}`} replace />;
-  if (page === 'study' && runtimeTrackId !== 'snowflake') return <Navigate to={'/train?track=' + runtimeTrackId} replace />;
 
   return (
     <Layout className="app-layout">
@@ -416,7 +434,7 @@ export default function App() {
         mode="horizontal"
         selectedKeys={[page]}
         items={NAV_ITEMS
-          .filter((it) => selectedTrackId ? ((runtimeTrackId === 'ai' || (it.key !== 'interview' && it.key !== 'agent')) && (it.key !== 'study' || runtimeTrackId === 'snowflake')) : it.key === 'learn')
+          .filter((it) => selectedTrackId ? ((runtimeTrackId === 'ai' || (it.key !== 'interview' && it.key !== 'agent'))) : it.key === 'learn')
           .map((it) => ({ ...it, disabled: isTrainingSessionRunning(phase) && it.key !== 'train' }))}
         onClick={(e) => goPage(e.key as Page)}
         style={{ justifyContent: 'center', borderBottom: '1px solid #f0f0f0' }}
@@ -457,6 +475,8 @@ export default function App() {
           agentInterview={agent}
           interviewContext={runtimeTrackId === 'ai' ? askCopilotCtx : null}
           onInterviewContextConsumed={() => setAskCopilotCtx(null)}
+          initialLearningPrompt={initialLearningPrompt}
+          onLearningPromptConsumed={() => setInitialLearningPrompt(null)}
         />}
       </div>
 

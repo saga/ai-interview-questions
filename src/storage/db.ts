@@ -95,6 +95,8 @@ export interface StoredStudyProgress {
   trackId: string;
   nodeId: string;
   completedArticleIds: string[];
+  /** Explicitly reviewed the structured KnowledgeNode summary when no Markdown tutorial exists. */
+  completedNode?: boolean;
   lastArticleId?: string;
   updatedAt: number;
 }
