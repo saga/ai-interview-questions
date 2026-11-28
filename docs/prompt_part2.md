@@ -93,6 +93,8 @@ Part 2 负责：
 "questionRole": "canonical | variant",
 "variantOf": null,
 "category": "...",
+"courseId": "...",
+"knowledgeId": "...",
 "topic": "...",
 "blueprintKnowledgeId": "...",
 "concepts": [
@@ -152,6 +154,7 @@ Part 2 负责：
 
 注意：
 
+* 上述 `courseId` / `knowledgeId` 仅在 Blueprint 明确为课程题时输出；非课程题省略这两个字段；
 * `blueprintKnowledgeId` 是 Blueprint 对账字段，不是 Question Schema 字段；
 * 若 Blueprint 是课程题，必须将 Blueprint 顶层的 `courseId`、`knowledgeId` 原样写入最终 Question 的同名字段；
 * 若不是课程题且 Blueprint 未提供这两个字段，则省略，不要自行创造；
