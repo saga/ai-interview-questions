@@ -29,6 +29,7 @@ import SettingsPanel from './components/settings/SettingsPanel';
 import TrainingHome from './components/home/TrainingHome';
 import ProgressPage from './components/progress/ProgressPage';
 import LearningMapPage from './components/learning-map/LearningMapPage';
+import StudyPage from './components/study/StudyPage';
 import InterviewPage from './components/interview/InterviewPage';
 import AgentInterviewPage from './components/agent/AgentInterviewPage';
 import QuestionCard from './components/quiz/QuestionCard';
@@ -41,7 +42,7 @@ import { devUsageLogger } from './ai/usageTelemetry';
 import { useIsMobile } from './hooks/useIsMobile';
 import { type Page, attemptNavigate, isTrainingSessionRunning } from './navigationGuard';
 
-const VALID_PAGES: Page[] = ['learn', 'train', 'progress', 'map', 'interview', 'settings', 'agent'];
+const VALID_PAGES: Page[] = ['learn', 'study', 'train', 'progress', 'map', 'interview', 'settings', 'agent'];
 /** 由 URL pathname 派生当前页面；未知路径回退训练首页。 */
 function pageFromPath(pathname: string): Page {
   const seg = pathname.split('/').filter(Boolean)[0] ?? '';
@@ -50,6 +51,7 @@ function pageFromPath(pathname: string): Page {
 
 const NAV_ITEMS = [
   { key: 'learn', icon: <BookOutlined />, label: '学习体系' },
+  { key: 'study', icon: <BookOutlined />, label: '学习' },
   { key: 'train', icon: <ThunderboltOutlined />, label: '课程训练' },
   { key: 'progress', icon: <BarChartOutlined />, label: '进度' },
   { key: 'map', icon: <ApartmentOutlined />, label: '学习地图' },
@@ -255,7 +257,28 @@ export default function App() {
     const trackBank = questionBankForTrack(bank, runtimeTrackId, knowledgeNodes);
     switch (page) {
       case 'learn':
-        return <LearningTrackSelector onSelect={(id) => navigate(`/train?track=${id}`)} />;
+        return <LearningTrackSelector onSelect={(id) => navigate(id === 'snowflake' ? '/study?track=snowflake' : '/train?track=' + id)} />;
+      case 'study':
+        return (
+          <StudyPage
+            nodes={trackNodes}
+            questions={trackBank.questions}
+            onGoTrain={(nodeId) => {
+              const node = trackNodes.find((item) => item.id === nodeId);
+              startSession({
+                title: 'Snowflake · ' + (node?.name ?? nodeId) + ' 专项训练',
+                topic: nodeId,
+                categories: [],
+                difficulties: [],
+                formats: ['choice', 'open'],
+                count: 10,
+                useAI: configReady,
+                scoringRubric: { correctness: 0.4, completeness: 0.2, architecture: 0.2, communication: 0.2 },
+                mode: 'course',
+              });
+            }}
+          />
+        );
       case 'train':
         return (
           <TrainingHome
@@ -332,6 +355,7 @@ export default function App() {
   if (location.pathname === '/' || location.pathname === '') return <Navigate to="/learn" replace />;
   if (page !== 'learn' && !selectedTrackId) return <Navigate to="/learn" replace />;
   if ((page === 'interview' || page === 'agent') && runtimeTrackId !== 'ai') return <Navigate to={`/train?track=${runtimeTrackId}`} replace />;
+  if (page === 'study' && runtimeTrackId !== 'snowflake') return <Navigate to={'/train?track=' + runtimeTrackId} replace />;
 
   return (
     <Layout className="app-layout">
@@ -392,7 +416,7 @@ export default function App() {
         mode="horizontal"
         selectedKeys={[page]}
         items={NAV_ITEMS
-          .filter((it) => selectedTrackId ? (runtimeTrackId === 'ai' || (it.key !== 'interview' && it.key !== 'agent')) : it.key === 'learn')
+          .filter((it) => selectedTrackId ? ((runtimeTrackId === 'ai' || (it.key !== 'interview' && it.key !== 'agent')) && (it.key !== 'study' || runtimeTrackId === 'snowflake')) : it.key === 'learn')
           .map((it) => ({ ...it, disabled: isTrainingSessionRunning(phase) && it.key !== 'train' }))}
         onClick={(e) => goPage(e.key as Page)}
         style={{ justifyContent: 'center', borderBottom: '1px solid #f0f0f0' }}
