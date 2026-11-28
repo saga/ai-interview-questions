@@ -1,61 +1,88 @@
-# PostgreSQL 内存配置、I/O 与并行查询
+# PostgreSQL 内存、I/O 与并行查询调优
 
-## 本节要解决的问题
+## 为什么把 work_mem 调到 1GB 后连接反而不稳定
 
-理解 shared_buffers、effective_cache_size、work_mem、检查点、I/O 和并行 worker 的不同作用，按实测负载而非固定比例调参。
+一个报表任务频繁出现 Sort Method: external merge，运维人员据此把 work_mem 从 16MB 调到 1GB。单条 SQL 的临时文件减少了，但高峰期数据库进程被操作系统终止，应用连接大量断开。
 
-PostgreSQL 数据库工程。依据 PostgreSQL 自身的事务、MVCC、WAL、索引、优化器和后台维护语义分析问题，不将 Snowflake 机制套用到 PostgreSQL。
+work_mem 不是每个连接只分配一次的固定内存。一次查询可能包含多个排序或 Hash 节点，Parallel Worker 也可能各自使用相关内存；数百个会话并发时，潜在占用会相乘。调参应按并发峰值估算，而不是只看一条执行计划。
 
-本教程只对应知识点 `postgresql-memory-parallelism`。目标是理解其机制、适用边界和验证方法，不把相邻知识点合并成一个大章。
+## 先分清四个内存参数
 
-## 核心知识
+shared_buffers 是 PostgreSQL 自己的缓冲池。操作系统文件缓存也可能保留同一数据，因此不能把 shared_buffers 之外的内存简单视为浪费。初始值需要结合物理内存、容器限制、云数据库规格和工作集测试，不能机械照搬某个百分比。
 
-### 区分实际分配内存的参数与仅影响规划器估计的参数
+effective_cache_size 只是规划器估算有多少数据可能命中 PostgreSQL 缓冲池或操作系统缓存，不会预留内存，也不会分配物理页面。把它调高不会增加系统可用内存，只会改变规划器对缓存命中的估计。
 
-参数调整前区分实际内存分配与规划器估算值，并估算并发会话、多个执行算子和并行 Worker 的乘数效应。
+work_mem 是每个执行操作可使用的工作内存上限。Sort、Hash Join 和 Hash Aggregate 可能使用它；Hash 操作还受 hash_mem_multiplier 影响。看到磁盘排序时，先确认节点数量、并发会话和临时文件，再考虑在单个报表事务里 SET LOCAL，而不是直接全局放大。
 
-### 估算 work_mem 在多个算子、会话和并行 worker 下的潜在总消耗
+maintenance_work_mem 主要用于 CREATE INDEX、VACUUM 等维护操作。预算时还要考虑并发维护任务和并行 worker，不能把它与普通 SELECT 的 work_mem 混为一谈。
 
-参数调整前区分实际内存分配与规划器估算值，并估算并发会话、多个执行算子和并行 Worker 的乘数效应。
+## 并行查询不是免费的 CPU
 
-### 使用基线和监控验证内存、I/O、并行查询与检查点变化的结果
+并行查询把支持的计划节点分配给 worker，再由 leader 汇总。是否采用并行计划取决于查询形状、表规模、成本参数和可用 worker。小查询的 worker 启动成本可能超过收益；某些计划节点也无法并行执行。
 
-日志解释发生了什么，指标观察趋势，Trace 关联跨步骤执行，告警触发响应。要把这些信号与数据新鲜度、质量、批次对账和责任人连接起来。
+max_parallel_workers_per_gather 限制一个 Gather/Gather Merge 节点的 worker 数；max_parallel_workers 限制整个实例的并行 worker 池。把前者调大，却不检查 max_worker_processes 和实际 CPU 配额，只会让更多查询竞争有限的 CPU。
 
-## 工程实施步骤
+## 先读配置来源和重启状态
 
-1. 复现问题并记录版本、当前数据库、Role、SQL、参数和时间范围。
-2. 结合 EXPLAIN、pg_stat_*、锁视图和日志定位执行、I/O、连接或事务瓶颈。
-3. 在受控窗口验证变更，比较结果正确性、锁影响、资源占用和恢复方式。
+~~~sql
+SELECT name, setting, unit, source, pending_restart
+FROM pg_settings
+WHERE name IN (
+  'shared_buffers', 'effective_cache_size', 'work_mem',
+  'hash_mem_multiplier', 'maintenance_work_mem',
+  'max_parallel_workers', 'max_parallel_workers_per_gather',
+  'max_worker_processes', 'max_wal_size',
+  'checkpoint_timeout', 'checkpoint_completion_target'
+)
+ORDER BY name;
+~~~
 
-## 场景分析
+再结合 pg_stat_activity、pg_stat_io、临时文件统计和操作系统指标观察实际负载。若查询有大量磁盘排序，定位具体 Sort/Hash 节点；若写入高峰伴随 checkpoint I/O，则检查 WAL 生成速率与检查点压力，不要把所有磁盘读写都归因于 shared_buffers。
 
-订单服务出现查询变慢、连接数上升或事务阻塞。请使用 PostgreSQL 执行计划、统计视图和事务信息定位问题，不要先通过加资源或终止会话掩盖根因。
+## 检查点和查询 Spill 是两种不同问题
 
-将场景转换为明确输入、状态变化和预期输出。逐项检查本节核心要求，区分配置事实、运行证据和待验证假设。缺少权限、版本、数据样本或官方行为证据时，明确记录未知项，不用猜测补齐。
+max_wal_size 与 checkpoint_timeout 影响检查点触发，checkpoint_completion_target 控制检查点工作在时间窗口内的分布。检查点过于频繁会造成写入抖动；盲目把 max_wal_size 提得很大，又会增加崩溃恢复时需要处理的 WAL。
 
-## 常见误区
+调优前记录检查点统计、WAL 生成和存储延迟。云数据库还要区分底层 IOPS/吞吐限制和 PostgreSQL 自身缓冲行为。一次只改一组参数，比较吞吐、p95 延迟、内存峰值、临时文件和恢复时间。
 
-- **误区：** 认为 work_mem 是每个数据库或实例唯一分配的一块固定内存
-  **纠正：** 参数调整前区分实际内存分配与规划器估算值，并估算并发会话、多个执行算子和并行 Worker 的乘数效应。
-- **误区：** 把 effective_cache_size 当成会直接分配内存的参数
-  **纠正：** 先用执行计划和运行证据识别扫描、过滤、缓存、Join 或排队瓶颈，再考虑聚类、索引、加速服务或重写。优化要对比延迟、扫描量和费用。
-- **误区：** 将单一机器的内存比例经验值当作所有工作负载的硬规则
-  **纠正：** 参数调整前区分实际内存分配与规划器估算值，并估算并发会话、多个执行算子和并行 Worker 的乘数效应。
+## 用局部配置验证，不要一次改全局
 
-## 完成标准
+对已定位的报表，可以先在专用连接或事务中做受控测试：
 
-- [ ] 能说明：区分实际分配内存的参数与仅影响规划器估计的参数
-- [ ] 能说明：估算 work_mem 在多个算子、会话和并行 worker 下的潜在总消耗
-- [ ] 能说明：使用基线和监控验证内存、I/O、并行查询与检查点变化的结果
-- [ ] 能指出本知识点的适用前提和不适用场景。
-- [ ] 能提供至少一项运行、数据或配置证据支持判断。
-- [ ] 能描述失败后的恢复、回滚或人工升级路径。
+~~~sql
+BEGIN;
+SET LOCAL work_mem = '128MB';
+
+EXPLAIN (ANALYZE, BUFFERS, SETTINGS)
+SELECT customer_id, sum(amount)
+FROM sales.orders
+WHERE created_at >= TIMESTAMPTZ '2026-11-01 00:00:00+00'
+GROUP BY customer_id;
+
+ROLLBACK;
+~~~
+
+数值只是实验起点，不能直接复制到全局配置。比较计划、临时块和内存峰值后，再决定是否需要角色级参数、专用连接或并发调度调整。
+
+## 调参时容易忽略的限制
+
+- work_mem 会被多个执行节点和并行 worker 放大。
+- effective_cache_size 不分配物理内存。
+- shared_buffers 要结合操作系统缓存和部署内存上限。
+- 并行 worker 增多不保证单条 SQL 更快，也可能挤占其他查询 CPU。
+- 检查点压力、查询 Spill 和存储瓶颈需要不同证据。
+- 单条查询压测得到的参数，不等于高并发生产参数。
 
 ## 自测
 
-1. 如何在实际系统中验证“区分实际分配内存的参数与仅影响规划器估计的参数”？
-2. 当“估算 work_mem 在多个算子、会话和并行 worker 下的潜在总消耗”不成立时，最可能需要检查哪些边界和证据？
-3. 为什么不能采用“认为 work_mem 是每个数据库或实例唯一分配的一块固定内存”这一做法？
+1. 一条查询有三个 Hash/Sort 节点，Gather 下又启动四个 worker。为什么把 work_mem 提高到 512MB 可能带来很高的潜在内存压力？
+2. effective_cache_size 从 8GB 调到 32GB 后，系统可用内存没有减少。原因是什么？
+3. 并行查询没有启动 worker，应该检查哪些全局和每查询限制？
+4. WAL 写入和 checkpoint I/O 变高，为什么不应直接归因于 shared_buffers 太小？
 
-回答时需要给出判断依据和验证方法，而不只是复述定义。
+## 参考资料
+
+- [PostgreSQL 18 resource consumption](https://www.postgresql.org/docs/18/runtime-config-resource.html)
+- [PostgreSQL 18 query planning](https://www.postgresql.org/docs/18/runtime-config-query.html)
+- [PostgreSQL 18 parallel query](https://www.postgresql.org/docs/18/parallel-query.html)
+- [PostgreSQL 18 monitoring statistics](https://www.postgresql.org/docs/18/monitoring-stats.html)

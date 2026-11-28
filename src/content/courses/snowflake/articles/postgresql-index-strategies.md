@@ -1,61 +1,96 @@
-# PostgreSQL 索引类型与设计策略
+# PostgreSQL 索引设计：先匹配查询，再计算维护成本
 
-## 本节要解决的问题
+## 为什么增加三个索引，查询却没有更快
 
-结合查询谓词、排序、选择性和维护成本选择 B-tree、GIN、GiST、BRIN、复合、部分、表达式与覆盖索引。
+订单表有几亿行，团队新增了 customer_id、created_at 和 status 三个索引。API 查询仍然扫描大量数据，写入吞吐却下降。
 
-PostgreSQL 数据库工程。依据 PostgreSQL 自身的事务、MVCC、WAL、索引、优化器和后台维护语义分析问题，不将 Snowflake 机制套用到 PostgreSQL。
+索引能减少定位候选行的成本，但每次 INSERT、UPDATE 和 VACUUM 都可能要维护它。低选择性索引也未必比顺序扫描便宜。设计应从真实谓词、排序方式和数据分布出发，而不是按字段逐个建 B-tree。
 
-本教程只对应知识点 `postgresql-index-strategies`。目标是理解其机制、适用边界和验证方法，不把相邻知识点合并成一个大章。
+## 索引类型要匹配查询操作符
 
-## 核心知识
+| 类型 | 典型用途 | 需要留意 |
+| --- | --- | --- |
+| B-tree | 相等、范围、排序和前缀匹配 | 不适合任意子串搜索 |
+| GIN | JSONB、数组、全文搜索的包含或成员查询 | 体积和更新成本可能较高 |
+| GiST | 范围、几何与可扩展相似/空间搜索 | 能力取决于 operator class |
+| BRIN | 数据与物理存储顺序高度相关的大表 | 返回候选块范围，不逐行定位 |
+| Hash | 相等比较的特定场景 | 通常先考虑功能更广的 B-tree |
 
-### 区分 B-tree、GIN、GiST、BRIN 等索引的常见适用场景
+日志按写入时间大致有序时，BRIN 可能用较小索引排除大量数据块；若写入顺序与时间无关，BRIN 范围会覆盖很多无关块，收益随之下降。
 
-先用执行计划和运行证据识别扫描、过滤、缓存、Join 或排队瓶颈，再考虑聚类、索引、加速服务或重写。优化要对比延迟、扫描量和费用。
+## 复合索引同时考虑过滤和排序
 
-### 理解复合索引列顺序、部分索引谓词、表达式索引与 INCLUDE
+常见查询是按租户查最近订单：
 
-先用执行计划和运行证据识别扫描、过滤、缓存、Join 或排队瓶颈，再考虑聚类、索引、加速服务或重写。优化要对比延迟、扫描量和费用。
+~~~sql
+SELECT order_id, created_at, amount
+FROM sales.orders
+WHERE tenant_id = 42
+  AND status = 'PAID'
+ORDER BY created_at DESC
+LIMIT 50;
+~~~
 
-### 使用 EXPLAIN/统计信息验证索引是否被选用并衡量写入、存储与维护成本
+一个候选索引是：
 
-先用执行计划和运行证据识别扫描、过滤、缓存、Join 或排队瓶颈，再考虑聚类、索引、加速服务或重写。优化要对比延迟、扫描量和费用。
+~~~sql
+CREATE INDEX orders_tenant_status_created_idx
+ON sales.orders (tenant_id, status, created_at DESC)
+INCLUDE (order_id, amount);
+~~~
 
-## 工程实施步骤
+等值过滤列放在前面，再根据排序设计后续列，可以让 B-tree 有机会同时支持过滤和 ORDER BY。不能将它简化成“选择性最高的列永远放第一位”；还要考虑其他查询是否只过滤 tenant_id，以及实际计划。
 
-1. 复现问题并记录版本、当前数据库、Role、SQL、参数和时间范围。
-2. 结合 EXPLAIN、pg_stat_*、锁视图和日志定位执行、I/O、连接或事务瓶颈。
-3. 在受控窗口验证变更，比较结果正确性、锁影响、资源占用和恢复方式。
+INCLUDE 将返回列放入索引叶子页，有机会支持 Index Only Scan，却不保证完全不访问 heap。可见性映射、表更新频率、返回字段及索引类型都会影响结果。
 
-## 场景分析
+## 部分索引与表达式索引
 
-订单服务出现查询变慢、连接数上升或事务阻塞。请使用 PostgreSQL 执行计划、统计视图和事务信息定位问题，不要先通过加资源或终止会话掩盖根因。
+若应用只频繁查询少量未完成订单，可以评估部分索引：
 
-将场景转换为明确输入、状态变化和预期输出。逐项检查本节核心要求，区分配置事实、运行证据和待验证假设。缺少权限、版本、数据样本或官方行为证据时，明确记录未知项，不用猜测补齐。
+~~~sql
+CREATE INDEX orders_open_tenant_created_idx
+ON sales.orders (tenant_id, created_at DESC)
+WHERE status IN ('NEW', 'PROCESSING');
+~~~
 
-## 常见误区
+查询谓词必须能让规划器证明它满足部分索引条件。参数化查询或不同写法不一定能匹配，因此要用应用真实 SQL 检查计划。
 
-- **误区：** 认为每个 WHERE 条件都应该建独立索引
-  **纠正：** 先用执行计划和运行证据识别扫描、过滤、缓存、Join 或排队瓶颈，再考虑聚类、索引、加速服务或重写。优化要对比延迟、扫描量和费用。
-- **误区：** 认为索引创建成功意味着规划器一定使用它
-  **纠正：** 先用执行计划和运行证据识别扫描、过滤、缓存、Join 或排队瓶颈，再考虑聚类、索引、加速服务或重写。优化要对比延迟、扫描量和费用。
-- **误区：** 忽略低选择性、写入开销、膨胀和统计信息对索引效果的影响
-  **纠正：** 先用执行计划和运行证据识别扫描、过滤、缓存、Join 或排队瓶颈，再考虑聚类、索引、加速服务或重写。优化要对比延迟、扫描量和费用。
+若查询常用 LOWER(email)，可建立表达式索引：
 
-## 完成标准
+~~~sql
+CREATE INDEX customers_email_lower_idx
+ON sales.customers (lower(email));
+~~~
 
-- [ ] 能说明：区分 B-tree、GIN、GiST、BRIN 等索引的常见适用场景
-- [ ] 能说明：理解复合索引列顺序、部分索引谓词、表达式索引与 INCLUDE
-- [ ] 能说明：使用 EXPLAIN/统计信息验证索引是否被选用并衡量写入、存储与维护成本
-- [ ] 能指出本知识点的适用前提和不适用场景。
-- [ ] 能提供至少一项运行、数据或配置证据支持判断。
-- [ ] 能描述失败后的恢复、回滚或人工升级路径。
+查询需要使用匹配表达式；索引表达式还受函数不可变性约束，不能对任意随环境变化的表达式建索引。
+
+## 在线建索引也有失败路径
+
+普通 CREATE INDEX 可能阻塞并发写入。CREATE INDEX CONCURRENTLY 会降低写入阻塞，但执行多个阶段、等待旧事务，通常更耗时。它不能放在显式事务块中；失败后可能留下 INVALID 索引，需要检查并清理。
+
+创建成功后用 EXPLAIN (ANALYZE, BUFFERS) 验证，再观察 pg_stat_user_indexes 的扫描计数、索引大小和写入成本。不要因为 DDL 成功就认定查询已经获得收益。
+
+## 索引维护成本和限制
+
+索引占用存储、增加 WAL 和写放大，也影响 VACUUM 与备份。更新频繁的表上，宽复合索引尤其昂贵。应定期检查长期无扫描的索引，但也要考虑主键/唯一约束、低频报表和故障恢复查询，不能只凭 idx_scan = 0 就删除。
+
+- 复合索引顺序要结合 WHERE、ORDER BY 和查询组合。
+- INCLUDE 不保证 Index Only Scan，也增加维护成本。
+- 部分索引谓词要匹配真实查询条件。
+- BRIN 依赖物理相关性，写入顺序变化会影响收益。
+- CONCURRENTLY 失败后要检查是否留下 INVALID 索引。
 
 ## 自测
 
-1. 如何在实际系统中验证“区分 B-tree、GIN、GiST、BRIN 等索引的常见适用场景”？
-2. 当“理解复合索引列顺序、部分索引谓词、表达式索引与 INCLUDE”不成立时，最可能需要检查哪些边界和证据？
-3. 为什么不能采用“认为每个 WHERE 条件都应该建独立索引”这一做法？
+1. 查询按 tenant_id 与 status 等值过滤，再按 created_at 倒序。为什么复合索引值得先于三个独立索引进行测试？
+2. INCLUDE 后计划仍访问 Heap，还需要检查什么？
+3. 部分索引只覆盖 OPEN 状态，为什么预编译参数查询不一定能使用它？
+4. CREATE INDEX CONCURRENTLY 失败后，为什么不能直接忽略留下的索引对象？
 
-回答时需要给出判断依据和验证方法，而不只是复述定义。
+## 参考资料
+
+- [PostgreSQL 18 indexes](https://www.postgresql.org/docs/18/indexes.html)
+- [PostgreSQL 18 multicolumn indexes](https://www.postgresql.org/docs/18/indexes-multicolumn.html)
+- [PostgreSQL 18 partial indexes](https://www.postgresql.org/docs/18/indexes-partial.html)
+- [PostgreSQL 18 indexes on expressions](https://www.postgresql.org/docs/18/indexes-expressional.html)
+- [PostgreSQL 18 index-only scans](https://www.postgresql.org/docs/18/indexes-index-only-scans.html)

@@ -3204,22 +3204,22 @@
       "summary": "根据数据生命周期、查询谓词和维护需求设计范围/列表/哈希分区，理解分区裁剪、分区键约束与维护成本。",
       "references": [
         {
-          "id": "postgresql-partitioning-ref-1",
+          "id": "postgresql-partitioning-verified-1",
           "type": "official",
-          "title": "Table Partitioning",
-          "url": "https://www.postgresql.org/docs/current/ddl-partitioning.html",
+          "title": "Table partitioning",
+          "url": "https://www.postgresql.org/docs/18/ddl-partitioning.html",
           "publisher": "PostgreSQL Documentation",
-          "relevance": "核对“PostgreSQL 分区表与生命周期管理”涉及的数据库机制和运行行为。",
-          "verifiedAt": "待核验"
+          "relevance": "核对 RANGE/LIST/HASH 分区、分区裁剪、默认分区、DETACH PARTITION 和唯一约束限制。",
+          "verifiedAt": "2026-11-28"
         },
         {
-          "id": "postgresql-partitioning-ref-2",
+          "id": "postgresql-partitioning-verified-2",
           "type": "official",
-          "title": "Data Definition",
-          "url": "https://www.postgresql.org/docs/current/ddl.html",
+          "title": "Data definition and constraints",
+          "url": "https://www.postgresql.org/docs/18/ddl.html",
           "publisher": "PostgreSQL Documentation",
-          "relevance": "核对“PostgreSQL 分区表与生命周期管理”涉及的数据库机制和运行行为。",
-          "verifiedAt": "待核验"
+          "relevance": "核对分区父表、子表及约束的 DDL 行为。",
+          "verifiedAt": "2026-11-28"
         }
       ]
     },
@@ -3237,22 +3237,40 @@
       "summary": "使用 pg_catalog、information_schema、pg_stat_*、日志和扩展指标观察对象、查询、锁、I/O 与数据库健康状况。",
       "references": [
         {
-          "id": "postgresql-catalogs-logging-monitoring-ref-1",
+          "id": "postgresql-catalogs-logging-monitoring-verified-1",
           "type": "official",
-          "title": "Concurrency control",
-          "url": "https://www.postgresql.org/docs/current/mvcc.html",
+          "title": "Monitoring statistics",
+          "url": "https://www.postgresql.org/docs/18/monitoring-stats.html",
           "publisher": "PostgreSQL Documentation",
-          "relevance": "核对“PostgreSQL 系统目录、日志与监控”涉及的数据库机制和运行行为。",
-          "verifiedAt": "待核验"
+          "relevance": "核对 pg_stat_activity、wait events、pg_stat_*、pg_stat_io 和统计重置行为。",
+          "verifiedAt": "2026-11-28"
         },
         {
-          "id": "postgresql-catalogs-logging-monitoring-ref-2",
+          "id": "postgresql-catalogs-logging-monitoring-verified-2",
           "type": "official",
-          "title": "Transaction isolation",
-          "url": "https://www.postgresql.org/docs/current/transaction-iso.html",
+          "title": "Logging configuration",
+          "url": "https://www.postgresql.org/docs/18/runtime-config-logging.html",
           "publisher": "PostgreSQL Documentation",
-          "relevance": "核对“PostgreSQL 系统目录、日志与监控”涉及的数据库机制和运行行为。",
-          "verifiedAt": "待核验"
+          "relevance": "核对慢语句日志阈值、日志前缀和日志收集配置。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "postgresql-catalogs-logging-monitoring-verified-3",
+          "type": "official",
+          "title": "pg_stat_statements",
+          "url": "https://www.postgresql.org/docs/18/pgstatstatements.html",
+          "publisher": "PostgreSQL Documentation",
+          "relevance": "核对 shared_preload_libraries、扩展启用条件和查询聚合统计字段。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "postgresql-catalogs-logging-monitoring-verified-4",
+          "type": "official",
+          "title": "System catalogs",
+          "url": "https://www.postgresql.org/docs/18/catalogs.html",
+          "publisher": "PostgreSQL Documentation",
+          "relevance": "核对 pg_catalog 对象元数据查询范围及其与 Information Schema 的区别。",
+          "verifiedAt": "2026-11-28"
         }
       ]
     },
@@ -3270,22 +3288,40 @@
       "summary": "理解 shared_buffers、effective_cache_size、work_mem、检查点、I/O 和并行 worker 的不同作用，按实测负载而非固定比例调参。",
       "references": [
         {
-          "id": "postgresql-memory-parallelism-ref-1",
+          "id": "postgresql-memory-parallelism-verified-1",
           "type": "official",
-          "title": "PostgreSQL Documentation",
-          "url": "https://www.postgresql.org/docs/current/index.html",
+          "title": "Resource consumption",
+          "url": "https://www.postgresql.org/docs/18/runtime-config-resource.html",
           "publisher": "PostgreSQL Documentation",
-          "relevance": "核对“PostgreSQL 内存配置、I/O 与并行查询”涉及的数据库机制和运行行为。",
-          "verifiedAt": "待核验"
+          "relevance": "核对 shared_buffers、work_mem、hash_mem_multiplier、maintenance_work_mem 和 worker 资源参数。",
+          "verifiedAt": "2026-11-28"
         },
         {
-          "id": "postgresql-memory-parallelism-ref-2",
+          "id": "postgresql-memory-parallelism-verified-2",
           "type": "official",
-          "title": "Monitoring Database Activity",
-          "url": "https://www.postgresql.org/docs/current/monitoring.html",
+          "title": "Query planning configuration",
+          "url": "https://www.postgresql.org/docs/18/runtime-config-query.html",
           "publisher": "PostgreSQL Documentation",
-          "relevance": "核对“PostgreSQL 内存配置、I/O 与并行查询”涉及的数据库机制和运行行为。",
-          "verifiedAt": "待核验"
+          "relevance": "核对 effective_cache_size 和规划器成本参数；估算值不等于实际内存分配。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "postgresql-memory-parallelism-verified-3",
+          "type": "official",
+          "title": "Parallel query",
+          "url": "https://www.postgresql.org/docs/18/parallel-query.html",
+          "publisher": "PostgreSQL Documentation",
+          "relevance": "核对 Gather/Gather Merge、worker 限制和并行计划边界。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "postgresql-memory-parallelism-verified-4",
+          "type": "official",
+          "title": "Monitoring statistics",
+          "url": "https://www.postgresql.org/docs/18/monitoring-stats.html",
+          "publisher": "PostgreSQL Documentation",
+          "relevance": "核对 pg_stat_io、检查点和运行统计的观测方式。",
+          "verifiedAt": "2026-11-28"
         }
       ]
     },
@@ -3303,22 +3339,40 @@
       "summary": "阅读计划节点、估算与实际行数、循环次数、缓冲区访问和 I/O，定位估算偏差、扫描及 JOIN 算法问题。",
       "references": [
         {
-          "id": "postgresql-explain-plans-statistics-ref-1",
-          "type": "official",
-          "title": "Indexes",
-          "url": "https://www.postgresql.org/docs/current/indexes.html",
-          "publisher": "PostgreSQL Documentation",
-          "relevance": "核对“PostgreSQL EXPLAIN、统计信息与计划诊断”涉及的数据库机制和运行行为。",
-          "verifiedAt": "待核验"
-        },
-        {
-          "id": "postgresql-explain-plans-statistics-ref-2",
+          "id": "postgresql-explain-plans-statistics-verified-1",
           "type": "official",
           "title": "Using EXPLAIN",
-          "url": "https://www.postgresql.org/docs/current/using-explain.html",
+          "url": "https://www.postgresql.org/docs/18/using-explain.html",
           "publisher": "PostgreSQL Documentation",
-          "relevance": "核对“PostgreSQL EXPLAIN、统计信息与计划诊断”涉及的数据库机制和运行行为。",
-          "verifiedAt": "待核验"
+          "relevance": "核对 EXPLAIN 与 EXPLAIN ANALYZE 的执行差异、计划节点和 BUFFERS 信息。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "postgresql-explain-plans-statistics-verified-2",
+          "type": "official",
+          "title": "Planner statistics",
+          "url": "https://www.postgresql.org/docs/18/planner-stats.html",
+          "publisher": "PostgreSQL Documentation",
+          "relevance": "核对统计信息、ANALYZE 和多列相关性如何影响选择性估算。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "postgresql-explain-plans-statistics-verified-3",
+          "type": "official",
+          "title": "CREATE STATISTICS",
+          "url": "https://www.postgresql.org/docs/18/sql-createstatistics.html",
+          "publisher": "PostgreSQL Documentation",
+          "relevance": "核对 dependencies、MCV 等扩展统计类型及创建后仍需 ANALYZE 的行为。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "postgresql-explain-plans-statistics-verified-4",
+          "type": "official",
+          "title": "Monitoring statistics",
+          "url": "https://www.postgresql.org/docs/18/monitoring-stats.html",
+          "publisher": "PostgreSQL Documentation",
+          "relevance": "核对执行统计与 I/O 诊断视图。",
+          "verifiedAt": "2026-11-28"
         }
       ]
     },
@@ -3336,22 +3390,49 @@
       "summary": "结合查询谓词、排序、选择性和维护成本选择 B-tree、GIN、GiST、BRIN、复合、部分、表达式与覆盖索引。",
       "references": [
         {
-          "id": "postgresql-index-strategies-ref-1",
+          "id": "postgresql-index-strategies-verified-1",
           "type": "official",
           "title": "Indexes",
-          "url": "https://www.postgresql.org/docs/current/indexes.html",
+          "url": "https://www.postgresql.org/docs/18/indexes.html",
           "publisher": "PostgreSQL Documentation",
-          "relevance": "核对“PostgreSQL 索引类型与设计策略”涉及的数据库机制和运行行为。",
-          "verifiedAt": "待核验"
+          "relevance": "核对 B-tree、Hash、GiST、SP-GiST、GIN、BRIN 和索引总体维护成本。",
+          "verifiedAt": "2026-11-28"
         },
         {
-          "id": "postgresql-index-strategies-ref-2",
+          "id": "postgresql-index-strategies-verified-2",
           "type": "official",
-          "title": "Using EXPLAIN",
-          "url": "https://www.postgresql.org/docs/current/using-explain.html",
+          "title": "Multicolumn indexes",
+          "url": "https://www.postgresql.org/docs/18/indexes-multicolumn.html",
           "publisher": "PostgreSQL Documentation",
-          "relevance": "核对“PostgreSQL 索引类型与设计策略”涉及的数据库机制和运行行为。",
-          "verifiedAt": "待核验"
+          "relevance": "核对复合索引的列顺序和可用谓词。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "postgresql-index-strategies-verified-3",
+          "type": "official",
+          "title": "Partial indexes",
+          "url": "https://www.postgresql.org/docs/18/indexes-partial.html",
+          "publisher": "PostgreSQL Documentation",
+          "relevance": "核对部分索引谓词与规划器证明查询条件的限制。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "postgresql-index-strategies-verified-4",
+          "type": "official",
+          "title": "Indexes on expressions",
+          "url": "https://www.postgresql.org/docs/18/indexes-expressional.html",
+          "publisher": "PostgreSQL Documentation",
+          "relevance": "核对表达式索引及函数不可变性要求。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "postgresql-index-strategies-verified-5",
+          "type": "official",
+          "title": "Index-only scans",
+          "url": "https://www.postgresql.org/docs/18/indexes-index-only-scans.html",
+          "publisher": "PostgreSQL Documentation",
+          "relevance": "核对 INCLUDE、可见性映射和 Index Only Scan 条件。",
+          "verifiedAt": "2026-11-28"
         }
       ]
     },
@@ -3369,22 +3450,58 @@
       "summary": "识别 N+1、SELECT *、深分页和索引列函数等常见查询反模式，并了解全文搜索、PostGIS、pgvector 等扩展的边界。",
       "references": [
         {
-          "id": "postgresql-query-patterns-extensions-ref-1",
+          "id": "postgresql-query-patterns-extensions-verified-1",
           "type": "official",
-          "title": "Indexes",
-          "url": "https://www.postgresql.org/docs/current/indexes.html",
+          "title": "SELECT",
+          "url": "https://www.postgresql.org/docs/18/sql-select.html",
           "publisher": "PostgreSQL Documentation",
-          "relevance": "核对“PostgreSQL 查询模式、全文搜索与扩展”涉及的数据库机制和运行行为。",
-          "verifiedAt": "待核验"
+          "relevance": "核对 LIMIT/OFFSET、排序和分页查询语义。",
+          "verifiedAt": "2026-11-28"
         },
         {
-          "id": "postgresql-query-patterns-extensions-ref-2",
+          "id": "postgresql-query-patterns-extensions-verified-2",
           "type": "official",
-          "title": "Using EXPLAIN",
-          "url": "https://www.postgresql.org/docs/current/using-explain.html",
+          "title": "Full text search introduction",
+          "url": "https://www.postgresql.org/docs/18/textsearch-intro.html",
           "publisher": "PostgreSQL Documentation",
-          "relevance": "核对“PostgreSQL 查询模式、全文搜索与扩展”涉及的数据库机制和运行行为。",
-          "verifiedAt": "待核验"
+          "relevance": "核对 tsvector、tsquery 和语言配置机制。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "postgresql-query-patterns-extensions-verified-3",
+          "type": "official",
+          "title": "Full text search tables and indexes",
+          "url": "https://www.postgresql.org/docs/18/textsearch-tables.html",
+          "publisher": "PostgreSQL Documentation",
+          "relevance": "核对全文搜索表列和索引查询写法。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "postgresql-query-patterns-extensions-verified-4",
+          "type": "official",
+          "title": "pg_trgm",
+          "url": "https://www.postgresql.org/docs/18/pgtrgm.html",
+          "publisher": "PostgreSQL Documentation",
+          "relevance": "核对三元组相似匹配、LIKE/ILIKE 和 GIN/GiST operator class。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "postgresql-query-patterns-extensions-verified-5",
+          "type": "official",
+          "title": "PostGIS spatial indexes",
+          "url": "https://postgis.net/documentation/faq/spatial-indexes/",
+          "publisher": "PostGIS",
+          "relevance": "核对 GiST 空间索引和可利用空间索引的谓词。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "postgresql-query-patterns-extensions-verified-6",
+          "type": "official",
+          "title": "pgvector",
+          "url": "https://github.com/pgvector/pgvector",
+          "publisher": "pgvector",
+          "relevance": "核对精确/近似最近邻、HNSW、IVFFlat、过滤后召回和 iterative scans。",
+          "verifiedAt": "2026-11-28"
         }
       ]
     },
@@ -4050,13 +4167,49 @@
       "summary": "设计多写入方条件下的提交冲突处理、幂等重试和一致性验证。",
       "references": [
         {
-          "id": "iceberg-write-mode-conflict-ref-1",
+          "id": "iceberg-write-mode-conflict-verified-1",
           "type": "official",
-          "title": "Virtual warehouses",
-          "url": "https://docs.snowflake.com/en/user-guide/warehouses",
-          "publisher": "Snowflake Documentation",
-          "relevance": "核对“Iceberg 写入并发、提交冲突与重试策略”涉及的产品行为、配置边界或工程机制。",
-          "verifiedAt": "待核验"
+          "title": "Reliability and concurrent writes",
+          "url": "https://iceberg.apache.org/docs/latest/reliability/",
+          "publisher": "Apache Iceberg",
+          "relevance": "核对快照元数据原子提交、乐观并发、冲突验证和安全重试。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "iceberg-write-mode-conflict-verified-2",
+          "type": "official",
+          "title": "Table specification",
+          "url": "https://iceberg.apache.org/spec/",
+          "publisher": "Apache Iceberg",
+          "relevance": "核对 Snapshot、提交验证、序列号和写入冲突的数据约束。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "iceberg-write-mode-conflict-verified-3",
+          "type": "official",
+          "title": "Spark writes and MERGE INTO",
+          "url": "https://iceberg.apache.org/docs/latest/spark-writes/",
+          "publisher": "Apache Iceberg",
+          "relevance": "核对 Spark MERGE INTO 的写入语义和源数据匹配限制。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "iceberg-write-mode-conflict-verified-4",
+          "type": "official",
+          "title": "Spark configuration",
+          "url": "https://iceberg.apache.org/docs/latest/spark-configuration/",
+          "publisher": "Apache Iceberg",
+          "relevance": "核对 Spark 写入隔离级别和引擎配置。",
+          "verifiedAt": "2026-11-28"
+        },
+        {
+          "id": "iceberg-write-mode-conflict-verified-5",
+          "type": "official",
+          "title": "Handling write concurrency",
+          "url": "https://docs.aws.amazon.com/prescriptive-guidance/latest/apache-iceberg-on-aws/handling-write-concurrency.html",
+          "publisher": "AWS",
+          "relevance": "比较 Catalog commit conflict 与 data conflict，核对应用级重试条件。",
+          "verifiedAt": "2026-11-28"
         }
       ]
     },
