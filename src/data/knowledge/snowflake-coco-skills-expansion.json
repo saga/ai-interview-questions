@@ -280,18 +280,23 @@
     "area": "data-platform",
     "topic": "snowflake-agent-ml",
     "priority": "P1",
-    "summary": "区分 AI SQL 基础调用与 CoCo Agentic 调用的模型门禁，并为技能安装、SQL 执行和有副作用的变更设置验证边界。",
+    "summary": "根据任务质量、成本和时延选择 CoCo 固定模型或 Auto 路由，并通过当前 Role 的模型 RBAC、产品发布阶段和 Region/Cross-Region 设置确认真实可用性。",
     "required": [
-      "Cortex base mode 与 agentic mode 是不同的可用性门禁；AI_COMPLETE 可用不代表 CoCo Agent 一定允许该模型。",
-      "SHOW CORTEX BASE MODELS 提供候选模型信息，但实际可调用性需结合生命周期、区域和真实探测判断。",
-      "CoCo 当前 agentic 模型 allow-list、名称变体、账户 allow-list 和跨区域设置都可能影响执行结果。",
-      "技能能执行 SQL、访问外部服务或修改对象，安装和执行前应检查来源、权限、影响范围并复核结果。"
+      "区分指定模型、Auto、Auto Intelligent 和 Auto Efficient 的路由语义、质量/成本取舍与路由费用。",
+      "通过 SHOW CORTEX BASE MODELS 检查当前 Role 可用模型、发布阶段和 Cross-Region Scope；模型清单不等于所有 Cortex 产品的功能承诺。",
+      "解释模型级 RBAC、CORTEX-MODEL-ROLE-ALL、SNOWFLAKE.PUBLIC 启动授权及最小权限模型管理。",
+      "区分 CoCo、Cortex Agents、AI Functions 和 Evaluations 中模型的 GA/Preview/Private Preview/Legacy 状态。",
+      "结合账号 Region、模型原生可用区和 Cross-Region Inference 设置判断数据驻留风险。",
+      "用固定任务集比较模型/路由模式的质量、成本、延迟与稳定性；Profile 不应被误认为会切换连接身份或 Role。"
     ],
     "misconceptions": [
-      "认为模型在 AI SQL 中可以调用，就一定能用于 CoCo Agent。",
-      "仅凭公开文档或 SHOW 输出判定模型当前可用，不做环境核验。",
-      "把模型名称不可用一律归因于模型下线，不检查区域和账户设置。",
-      "默认信任 Skill 生成和执行的 SQL，不审查权限、覆盖范围或外部调用。"
+      "把 CoCo 模型列表当成永久固定的内置清单",
+      "认为同一模型在所有 Cortex 产品和 Region 中发布阶段相同",
+      "只按模型名选型，不检查当前 Role 的模型级 RBAC",
+      "不经审批向所有运行角色授予所有当前与未来模型",
+      "把 Cross-Region Inference 当成纯性能设置，不评估数据驻留",
+      "把 Auto Efficient 当成固定单模型，漏算路由费用",
+      "认为 CoCo Profile 会改变当前 Snowflake Account、Role 或 Warehouse"
     ],
     "angles": [
       "boundary",
