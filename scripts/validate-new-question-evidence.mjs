@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const args = process.argv.slice(2);
@@ -22,6 +22,14 @@ function parse(raw, path) {
   if (!Array.isArray(value)) throw new Error(`${path}: 题库文件必须是 JSON 数组`);
   return value;
 }
+function readJsonArrays(directory) {
+  return readdirSync(directory)
+    .filter((file) => file.endsWith('.json'))
+    .sort()
+    .flatMap((file) => parse(readFileSync(resolve(directory, file), 'utf8'), `src/data/knowledge/${file}`));
+}
+const knowledgeNodes = readJsonArrays(resolve(process.cwd(), 'src/data/knowledge'));
+const knowledgeById = new Map(knowledgeNodes.map((node) => [node.id, node]));
 function previousQuestions(path) {
   try {
     return parse(execFileSync('git', ['show', `${base}:${path}`], { encoding: 'utf8' }), path);
@@ -51,8 +59,18 @@ for (const path of changedFiles) {
     if (question.courseId && !question.knowledgeId) {
       errors.push(`${path} / ${question.id}: 课程题缺精确 knowledgeId`);
     }
-    if (question.courseId && question.knowledgeId !== question.topic) {
-      errors.push(`${path} / ${question.id}: 课程题的 topic 必须等于 knowledgeId（KnowledgeNode.id）`);
+    if (question.courseId && question.knowledgeId) {
+      const node = knowledgeById.get(question.knowledgeId);
+      if (!node) {
+        errors.push(`${path} / ${question.id}: knowledgeId "${question.knowledgeId}" 不存在于 KnowledgeNode 清单`);
+      } else {
+        if (node.courseId !== question.courseId) {
+          errors.push(`${path} / ${question.id}: knowledgeId "${question.knowledgeId}" 不属于 courseId "${question.courseId}"`);
+        }
+        if (question.topic !== node.id) {
+          errors.push(`${path} / ${question.id}: topic 必须等于对应 KnowledgeNode.id（${node.id}），不能使用 KnowledgeNode.topic 分组值`);
+        }
+      }
     }
     if (question.courseId === 'snowflake') {
       if (!question.source?.section?.trim()) errors.push(`${path} / ${question.id}: Snowflake 课程题缺 source.section`);
