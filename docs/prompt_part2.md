@@ -64,7 +64,7 @@ Part 2 负责：
 
 原样继承 Part 1 的 `topic`，不得改名或重新推断。
 
-如果 Blueprint 含课程 `courseId` 和精确 `knowledgeId`，最终 Question 必须原样复制这两个字段；`topic` 仍按 Blueprint 保留，不得用 `knowledgeId` 覆盖共享主题键。
+如果 Blueprint 含课程 `courseId` 和精确 `knowledgeId`，最终 Question 必须原样复制这两个字段；课程题的 `topic` 也必须原样等于该 `knowledgeId`（即 `KnowledgeNode.id`），不得改成 `KnowledgeNode.topic` 的共享分组值。
 
 不要：
 
@@ -165,7 +165,7 @@ Part 2 负责：
 * 若不是课程题且 Blueprint 未提供这两个字段，则省略，不要自行创造；
 * `source.materialId` 必须引用当前实际使用的稳定材料 ID；存在具体章节或页码时填写 `section` / `page`；
 * Snowflake 课程题还必须提供 `source.relatedMaterials`，使用课程路线中登记的官方文档 ID，不得填写未经核验的 URL 或臆造 ID；
-* 不要把共享 `topic` 当成具体 `knowledgeId`；
+* 课程题必须满足 `topic === knowledgeId`；两者都指向唯一 `KnowledgeNode.id`。`KnowledgeNode.topic` 是共享分类字段，不是 Question.topic；
 * `concepts[0]` 必须是 core；
 * 后续才是 supporting。
 
