@@ -69,6 +69,8 @@ describe('Snowflake learning content', () => {
     expect(ingestion?.references.some((reference) =>
       reference.type === 'case' && reference.id === 'case-chocolate-finance-ingestion',
     )).toBe(true);
+    expect(warehouse?.articles.some((article) => article.content.includes('Order.co'))).toBe(true);
+    expect(ingestion?.articles.some((article) => article.content.includes('Chocolate Finance'))).toBe(true);
   });
 
   it('every POC knowledge node is connected to at least one exam question', () => {
