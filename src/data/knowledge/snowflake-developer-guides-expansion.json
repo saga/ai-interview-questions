@@ -70,17 +70,21 @@
     "area": "data-platform",
     "topic": "snowflake-devops",
     "priority": "P1",
-    "summary": "将真实工作流依赖建模为可管理、可观察的执行图",
+    "summary": "使用 Root、Child、AFTER 和 Finalizer 建模任务依赖，控制图运行重叠与失败重试，并通过 REST API、Task History 和 Graph Run Group 管理及追踪执行。",
     "required": [
-      "将真实工作流依赖建模为可管理、可观察的执行图",
-      "显式定义父子任务依赖，通过受控 DDL/API 管理任务对象和运行上下文",
-      "明确任务执行角色、依赖图、失败动作和重跑策略"
+      "用 Root、Child、AFTER 和 Finalizer 表达业务工作流依赖；理解多个前置任务全部成功后才会触发下游。",
+      "区分图内 Child 并行与多轮 Graph Run 的 OVERLAP_POLICY，并根据耗时、调度频率和写入幂等性选择运行策略。",
+      "管理 Task Graph 的同 Schema、同 Owner Role、任务数量限制，以及修改图前暂停 Root 和发布新版本的流程。",
+      "区分自动重试、RETRY LAST、RETRY GRAPH RUN GROUP 的触发条件、Graph Run Group 和 14 天/图结构约束。",
+      "使用 Snowflake REST Task API 管理任务资源、触发执行、查询依赖与运行；通过 TASK_HISTORY、COMPLETE_TASK_GRAPHS 和 Query ID 追踪结果。"
     ],
     "misconceptions": [
-      "Task 名称带数字就自动建立依赖",
-      "重试可以理解业务键去重规则",
-      "生产任务默认应使用管理员身份",
-      "根任务成功即可证明所有子任务正确"
+      "通过 Task 名称、编号或创建顺序猜测依赖，而不是用 AFTER 显式定义",
+      "把多前置 Child 理解成任意一个成功就运行",
+      "把 OVERLAP_POLICY 当成图内 Child 依赖关系设置",
+      "修改 DAG 时不暂停 Root 或不校验任务 Owner",
+      "认为所有失败都可无条件 RETRY LAST，或把重试当成业务幂等保证",
+      "把 REST API 返回 202 Accepted 当成整张图已经执行完成"
     ],
     "angles": [
       "fundamental",
