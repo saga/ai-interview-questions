@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Question } from '../schemas/question';
+import type { TopicStats } from '../schemas/learner';
 import { courseTopicIds, profileForTrack, questionsForKnowledgeNode } from './learningTracks';
 import { emptyProfile } from './learner';
 import { knowledgeNodes } from '../data/knowledgeMap';
@@ -29,7 +30,7 @@ function question(
 }
 
 describe('questionsForKnowledgeNode', () => {
-  it('selects the explicit KnowledgeNode mapping, not sibling nodes in the same topic', () => {
+  it('selects the exact mapped node and excludes questions for other nodes', () => {
     const bank = [
       question('node-a-q1', 'node-a', 'node-a'),
       question('node-b-q1', 'node-b', 'node-b'),
@@ -65,10 +66,10 @@ describe('course learner profile projection', () => {
     expect(keys.has(snowflakeNode!.topic)).toBe(true);
 
     const profile = emptyProfile();
-    const stat = {
+    const stat: TopicStats = {
       attempts: 1, avgScore: 80, lastScore: 80, mastery: 0.8,
       trend: 'flat', commonWeaknesses: [], lastSeen: 1,
-    } as const;
+    };
     profile.topicStats['snowflake-architecture'] = stat;
     profile.topicStats[snowflakeNode!.topic] = stat;
     const projected = profileForTrack(profile, 'snowflake', [snowflakeNode!]);
