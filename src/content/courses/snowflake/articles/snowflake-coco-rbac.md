@@ -1,68 +1,89 @@
-# Snowflake RBAC 分层与最小权限
+# Cortex Agent 与 CoCo 的工具授权边界
 
-## 本节要解决的问题
+## Agent 有 USAGE，为什么 Search 和 Analyst 仍然调用失败
 
-以访问角色承载对象权限，以功能角色表达人和团队职责，并按实际复杂度建立可验证的角色层级。
+分析师已经获得某个 Agent 的 USAGE，可以提交请求，但 Agent 运行时却提示 Cortex Analyst 无权访问 Semantic View，或 Search 工具找不到 Stage 文档。
 
-企业数据架构与治理。先定义业务实体、事实粒度、指标口径和访问责任，再决定物理模型、语义定义与权限策略。
+原因是 Agent USAGE 只允许调用 Agent 本身。Agent 使用调用者当前会话角色执行工具；调用者还需要有权使用每个配置工具和它依赖的数据对象。把所有权限都授给一个管理员角色，也不是合理的修复方式。
 
-本教程只对应知识点 `snowflake-coco-rbac`。目标是理解其机制、适用边界和验证方法，不把相邻知识点合并成一个大章。
+## 先区分 Cortex Code、Agent API 和具体工具权限
 
-## 核心知识
+Snowflake 的 Cortex Code CLI 在 Standard mode 中支持 Snowflake 数据工具、MCP 和 Skills；Code mode 面向代码工程，关闭 Snowflake 数据工具、MCP servers、Skills 和协作能力。两种模式的工具范围不同，不应把 Code mode 的文件/Shell 能力误认为可以访问数据库。
 
-### 尽量先把数据库、Schema、Warehouse 和对象权限授予访问角色，再把访问角色授予功能或人员角色。
+Cortex Agent API 使用者可以拥有 SNOWFLAKE.CORTEX_AGENT_USER，只获得 Cortex Agents、CoWork 和 Cortex Code 的使用权限；若拥有 SNOWFLAKE.CORTEX_USER，则可以访问更广泛的 Cortex Covered AI Features。CORTEX_AGENT_USER 并不包含 Cortex Analyst 权限。使用 Analyst 工具还需要 SNOWFLAKE.CORTEX_ANALYST_USER。
 
-Snowflake 的存储、计算与 Cloud Services 属于不同责任边界。分别检查数据持久化、Warehouse 资源以及平台级元数据、认证与协调，不能把一个层次的设置当作另一个层次的修复手段。
+默认情况下，SNOWFLAKE.CORTEX_USER 会授予 PUBLIC。若组织要限制 AI 能力，应先按账户策略撤销 PUBLIC 的广泛授权，再授予专用自定义角色，不要只增加一个较窄角色却忘记旧的 CORTEX_USER 继承。
 
-### 角色层级应根据环境、业务域、数据产品和对象范围按需建立，不能默认每个账户都需要全部层级。
+## Agent 的最小调用权限
 
-权限判断沿用户、当前激活角色、角色继承、对象权限和所有权追踪，并检查 Database、Schema 与目标对象的使用权限。
+调用者至少需要：
 
-### 交付前使用 SHOW GRANTS 等命令验证实际权限，核对当前角色及辅助角色的有效访问范围。
+- Agent 所在 Database 和 Schema 的 USAGE。
+- Agent 对象的 USAGE。
+- Agent 配置的每个工具 Warehouse 的 USAGE。
+- 使用 Analyst 时的 SNOWFLAKE.CORTEX_ANALYST_USER。
+- 使用 Search 时，对 Search Service 的 USAGE；对源 Stage 的引用文档访问还可能需要 Stage READ 和底层对象权限。
+- 使用 Semantic View 时，对语义视图及其引用对象所需的 SELECT/USAGE。
+- 调用自定义 Stored Procedure 时，对 Procedure 的 USAGE，并满足其依赖对象在对应 Rights 模式下的权限。
 
-权限判断沿用户、当前激活角色、角色继承、对象权限和所有权追踪，并检查 Database、Schema 与目标对象的使用权限。
+示例：
 
-### RBAC 负责角色架构与权限引用边界，行访问和脱敏策略的具体实现应由相应治理流程管理。
+~~~sql
+GRANT DATABASE ROLE SNOWFLAKE.CORTEX_AGENT_USER
+  TO ROLE SUPPORT_AGENT_ROLE;
 
-权限判断沿用户、当前激活角色、角色继承、对象权限和所有权追踪，并检查 Database、Schema 与目标对象的使用权限。
+GRANT DATABASE ROLE SNOWFLAKE.CORTEX_ANALYST_USER
+  TO ROLE SUPPORT_AGENT_ROLE;
 
-## 工程实施步骤
+GRANT USAGE ON DATABASE AI_DB TO ROLE SUPPORT_AGENT_ROLE;
+GRANT USAGE ON SCHEMA AI_DB.AGENTS TO ROLE SUPPORT_AGENT_ROLE;
+GRANT USAGE ON AGENT AI_DB.AGENTS.SUPPORT_AGENT
+  TO ROLE SUPPORT_AGENT_ROLE;
 
-1. 写清业务实体、事实粒度、关系基数、指标口径、敏感级别和 owner。
-2. 将业务定义映射到物理模型、语义对象、角色授权和数据质量规则。
-3. 用 Golden Queries、允许/拒绝访问测试和变更审查验证结果。
+GRANT USAGE ON WAREHOUSE AGENT_QUERY_WH
+  TO ROLE SUPPORT_AGENT_ROLE;
+~~~
 
-## 场景分析
+该角色还需要对具体工具引用的数据和资源有对应权限。不要只复制示例后就认为完整授权已经完成。
 
-业务、财务和分析团队对同一个指标给出不同结果。请确认事实粒度、关系、过滤条件和时间口径，再决定模型与治理规则。
+## 部分工具不可访问时，Agent 默认可能继续运行
 
-将场景转换为明确输入、状态变化和预期输出。逐项检查本节核心要求，区分配置事实、运行证据和待验证假设。缺少权限、版本、数据样本或官方行为证据时，明确记录未知项，不用猜测补齐。
+Cortex Agent 的 orchestration.tool_not_accessible 默认值为 accept：若调用者缺少某个已配置工具的权限，Agent 可以继续使用其他可访问工具，并返回警告。对于需要全部工具都可用的工作流，可以设置 reject，使任一配置工具不可访问时整次运行失败。
 
-## 常见误区
+这两种行为代表不同的产品策略：
+- 客服问答允许只用已授权的知识检索回答，可以接受部分工具不可用，但必须显示降级状态。
+- 需要 Analyst 与 Search 同时提供证据的财务流程，不应缺少一个工具后仍给出看似完整的答案，应选择 reject。
 
-- **误区：** 直接把大量对象权限授予用户或功能角色，导致难以重构。
-  **纠正：** 权限判断沿用户、当前激活角色、角色继承、对象权限和所有权追踪，并检查 Database、Schema 与目标对象的使用权限。
-- **误区：** 不考虑组织规模和职责边界，强制所有角色层级全量存在。
-  **纠正：** 权限判断沿用户、当前激活角色、角色继承、对象权限和所有权追踪，并检查 Database、Schema 与目标对象的使用权限。
-- **误区：** 只看角色命名就假设权限已经正确生效。
-  **纠正：** 权限判断沿用户、当前激活角色、角色继承、对象权限和所有权追踪，并检查 Database、Schema 与目标对象的使用权限。
-- **误区：** 把 RBAC 角色设计与具体脱敏/行访问策略 SQL 的实现混成一项工作。
-  **纠正：** 权限判断沿用户、当前激活角色、角色继承、对象权限和所有权追踪，并检查 Database、Schema 与目标对象的使用权限。
+无论选择哪一种，Agent 的回答都应记录哪些工具实际执行、哪些被拒绝、拒绝原因和最终采用的证据。
 
-## 完成标准
+## 用角色矩阵测试，而不只用管理员验证
 
-- [ ] 能说明：尽量先把数据库、Schema、Warehouse 和对象权限授予访问角色，再把访问角色授予功能或人员角色。
-- [ ] 能说明：角色层级应根据环境、业务域、数据产品和对象范围按需建立，不能默认每个账户都需要全部层级。
-- [ ] 能说明：交付前使用 SHOW GRANTS 等命令验证实际权限，核对当前角色及辅助角色的有效访问范围。
-- [ ] 能说明：RBAC 负责角色架构与权限引用边界，行访问和脱敏策略的具体实现应由相应治理流程管理。
-- [ ] 能指出本知识点的适用前提和不适用场景。
-- [ ] 能提供至少一项运行、数据或配置证据支持判断。
-- [ ] 能描述失败后的恢复、回滚或人工升级路径。
+至少准备三种角色：
+1. 完整业务角色：可访问 Agent、Analyst、Search 和允许的业务数据。
+2. 只读检索角色：可访问 Agent 和指定 Search 内容，但不能读取分析事实表。
+3. 无权限角色：没有 Agent 或工具权限，应被拒绝。
+
+分别用 Snowsight 与 API 运行测试，因为它们使用的会话/调用身份可能不同。验证工具是否按预期可见、对象数据是否受 Row Access Policy/Masking Policy 保护、缺少工具时 accept/reject 是否符合流程，以及审计记录是否能关联调用者。
+
+## 常见授权错误
+
+- 认为 Agent USAGE 自动包含 Analyst、Search 和自定义工具权限。
+- 给所有人 CORTEX_USER，随后又试图只靠 CORTEX_AGENT_USER 限制范围。
+- 使用 Analyst，却忘了单独授予 CORTEX_ANALYST_USER。
+- 只测试管理员角色，未测试业务调用者的真实权限。
+- 默认 accept 导致一个必需工具不可用，但 Agent 仍返回部分答案。
+- 认为 Code mode 与 Standard mode 具有同一套工具。
 
 ## 自测
 
-1. 如何在实际系统中验证“尽量先把数据库、Schema、Warehouse 和对象权限授予访问角色，再把访问角色授予功能或人员角色。”？
-2. 当“角色层级应根据环境、业务域、数据产品和对象范围按需建立，不能默认每个账户都需要全部层级。”不成立时，最可能需要检查哪些边界和证据？
-3. 为什么不能采用“直接把大量对象权限授予用户或功能角色，导致难以重构。”这一做法？
+1. Agent USAGE 为什么不能保证 Analyst 工具能查询 Semantic View？
+2. CORTEX_AGENT_USER 与 CORTEX_USER 的权限范围有什么区别？
+3. 为什么使用 Cortex Analyst 还要另行授权 CORTEX_ANALYST_USER？
+4. orchestration.tool_not_accessible 设置为 accept 与 reject，对用户结果有什么影响？
+5. 如何设计一个只允许 Search、不允许读取订单事实表的 Agent 角色？
 
-回答时需要给出判断依据和验证方法，而不只是复述定义。
+## 参考资料
+
+- [Cortex Agents access control and authentication](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-agents-setup)
+- [Cortex Code code mode](https://docs.snowflake.com/en/user-guide/cortex-code/code-mode)
+- [Cortex Agents overview](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-agents)
