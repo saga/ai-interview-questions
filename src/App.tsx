@@ -36,6 +36,7 @@ import QuestionCard from './components/quiz/QuestionCard';
 import AdaptiveQuiz from './components/quiz/AdaptiveQuiz';
 import ResultPanel from './components/result/ResultPanel';
 import CopilotSidebar from './components/copilot/CopilotSidebar';
+import { recordQuestionReviewRating } from './storage/questionReviews';
 import type { ActiveInterviewContext } from './application/conversation/interviewContext';
 import { createLLMProvider } from './ai/provider';
 import { devUsageLogger } from './ai/usageTelemetry';
@@ -170,6 +171,12 @@ export default function App() {
             prevOverall={prevOverall}
             onContinue={handleContinue}
             onRestart={handleRestart}
+            onReviewRating={(questionId, rating) => {
+              void recordQuestionReviewRating(runtimeTrackId, questionId, rating).then((row) => {
+                if (row) message.success('已安排下次复习');
+                else message.error('复习计划保存失败');
+              });
+            }}
           />
         );
       }
@@ -302,6 +309,7 @@ export default function App() {
         return (
           <TrainingHome
             categories={trackBank.categories}
+            availableQuestionIds={trackBank.questions.map((question) => question.id)}
             config={config}
             profile={trackProfile}
             track={getLearningTrack(runtimeTrackId)}

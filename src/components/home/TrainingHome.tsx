@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Card,
   Collapse,
@@ -28,6 +28,7 @@ import { isConfigValid } from '../../ai/provider';
 import { buildCoachDefinition, recommendationText } from '../../domain/learner';
 import { categoryLabel } from '../../domain/categories';
 import type { LearningTrack } from '../../data/learningTracks';
+import { getDueQuestionReviews } from '../../storage/questionReviews';
 
 const FORMAT_OPTIONS: { label: string; value: FormatId }[] = [
   { label: '选择（单选/多选）', value: 'choice' },
@@ -42,6 +43,7 @@ const DIFF_OPTIONS: { label: string; value: Difficulty }[] = [
 
 interface Props {
   categories: string[];
+  availableQuestionIds: string[];
   config: AIConfig;
   profile: LearnerProfile;
   track: LearningTrack;
@@ -60,7 +62,7 @@ function fmtDate(ts: number): string {
   return `${d.getMonth() + 1}月${d.getDate()}日`;
 }
 
-export default function TrainingHome({ categories, config, profile, track, onStart, onGoSettings, onChooseTrack }: Props) {
+export default function TrainingHome({ categories, availableQuestionIds, config, profile, track, onStart, onGoSettings, onChooseTrack }: Props) {
   const configReady = isConfigValid(config);
   const isAiTrack = track.id === 'ai';
   const last = profile.sessions[0];
@@ -71,6 +73,20 @@ export default function TrainingHome({ categories, config, profile, track, onSta
   const [difficulties, setDifficulties] = useState<Difficulty[]>([]);
   const [formats, setFormats] = useState<FormatId[]>(['choice', 'open']);
   const [useAI, setUseAI] = useState(true);
+  const [dueQuestionIds, setDueQuestionIds] = useState<string[]>([]);
+  const [loadingDueReviews, setLoadingDueReviews] = useState(true);
+  const availableIds = useMemo(() => new Set(availableQuestionIds), [availableQuestionIds]);
+
+  useEffect(() => {
+    let active = true;
+    setLoadingDueReviews(true);
+    void getDueQuestionReviews(track.id, Date.now(), 20).then((rows) => {
+      if (!active) return;
+      setDueQuestionIds([...new Set(rows.map((row) => row.questionId).filter((id) => availableIds.has(id)))]);
+      setLoadingDueReviews(false);
+    });
+    return () => { active = false; };
+  }, [track.id, availableIds]);
 
   const startCustom = () => {
     onStart({
@@ -111,6 +127,35 @@ export default function TrainingHome({ categories, config, profile, track, onSta
           {!configReady ? ' 未配置模型时，选择题仍可确定性判分；开放题无法自动评分。' : ' 模型用于开放题评分和可选题目变体。'}
         </Typography.Paragraph>
       </Card>
+
+      {!loadingDueReviews && dueQuestionIds.length > 0 && (
+        <Card size="small" style={{ marginBottom: 16 }}>
+          <Space align="center" style={{ width: '100%', justifyContent: 'space-between' }} wrap>
+            <div>
+              <Typography.Text strong>到期复习</Typography.Text>
+              <Typography.Text type="secondary" style={{ display: 'block', fontSize: 12 }}>
+                按上次回忆难度安排 · {dueQuestionIds.length} 道题
+              </Typography.Text>
+            </div>
+            <Button
+              type="primary"
+              onClick={() => onStart({
+                title: `${track.shortTitle} · 到期复习`,
+                questionIds: dueQuestionIds,
+                categories: [],
+                difficulties: [],
+                formats: ['choice', 'open'],
+                count: dueQuestionIds.length,
+                useAI: configReady,
+                scoringRubric: { correctness: 0.4, completeness: 0.2, architecture: 0.2, communication: 0.2 },
+                mode: 'course',
+              })}
+            >
+              开始复习
+            </Button>
+          </Space>
+        </Card>
+      )}
 
       {last && (
         <Card style={{ marginBottom: 16 }}>

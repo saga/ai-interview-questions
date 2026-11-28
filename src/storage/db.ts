@@ -101,12 +101,28 @@ export interface StoredStudyProgress {
   updatedAt: number;
 }
 
+export type QuestionReviewRating = 'again' | 'hard' | 'good' | 'easy';
+
+/** Spaced-review scheduling is kept separate from assessed LearnerProfile mastery. */
+export interface StoredQuestionReview {
+  id: string;
+  trackId: string;
+  questionId: string;
+  dueAt: number;
+  intervalHours: number;
+  repetitions: number;
+  lastRating: QuestionReviewRating;
+  lastReviewedAt: number;
+  updatedAt: number;
+}
+
 export class TrainerDB extends Dexie {
   learner!: Table<StoredLearner, string>;
   sessions!: Table<StoredSession, string>;
   errorLog!: Table<ErrorLogEntry, number>;
   agentSessions!: Table<StoredAgentSession, string>;
   studyProgress!: Table<StoredStudyProgress, string>;
+  questionReviews!: Table<StoredQuestionReview, string>;
 
   constructor() {
     super('ai-interview-trainer');
@@ -145,6 +161,15 @@ export class TrainerDB extends Dexie {
       errorLog: '++id, scope, createdAt, kind, event, level',
       agentSessions: 'id, updatedAt',
       studyProgress: 'id, trackId, nodeId, updatedAt',
+    });
+    // v6: question-level spaced reviews, independent of assessed learner mastery.
+    this.version(6).stores({
+      learner: 'id',
+      sessions: 'id, startedAt, overall, *topics',
+      errorLog: '++id, scope, createdAt, kind, event, level',
+      agentSessions: 'id, updatedAt',
+      studyProgress: 'id, trackId, nodeId, updatedAt',
+      questionReviews: 'id, trackId, questionId, dueAt, [trackId+dueAt]',
     });
   }
 }

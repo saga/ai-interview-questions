@@ -63,6 +63,8 @@ describe('scoringRubricSchema', () => {
       scoringRubric: OK,
     };
     expect(interviewDefinitionSchema.safeParse(base).success).toBe(true);
+    expect(interviewDefinitionSchema.safeParse({ ...base, questionIds: ['q-1', 'q-2'] }).success).toBe(true);
+    expect(interviewDefinitionSchema.safeParse({ ...base, questionIds: [] }).success).toBe(false);
     expect(
       interviewDefinitionSchema.safeParse({ ...base, scoringRubric: { ...OK, architecture: 2 } }).success,
     ).toBe(false);

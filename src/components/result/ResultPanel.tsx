@@ -1,5 +1,5 @@
 import { Card, Typography, Tag, Progress, Space, Button, Collapse, List, Alert, Divider } from 'antd';
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useState } from 'react';
 import {
   ReloadOutlined,
   CheckCircleTwoTone,
@@ -15,6 +15,7 @@ import type { EvaluationResult } from '../../schemas/evaluation';
 import type { LearnerProfile } from '../../schemas/learner';
 import type { AIConfig } from '../../schemas/ai-config';
 import type { SessionQuestion } from '../../schemas/session';
+import type { QuestionReviewRating } from '../../storage/db';
 import { categoryLabel } from '../../domain/categories';
 import { recommendationText } from '../../domain/learner';
 import RichText from '../common/RichText';
@@ -36,6 +37,7 @@ interface Props {
   prevOverall: number | null;
   onContinue: () => void;
   onRestart: () => void;
+  onReviewRating?: (questionId: string, rating: QuestionReviewRating) => void;
 }
 
 function letterList(idxs: number[]): string {
@@ -90,16 +92,53 @@ function collectSignals(
   return { strengths: strengths.slice(0, 5), weaknesses: weaknesses.slice(0, 5) };
 }
 
+const REVIEW_RATINGS: Array<{ value: QuestionReviewRating; label: string }> = [
+  { value: 'again', label: 'Again' },
+  { value: 'hard', label: 'Hard' },
+  { value: 'good', label: 'Good' },
+  { value: 'easy', label: 'Easy' },
+];
+
+function ReviewRatingControl({
+  rating,
+  onRate,
+}: {
+  rating?: QuestionReviewRating;
+  onRate: (rating: QuestionReviewRating) => void;
+}) {
+  return (
+    <Space wrap size={4} style={{ marginTop: 10 }}>
+      <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+        回忆难度 · 安排下次复习
+      </Typography.Text>
+      {REVIEW_RATINGS.map((item) => (
+        <Button
+          key={item.value}
+          size="small"
+          type={rating === item.value ? 'primary' : 'default'}
+          onClick={() => onRate(item.value)}
+        >
+          {item.label}
+        </Button>
+      ))}
+    </Space>
+  );
+}
+
 function ResultItem({
   index,
   sq,
   answer,
   grade,
+  reviewRating,
+  onReviewRating,
 }: {
   index: number;
   sq: SessionQuestion;
   answer: AnswerValue;
   grade?: EvaluationResult | null;
+  reviewRating?: QuestionReviewRating;
+  onReviewRating?: (rating: QuestionReviewRating) => void;
 }) {
   const q = sq.question;
   const metadata = (
@@ -150,6 +189,7 @@ function ResultItem({
               { key: 'd', label: '解析', children: <Typography.Paragraph type="secondary">解析：{q.explanation}</Typography.Paragraph> },
             ]}
           />
+          {onReviewRating && <ReviewRatingControl rating={reviewRating} onRate={onReviewRating} />}
         </Card>
       </List.Item>
     );
@@ -260,12 +300,28 @@ function ResultItem({
             },
           ]}
         />
+        {onReviewRating && <ReviewRatingControl rating={reviewRating} onRate={onReviewRating} />}
       </Card>
     </List.Item>
   );
 }
 
-export default function ResultPanel({ questions, answers, grades, profile, masteryThreshold, prevOverall, onContinue, onRestart }: Props) {
+export default function ResultPanel({
+  questions,
+  answers,
+  grades,
+  profile,
+  masteryThreshold,
+  prevOverall,
+  onContinue,
+  onRestart,
+  onReviewRating,
+}: Props) {
+  const [reviewRatings, setReviewRatings] = useState<Record<string, QuestionReviewRating>>({});
+  const rateQuestion = (questionId: string, rating: QuestionReviewRating) => {
+    setReviewRatings((current) => ({ ...current, [questionId]: rating }));
+    onReviewRating?.(questionId, rating);
+  };
   let earned = 0;
   const total = questions.length;
 
@@ -353,7 +409,16 @@ export default function ResultPanel({ questions, answers, grades, profile, maste
 
       <List
         dataSource={questions}
-        renderItem={(sq, i) => <ResultItem index={i} sq={sq} answer={answers[sq.question.id]} grade={grades[sq.question.id]} />}
+        renderItem={(sq, i) => (
+          <ResultItem
+            index={i}
+            sq={sq}
+            answer={answers[sq.question.id]}
+            grade={grades[sq.question.id]}
+            reviewRating={reviewRatings[sq.question.id]}
+            onReviewRating={onReviewRating ? (rating) => rateQuestion(sq.question.id, rating) : undefined}
+          />
+        )}
       />
 
       <Space style={{ width: '100%', marginTop: 16 }} direction="vertical">

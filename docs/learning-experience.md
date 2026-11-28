@@ -11,7 +11,7 @@
 
 ## 学习和考核的边界
 
-阅读完成、摘要复习、专项训练和掌握度是不同状态。studyProgress 记录学习资料活动；LearnerProfile 的 topicStats / knowledgeStats / misconceptionHits 记录评估证据。看过解释或标记完成不代表掌握。
+阅读完成、摘要复习、专项训练、间隔复习和掌握度是不同状态。答题后学习者可按真实回忆难度选择 Again / Hard / Good / Easy，系统据此设置下一次到期时间；到期队列按原题 ID 组卷。自评只安排复习，不会改变考试成绩或掌握度。studyProgress 记录学习资料活动；LearnerProfile 的 topicStats / knowledgeStats / misconceptionHits 记录评估证据。看过解释或标记完成不代表掌握。
 
 ## 教材质量门禁
 

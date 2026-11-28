@@ -101,6 +101,10 @@ export async function nextAdaptiveStep(
   if (config?.disabledCategories?.length) pool = pool.filter((q) => !config.disabledCategories.includes(q.category));
   if (def.categories.length > 0) pool = pool.filter((q) => def.categories.includes(q.category));
   if (def.topic) pool = pool.filter((q) => q.topic === def.topic);
+  if (def.questionIds?.length) {
+    const selectedIds = new Set(def.questionIds);
+    pool = pool.filter((question) => selectedIds.has(question.id));
+  }
   if (def.difficulties.length > 0) pool = pool.filter((q) => def.difficulties.includes(q.difficulty));
   pool = pool.filter((q) => availableFormats(q, formats).length > 0);
   const asked = new Set(session.questions.map((sq) => sq.question.id));

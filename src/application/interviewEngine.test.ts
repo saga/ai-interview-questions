@@ -163,6 +163,16 @@ describe('buildSession 组卷与变体处理', () => {
     expect(session.questions.every((sq) => sq.format === 'choice')).toBe(true);
   });
 
+  it('按 questionIds 精确组卷，用于到期复习', async () => {
+    const session = await buildSession(
+      bank,
+      { ...def(false, ['choice', 'open']), questionIds: ['d2'], count: 1 },
+      cfg,
+    );
+    expect(session.questions).toHaveLength(1);
+    expect(session.questions[0].question.id).toBe('d2');
+  });
+
   it('按 KnowledgeNode topic 严格限制专项训练题池', async () => {
     const session = await buildSession(
       bank,

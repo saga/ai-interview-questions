@@ -47,6 +47,8 @@ export const interviewDefinitionSchema = z.object({
   /** 本次训练所属顶层学习体系；未指定的历史定义沿用 AI。 */
   courseId: z.string().min(1).optional(),
   topic: z.string().min(1).optional(),
+  /** Exact question IDs for due reviews; when present this is the authoritative question pool. */
+  questionIds: z.array(z.string().min(1)).min(1).optional(),
   categories: z.array(z.string()),
   difficulties: z.array(difficultySchema),
   formats: z.array(formatIdSchema),
