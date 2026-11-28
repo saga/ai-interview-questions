@@ -126,11 +126,11 @@ describe('KnowledgeDocument 投影', () => {
     expect(questionDocument(questions[0]).metadata.knowledgeId).toBe('kv-cache');
   });
 
-  it('共享 topic 分组可检索同组知识节点和课程题', () => {
+  it('通过 KnowledgeNode.topic 共享分组检索节点和其课程题', () => {
     const groupedQuestion: Question = {
       ...questions[0],
       id: 'q-inference-group',
-      topic: 'Inference',
+      topic: 'kv-cache',
       knowledgeId: 'kv-cache',
     };
     const index = buildKnowledgeIndex(buildKnowledgeDocuments(nodes, [groupedQuestion]));
