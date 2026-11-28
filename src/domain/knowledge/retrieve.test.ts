@@ -126,6 +126,23 @@ describe('KnowledgeDocument 投影', () => {
     expect(questionDocument(questions[0]).metadata.knowledgeId).toBe('kv-cache');
   });
 
+  it('共享 topic 分组可检索同组知识节点和课程题', () => {
+    const groupedQuestion: Question = {
+      ...questions[0],
+      id: 'q-inference-group',
+      topic: 'Inference',
+      knowledgeId: 'kv-cache',
+    };
+    const index = buildKnowledgeIndex(buildKnowledgeDocuments(nodes, [groupedQuestion]));
+    const evidence = searchKnowledge(
+      { query: 'Inference', scope: 'topic', topic: 'Inference', limit: 10 },
+      { index, nodes },
+    );
+    expect(evidence.hits.some((hit) => hit.kind === 'knowledge' && hit.metadata.knowledgeId === 'kv-cache')).toBe(true);
+    expect(evidence.hits.some((hit) => hit.kind === 'question' && hit.metadata.questionId === 'q-inference-group')).toBe(true);
+    expect(evidence.hits.every((hit) => hit.metadata.topic === 'Inference')).toBe(true);
+  });
+
   it('题目把真值隔离到 sensitiveText', () => {
     const doc = questionDocument(questions[0]);
     expect(doc.text).toContain('KV Cache 为什么能降低自回归解码的延迟？');
