@@ -52,7 +52,7 @@ description: "写新题并落库。用户要求新增面试题、起草题目或
 - 如果同时提供 open 形态，`referenceAnswer` 必须与 choice 正确答案一致。
 - 开放题参考答案应包含可检查的关键要点，而不只是重复题干。
 - `tags` 使用已有命名风格，避免创建同义或大小写重复标签。
-- `topic` 是题库的主题/检索键，不保证唯一对应一个 KnowledgeNode。**新课程题必须填写 `courseId` 和精确的 `knowledgeId`**；`knowledgeId` 必须属于该课程与 topic 对应的候选节点。旧题若没有 `knowledgeId`，只有在系统能唯一映射时才允许沿用历史格式。`question:add --check` 会拒绝无法明确映射的新题，不允许靠模糊匹配。
+- 对映射到 KnowledgeNode 的题目，`topic` 使用具体节点 ID。**新课程题必须填写 `courseId` 和精确的 `knowledgeId`，并满足 `topic === knowledgeId === KnowledgeNode.id`**。`KnowledgeNode.topic` 是共享上级分类，不能填入 Question.topic。`question:add --check` 会校验节点、课程和 ID 一致性。
 - `category` 通常与所在文件名一致；生产补题批次文件（如 `foundational-and-intermediate.json`）允许跨领域收录题目，加载时以题目自身 `category` 为准。
 - 目标题库文件普遍是 choice + open 双形态 100% 覆盖，新题应同时写两种形态。
 - `open.referenceAnswer` 若写成 `正确答案：B、C、D。`（全角冒号），`bank.test.ts` 的一致性正则**不会命中**（正则要求"正确答案"后紧跟空白+字母），因此需**人工核对**字母与 `answer` 索引一致。
