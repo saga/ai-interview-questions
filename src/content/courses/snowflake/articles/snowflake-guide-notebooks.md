@@ -1,63 +1,92 @@
-# Snowflake Notebooks 与 Snowpark 工程化
+# Snowflake Notebooks：从交互探索到可部署作业
 
-## 本节要解决的问题
+## Notebook 可以运行，不代表它已经是生产作业
 
-把探索代码整理成可重复执行、可部署和可观察的转换步骤
+数据工程师在 Notebook 里完成清洗和聚合，手工运行结果正确。到了凌晨由 Task 执行时，却出现依赖包找不到、Database/Schema 不同、文件路径失效或权限不足的问题。
 
-数据工程。将输入、摄取、转换、状态推进、目标写入和下游可见性分开观察；执行成功必须结合质量、重放能力和端到端延迟。
+原因通常不是 Notebook 语法，而是交互环境与部署环境并不相同。Notebook 负责探索和组织代码；进入生产调度时，还要明确计算环境、依赖、执行身份、输入输出以及部署版本。
 
-本教程只对应知识点 `snowflake-guide-notebooks`。目标是理解其机制、适用边界和验证方法，不把相邻知识点合并成一个大章。
+## 先分清 Legacy Notebook 与 Workspaces Notebook
 
-## 核心知识
+当前新一代 Notebook 位于 Snowsight Workspaces，提供 Jupyter 兼容的文件工作区、终端、Git 集成和共享协作。旧版 Notebooks 已被称为 Legacy Notebooks；自 2026 年 9 月起，Snowflake 已停止创建新的 Legacy Notebook。迁移不是简单复制文件，旧 Notebook 中部分组件和依赖需要调整。
 
-### 把探索代码整理成可重复执行、可部署和可观察的转换步骤
+新 Workspaces Notebook 的 Kernel 运行在 Snowpark Container Services Compute Pool 上。SQL 和 Snowpark DataFrame 计算仍可下推到 Warehouse，因此容器计算与查询 Warehouse 是两类资源。一个 Notebook Service 可以供多个 Notebook 文件使用；Service 运行时占用 Compute Pool 节点。
 
-先判断逻辑是集合式数据转换、单值计算还是多步骤过程控制。分别评估 SQL、Snowpark、UDF 和 Procedure 的运行时、依赖、权限、副作用、部署测试与可观测性。
+还有一个容易遗漏的上下文差异：Legacy Notebook 文件属于某个 Notebook 对象，会继承其 Database/Schema；Workspaces Notebook 文件属于 Workspace，不再自动继承数据库上下文。代码应显式执行 USE DATABASE、USE SCHEMA，或始终使用全限定对象名。
 
-### 显式定义输入输出与参数、固定依赖环境、分解可测试步骤并记录结构化日志
+## Snowpark DataFrame 的延迟执行会影响调试
 
-先判断逻辑是集合式数据转换、单值计算还是多步骤过程控制。分别评估 SQL、Snowpark、UDF 和 Procedure 的运行时、依赖、权限、副作用、部署测试与可观测性。
+Snowpark DataFrame 表示一段关系运算计划。select、filter、join 和 group_by 通常只是继续构造计划，并不会立即读取数据；调用 collect、count、show 或写入目标表等 Action 时，才会触发执行。
 
-### 不把凭证写入 Notebook，并对关键输出添加行数/键唯一性断言
+~~~python
+from snowflake.snowpark.functions import col, sum as sum_
 
-先判断逻辑是集合式数据转换、单值计算还是多步骤过程控制。分别评估 SQL、Snowpark、UDF 和 Procedure 的运行时、依赖、权限、副作用、部署测试与可观测性。
+orders = session.table("RAW.ORDERS")
+daily_sales = (
+    orders
+    .filter(col("ORDER_DATE") >= "2026-11-01")
+    .group_by("ORDER_DATE", "REGION")
+    .agg(sum_("AMOUNT").alias("TOTAL_AMOUNT"))
+)
 
-## 工程实施步骤
+# Action 才会真正执行查询
+daily_sales.show()
+~~~
 
-1. 记录源系统、文件/事件形态、业务键、事件时间、到达时间和批次标识。
-2. 定义加载/转换状态、重复与迟到处理、拒绝数据隔离和失败后的可重放范围。
-3. 核对目标行数、关键业务汇总、端到端新鲜度和重跑幂等性。
+因此，在 Notebook 中创建多个 DataFrame 变量，并不代表数据已经被多次读取；也不代表最终执行计划一定符合预期。需要观察 Query History 和 Query Profile，确认过滤、聚合、Join 是否被推送到 Snowflake，以及何时发生数据回传到 Python。
 
-## 场景分析
+尽量把大规模关系运算留在 Snowflake 执行。将大量数据 collect 到 Python 进程后再处理，会消耗容器内存和网络带宽，也可能绕过数据库优化器。
 
-订单源每天提供批次文件，部分事件会迟到、重复或被修订，下游报表需要稳定更新。请设计接入、处理、重放和结果核验路径。
+## 依赖、Secrets 和文件路径要成为部署的一部分
 
-将场景转换为明确输入、状态变化和预期输出。逐项检查本节核心要求，区分配置事实、运行证据和待验证假设。缺少权限、版本、数据样本或官方行为证据时，明确记录未知项，不用猜测补齐。
+开发阶段临时安装的包，不会自动成为生产 Code Bundle 的固定依赖。Workspaces Notebook 使用 Container Runtime 的包管理方式，依赖和版本应写进可复现的环境配置，并在目标 Runtime 验证。
 
-## 常见误区
+凭证不要写在 Notebook 单元格、参数文件或 Git 中。访问外部系统时，使用 Snowflake 支持的 Secret、External Access Integration 和受控网络访问；交互用户与调度任务的执行身份也要分别验证权限。
 
-- **误区：** 输出截图比结果数据断言更可靠
-  **纠正：** 先判断逻辑是集合式数据转换、单值计算还是多步骤过程控制。分别评估 SQL、Snowpark、UDF 和 Procedure 的运行时、依赖、权限、副作用、部署测试与可观测性。
-- **误区：** 依赖版本可以不管理
-  **纠正：** 先判断逻辑是集合式数据转换、单值计算还是多步骤过程控制。分别评估 SQL、Snowpark、UDF 和 Procedure 的运行时、依赖、权限、副作用、部署测试与可观测性。
-- **误区：** 源码里保存明文账号密码更稳定
-  **纠正：** 先判断逻辑是集合式数据转换、单值计算还是多步骤过程控制。分别评估 SQL、Snowpark、UDF 和 Procedure 的运行时、依赖、权限、副作用、部署测试与可观测性。
-- **误区：** 一次手工运行能证明自动运行必然成功
-  **纠正：** 先判断逻辑是集合式数据转换、单值计算还是多步骤过程控制。分别评估 SQL、Snowpark、UDF 和 Procedure 的运行时、依赖、权限、副作用、部署测试与可观测性。
+交互环境里读取的本地临时文件，在非交互执行时可能不存在。依赖文件应放入 Workspace、Stage 或其他明确管理的位置，并确认它们进入部署包。
 
-## 完成标准
+## 用 Code Bundle 把 Workspace 内容部署成可调度单元
 
-- [ ] 能说明：把探索代码整理成可重复执行、可部署和可观察的转换步骤
-- [ ] 能说明：显式定义输入输出与参数、固定依赖环境、分解可测试步骤并记录结构化日志
-- [ ] 能说明：不把凭证写入 Notebook，并对关键输出添加行数/键唯一性断言
-- [ ] 能指出本知识点的适用前提和不适用场景。
-- [ ] 能提供至少一项运行、数据或配置证据支持判断。
-- [ ] 能描述失败后的恢复、回滚或人工升级路径。
+Notebooks in Workspaces 通过 Code Bundle 将 Workspace 文件打包为生产对象。Code Bundle 是 Database/Schema 下的对象，包含 Notebook、Python 文件和 SQL 文件，可指定 Notebook 作为入口，并在 Task 中执行。
+
+部署不是“定时打开 Notebook”。Task 执行的是已发布到 Code Bundle 的版本。修改 Notebook 后必须再次 Deploy Changes，否则已有 Task 仍使用上一次部署的代码。
+
+生产 CI/CD 可以将 Git 仓库中的 Notebook 文件部署到内部或临时 Stage，再创建或更新 Code Bundle，最后由 Snowflake Task 调度。Code Bundle 采用 caller's rights；Database/Schema USAGE、Code Bundle USAGE、Warehouse/Compute Pool USAGE、External Access Integration 和账户级 EXECUTE TASK 都要纳入检查。Task Owner Role 还必须拥有运行代码所需的对象权限。
+
+## 一条 Notebook 作业的验收链
+
+将订单明细整理为日汇总时，至少保留以下证据：
+
+1. Git Commit：确定 Notebook、Python 模块和依赖文件的版本。
+2. Code Bundle：确认生产发布的入口文件和内容。
+3. Task：确认调度、Owner Role、Warehouse/Compute Pool 与执行权限。
+4. Query ID：确认实际运行了哪些 SQL，是否发生不必要的数据回传。
+5. 数据校验：检查批次行数、订单键唯一性、金额汇总和迟到数据。
+6. Run History：保存运行状态、错误信息、日志、耗时和结果。
+
+Notebook 单元格显示成功只是开发证据；生产作业还要在非交互模式、真实执行身份和真实调度下验证。
+
+## 容易踩中的迁移与运行边界
+
+- 把 Legacy Notebook 的 Warehouse Runtime 规则直接套到 Workspaces Notebook。
+- 假定 Notebook 自动继承 Database/Schema 上下文。
+- 在 Python 中收集数百万行，再用本地 Pandas 完成数据库本可以处理的聚合。
+- 只在交互环境安装依赖，未把包版本和文件纳入 Code Bundle。
+- 修改 Notebook 后未重新部署 Code Bundle，Task 继续执行旧版本。
+- 只检查执行者能否看到 Run History，不检查其是否有权读取执行结果。
 
 ## 自测
 
-1. 如何在实际系统中验证“把探索代码整理成可重复执行、可部署和可观察的转换步骤”？
-2. 当“显式定义输入输出与参数、固定依赖环境、分解可测试步骤并记录结构化日志”不成立时，最可能需要检查哪些边界和证据？
-3. 为什么不能采用“输出截图比结果数据断言更可靠”这一做法？
+1. 为什么 Workspaces Notebook 的 Kernel 使用 Compute Pool，而 SQL 查询仍然需要 Warehouse？
+2. Snowpark DataFrame 创建后没有立即执行 SQL。哪些 Action 会触发实际计算？
+3. Notebook 在 Snowsight 手工运行成功，Task 执行却找不到文件。应检查 Workspace 文件、Stage 和 Code Bundle 的哪个环节？
+4. 修改了 Notebook 代码但没有 Deploy Changes，下一次 Task 会运行哪个版本？
+5. 为什么能查看 Code Bundle 的运行状态，不代表一定有权限查看运行结果？
 
-回答时需要给出判断依据和验证方法，而不只是复述定义。
+## 参考资料
+
+- [Snowflake Notebooks in Workspaces](https://docs.snowflake.com/en/user-guide/ui-snowsight/notebooks-in-workspaces/notebooks-in-workspaces-overview)
+- [Migrating Legacy Notebooks to Workspaces](https://docs.snowflake.com/en/user-guide/ui-snowsight/notebooks-in-workspaces/notebooks-in-workspaces-migrate)
+- [Schedule Notebooks in Workspaces](https://docs.snowflake.com/en/user-guide/ui-snowsight/notebooks-in-workspaces/notebooks-in-workspaces-schedule)
+- [Observability and logging for Notebooks in Workspaces](https://docs.snowflake.com/en/user-guide/ui-snowsight/notebooks-in-workspaces/notebooks-in-workspaces-observability-logging)
+- [Working with DataFrames in Snowpark Python](https://docs.snowflake.com/en/developer-guide/snowpark/python/working-with-dataframes)
