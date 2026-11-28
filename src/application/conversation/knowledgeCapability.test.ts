@@ -191,6 +191,25 @@ describe('retrieveForCopilot 端到端', () => {
     expect(joined).not.toContain('解析：');
   });
 
+  it('课程题的当前题检索使用 knowledgeId，而不是共享 topic', () => {
+    const courseQuestion: Question = {
+      ...activeQuestion,
+      id: 'q-course-active',
+      courseId: 'snowflake',
+      topic: 'snowflake',
+      knowledgeId: 'snowflake-architecture',
+    };
+    const evidence = retrieveForCopilot({
+      query: '这道题为什么错',
+      activeQuestion: courseQuestion,
+      limit: 8,
+    });
+    expect(evidence.scope).toBe('current_question');
+    expect(evidence.seeds).toContain('snowflake-architecture');
+    expect(evidence.seeds).not.toContain('snowflake');
+    expect(evidence.hits.some((hit) => hit.metadata.knowledgeId === 'snowflake-architecture')).toBe(true);
+  });
+
   it('P0-B：明确谈当前题时仍可拿到该题真值（explain 未被误伤）', () => {
     const evidence = retrieveForCopilot({ query: '这道题我不会，给我详细解读', activeQuestion, limit: 8 });
     expect(evidence.scope).toBe('current_question');
