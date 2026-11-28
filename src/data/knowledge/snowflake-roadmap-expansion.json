@@ -370,16 +370,21 @@
     "area": "data-platform",
     "topic": "snowflake-agent-ml",
     "priority": "P1",
-    "summary": "以任务成功、工具正确性、结果质量、权限遵从和运行成本评估 Agent，而非只检查最终文字。",
+    "summary": "设计可复现的 Cortex Agent 评测集，按 Ground Truth 评估最终回答、工具选择和工具执行，并管理 Judge/Agent 版本、非确定性分数波动、评测权限和成本。",
     "required": [
-      "建立任务级期望结果和工具调用约束",
-      "保存中间轨迹并将失败分类为规划、工具、检索或答案问题",
-      "在模型、提示、工具或数据变更后执行回归"
+      "设计 Input Query 与 Ground Truth VARIANT，区分 ground_truth_output 和 ground_truth_invocations。",
+      "解释 answer_correctness、tool_selection_accuracy、tool_execution_accuracy 和 logical_consistency 的评分对象、输入要求与限制。",
+      "分别标注 tool_name、tool_input、tool_output，理解 TSA 与 TEA 对工具调用数量、顺序、输入和输出的不同处理。",
+      "识别 TSA/TEA 当前未覆盖的工具类型，并为 MCP、Code Execution 和副作用设计额外测试。",
+      "固定 Agent Version 与 Metric Version，分析运行非确定性、评测分数方差、Judge 权限和成本。"
     ],
     "misconceptions": [
-      "只评最终答案是否流畅",
-      "把一次人工演示当作稳定性评估",
-      "不保存工具轨迹就尝试定位跨步骤故障"
+      "只用自然语言期望描述而不写明日期、值、单位、容差和边界",
+      "只写 tool_name 就认为 TEA 验证了工具输入和输出",
+      "将 TSA 当作 Judge 主观打分，或认为调用顺序会影响 TSA",
+      "把未纳入 TSA/TEA 的工具误判为已经得到验证",
+      "混用 Metric Version 分数或认为固定版本会固定执行 Trace",
+      "忽略 Judge Model 权限导致评测异常归零"
     ],
     "angles": [
       "mechanism",
