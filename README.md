@@ -7,7 +7,7 @@ Vite + React 19 + TypeScript + Ant Design 单页应用，包含学习体系、�
 ## 功能
 
 - 首屏训练入口：**继续训练**（按薄弱项）/ **快速训练**（自动选题，10 分钟）/ 自定义训练（折叠的高级配置）
-- **学习模式（Snowflake POC）**：课程导览、完整知识树、KnowledgeNode 教材、官方参考资料和独立阅读进度；教材可直接进入当前知识点专项训练，阅读记录不影响考试掌握度
+- **学习模式**：课程导览、完整知识树、KnowledgeNode 教材、官方参考资料和独立阅读进度；教材可直接进入当前知识点专项训练，阅读记录不影响考试掌握度
 - **Learner Memory**：本地记录每次训练的分数、弱项、掌握度与趋势，据此推荐下一次训练（薄弱主题优先出题）
 - 题库驱动（`src/data/questions/` 按 topic/批次拆分为 JSON 文件，`src/data/variants/` 存放离线变体；AI 课程保留六个能力域，Snowflake、Security Architecture、校招面试和 SAP IT Service Consultant 均为独立课程体系），题目按课程采用相应形态：AI 题库支持选择/开放双形态，校招面试 785 题全部为情境式选择题（555 单选、230 多选），LLM 变体出题保持知识点不变
 - 开放题 Agent 多维评分（正确性 / 完整性 / 架构 / 表达）+ 选择题确定性判分
@@ -56,7 +56,8 @@ npm run questions:manage -- challenge --topic=rag --limit=20
 - `docs/ARCHITECTURE.md`：架构、目录职责、技术栈注意点
 - `docs/security-architecture-course-roadmap.md`：面向 Solution Architect 的安全架构课程、标准来源与方案设计案例
 - `docs/snowflake-learning-path.md`：Snowflake 独立课程的系统学习路线、架构实战与题目索引
-- `docs/snowflake-learning-mode-poc.md`：Snowflake 学习模式 POC 的教材模型、覆盖范围、学习记录与专项训练衔接
+- `docs/snowflake-learning-mode-poc.md`：Snowflake 学习模式的教材模型、194 篇节点教程、8 篇综合教程、学习记录与专项训练衔接
+- `docs/learning-experience.md`：各课程学习入口、题目生成、节点级训练与事实核验流程
 - [`docs/rag-interview-questions-research-2026-10.md`](docs/rag-interview-questions-research-2026-10.md)：2026-10 版 RAG 工程实践与参考来源，配套新增 120 道初/中级题，覆盖混合检索、重排、Contextual Retrieval、Agentic RAG、GraphRAG、评测、多模态与安全
 - [`docs/evaluation-prompt-context-engineering-research-2026-10.md`](docs/evaluation-prompt-context-engineering-research-2026-10.md)：2026-10 版评估指标、Prompt Engineering 与 Context Engineering 研究及参考来源，配套新增 100 道初/中级题（40 道评估指标、30 道提示工程、30 道上下文工程）。
 - [`docs/legacy-question-bank-audit-2026-10-29.md`](docs/legacy-question-bank-audit-2026-10-29.md)：既有题库与知识库抽样审查（累计 300 余道题），含题目修订、知识节点更新与离线变体同步记录。
