@@ -39,6 +39,9 @@ jobs:
           else
             node scripts/audit-learning-content.mjs --strict --base HEAD~1
           fi
+      - name: Learning content backlog report (non-blocking)
+        continue-on-error: true
+        run: npm run learning:content-audit
       - name: Validate evidence metadata on changed questions
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
