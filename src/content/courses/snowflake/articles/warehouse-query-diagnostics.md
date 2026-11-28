@@ -1,70 +1,103 @@
 # Warehouse、Query Profile 与成本根因诊断
 
-## 本节要解决的问题
+## 先别把四分钟的查询直接换成四倍大的仓库
 
-把“查询变慢”“报表偶尔超时”和“Warehouse 费用上涨”转成可验证的根因分析。一次诊断至少要回答三个问题：用户等待发生在哪个执行阶段、哪个算子消耗了主要资源，以及资源变化是否足以解释性能和成本变化。
+订单报表昨天运行 30 秒，今天变成 4 分钟。团队准备把 Warehouse 从 Large 改成 4X-Large，但没有人确认这四分钟到底花在排队、事务等待还是 SQL 执行上。
 
-## 核心知识
+Snowflake 的 Query History 已经记录了这些阶段。先把总耗时拆开，才能决定要看 Warehouse Load，还是进入 Query Profile 查算子。
 
-### 查询总耗时需要按阶段拆解
+## 同样是慢，背后的等待完全不同
 
-Query History 记录编译、仓库预配等待、过载队列、事务阻塞和执行耗时。QUEUED_OVERLOAD_TIME 高通常指向并发负载，QUEUED_PROVISIONING_TIME 高则应检查仓库启动/扩容；TRANSACTION_BLOCKED_TIME 高应检查锁等待。EXECUTION_TIME 高才需要重点进入 Query Profile 观察算子。
+Query History 中几个时间字段尤其有用：
 
-同样的 SQL 文本可能因参数、数据规模、角色、Warehouse、Session 配置和缓存状态不同而有不同表现。诊断应使用 Query ID、Query Tag、参数化查询 hash 和实际执行上下文，而不是只按 SQL 字符串搜索。
+| 字段 | 表示什么 | 常见排查方向 |
+| --- | --- | --- |
+| COMPILATION_TIME | SQL 编译和计划阶段的时间 | 查询复杂度、反复生成动态 SQL |
+| QUEUED_PROVISIONING_TIME | 等待 Warehouse 创建、恢复或扩容资源 | 仓库启动和扩容过程 |
+| QUEUED_OVERLOAD_TIME | 因当前仓库负载过高而排队 | 并发峰值、资源争用 |
+| TRANSACTION_BLOCKED_TIME | 被并发 DML 事务阻塞的时间 | 锁等待和事务生命周期 |
+| EXECUTION_TIME | 实际执行计划的时间 | 扫描、Join、聚合、交换和 Spill |
 
-### Query Profile 用算子输入输出和数据量找根因
+如果报表主要在 QUEUED_OVERLOAD_TIME 上消耗时间，打开 Query Profile 看到的算子可能并没有问题；要是 EXECUTION_TIME 增加，则要进一步检查执行计划。事务阻塞高时，扩大 Warehouse 并不能释放另一事务持有的锁。
 
-扫描算子要看读取字节、微分区裁剪和过滤效果；Join 算子要看左右输入与输出行数，过度膨胀通常意味着 Join Key 重复或关联条件不完整；Aggregate/Sort/Window 要看输入基数和数据交换；Spill 则提示中间结果需要落到本地或远程存储，需要结合执行计划与仓库资源分析。
+## 先用 Query ID 固定诊断对象
 
-Profile 显示的是执行结果统计，不代表 SQL 语义正确。每项改写都应确认结果集、关键业务汇总和行数与原方案一致。
+排查事故时，不要只按 SQL 文本搜索。相同 SQL 可能使用不同参数、Role、Warehouse、Session 设置和数据窗口。把 Query ID、Query Tag、执行用户、Role、Warehouse、参数以及业务数据范围保存下来，才能复现原始问题。
 
-### 仓库负载与费用视图补充执行计划之外的信息
+查询历史可以直接查看：
 
-WAREHOUSE_LOAD_HISTORY 以 5 分钟为粒度提供运行、过载排队、预配等待和事务阻塞负载。它适合历史容量分析，但有数据延迟；即时事故可优先使用 Snowsight 和 Information Schema。WAREHOUSE_METERING_HISTORY 观察仓库小时级 credits，查询级归因用于定位昂贵 SQL。三类数据分别回答计划、容量与费用问题。
+~~~sql
+SELECT
+  QUERY_ID,
+  START_TIME,
+  QUERY_TYPE,
+  USER_NAME,
+  ROLE_NAME,
+  WAREHOUSE_NAME,
+  COMPILATION_TIME,
+  QUEUED_PROVISIONING_TIME,
+  QUEUED_OVERLOAD_TIME,
+  TRANSACTION_BLOCKED_TIME,
+  EXECUTION_TIME,
+  PARTITIONS_SCANNED,
+  PARTITIONS_TOTAL,
+  BYTES_SCANNED,
+  BYTES_SPILLED_TO_LOCAL_STORAGE,
+  BYTES_SPILLED_TO_REMOTE_STORAGE
+FROM SNOWFLAKE.ACCOUNT_USAGE.QUERY_HISTORY
+WHERE START_TIME >= DATEADD('hour', -6, CURRENT_TIMESTAMP())
+  AND QUERY_TYPE = 'SELECT'
+ORDER BY START_TIME DESC
+LIMIT 100;
+~~~
 
-## 工程实施步骤
+ACCOUNT_USAGE 视图不是实时事故面板。QUERY_HISTORY 视图最多可能延迟约 45 分钟，Warehouse Load History 的数据延迟可能更长。刚刚发生的查询，优先用 Snowsight Query History 或 Information Schema 的 QUERY_HISTORY 表函数查看。
 
-1. 收集问题时间范围、Query ID、SQL 版本、参数、用户、Role、Warehouse、Query Tag 和业务数据范围。
-2. 在 Query History 中拆分 compilation、provisioning、overload、transaction blocked 和 execution 时间。
-3. 对 execution_time 异常的查询打开 Query Profile，记录扫描、Join、聚合、排序、交换和 spill 算子数据。
-4. 对 queued_overload_time 异常的查询，检查 Warehouse Load History 峰值与并发工作负载；对 provisioning 异常检查 Resume/扩缩容。
-5. 对 transaction_blocked_time 异常的查询，检查 LOCK_WAIT_HISTORY、事务和并发 DML，而不是先扩大仓库。
-6. 根据证据提出单一优化假设：减少扫描、修正 Join 基数、降低并发竞争、调整 Warehouse 或优化暂停策略。
-7. 通过同一数据时间窗、参数、SQL 语义和缓存条件复测，并核对结果行数、关键金额和其他业务指标。
-8. 对比性能和成本：p50/p95、排队、扫描字节、spill、credits、查询调用次数和单位业务产出。
-9. 将 Query ID、Profile 截图/证据、SQL 版本和测试结果纳入故障记录，供下次回归比较。
+## Query Profile 要看算子的输入和输出
 
-## 场景分析
+当 EXECUTION_TIME 明显增加，打开对应 Query ID 的 Query Profile。不要只看哪个算子颜色最深，先比较算子输入、输出和数据交换：
 
-订单报表从 30 秒变成 4 分钟，团队准备把仓库从 Large 改成 4X-Large。Query History 显示执行时间增长，而排队时间基本不变。Query Profile 显示 Join 输出行数增长到原来的十倍，扫描的微分区数量也显著增加。
+- Table Scan：查看扫描字节、扫描微分区比例和过滤效果。过滤条件没有裁剪到数据，往往会让下游算子处理更多行。
+- Join：比较左右输入行数和 Join 输出行数。输出突然膨胀，通常应检查关联键是否唯一、Join 条件是否完整，或数据是否出现重复。
+- Aggregate、Sort 和 Window：关注输入基数、分组数量及数据交换。高基数聚合或排序可能产生大量中间数据。
+- Spill：查看本地或远程 Spill 字节，结合算子输入、Warehouse 资源和查询形态分析；Spill 是症状，不自动等于 Warehouse 太小。
 
-先检查最近数据是否出现重复订单、Join Key 是否仍唯一、日期过滤是否有效裁剪。若 Join 逻辑发生基数放大，扩大仓库只会更快处理错误或冗余数据；应先修正 SQL 或数据质量。优化后核对订单数、客户数和金额汇总，再比较 Query Profile 和 p95。
+需要将 Profile 指标纳入程序化分析时，可以使用 GET_QUERY_OPERATOR_STATS。它返回算子统计数据，但仍要把 JSON 指标与具体 Query ID、SQL 版本和业务结果关联起来。
 
-若排队时间同时增长，则另行评估 Warehouse 容量。一个查询可能同时存在 SQL 计划退化和并发竞争，但两者需要独立证据和验收。
+## 回到订单报表：先排除 Join 放大
 
-## 常见误区
+Query History 显示，这条报表的执行时间增加，而排队时间基本不变。Query Profile 又显示 Join 输出行数是原来的十倍，扫描的微分区数量也显著增加。
 
-- **总耗时增加就认为 SQL 算子变慢。** 编译、恢复、过载队列和事务等待可能占据主要时间。
-- **看到 Join 很慢就直接增加 Warehouse。** 先检查 Join 输入输出基数和关联条件。
-- **把 spill 直接解释为仓库太小。** 中间数据量、排序、聚合和 Join 计划也可能导致 spill。
-- **认为扫描微分区多一定是表设计问题。** 需要同时检查谓词、查询选择性和数据分布。
-- **优化后只看耗时，不核对结果。** 性能提升不证明 SQL 语义保持正确。
-- **把查询级 credits 当作所有费用。** 仓库空闲和 Serverless、存储等费用需要另行核对。
+这时应先检查客户维表是否出现重复键、订单表是否重复摄取，以及日期过滤条件是否仍然有效。若 Join 基数放大，扩大 Warehouse 只会更快地处理更多冗余行。
 
-## 完成标准
+修正后不能只看耗时下降。还要核对订单数、客户数和金额汇总，确认业务结果与预期一致。若排队时间也在增长，则另开一条容量调查；单条查询可以同时有计划退化和并发竞争，但两种根因要分别拿证据。
 
-- [ ] 能拆分查询编译、排队、执行和事务阻塞时间。
-- [ ] 能用 Query Profile 识别扫描、Join、聚合和 spill 瓶颈。
-- [ ] 能用 Warehouse Load History 判断容量与并发问题。
-- [ ] 能将诊断结果转成单一可验证的优化假设。
-- [ ] 能同时用结果正确性、延迟与成本验收。
+## 仓库负载和费用数据补充另一半答案
+
+Query Profile 解释一条 SQL 怎样执行，Warehouse Load History 观察一段时间的仓库负载，Warehouse Metering History 记录仓库 Credit 使用。三者回答的是不同问题，不能互相替代。
+
+ACCOUNT_USAGE 的历史数据有延迟，适合做事后容量分析和趋势比较。实时事故则先从 Snowsight 或 Information Schema 取证。查询级费用归因也不等于账户全部费用：空闲 Warehouse、Serverless 服务、存储和数据传输应分别观察。
+
+## 怎样验证一次优化真的有效
+
+每次只验证一个主要假设。例如先修复 Join Key，再保持数据窗口和参数不变进行对照；不要同时更改 SQL、Warehouse Size 和缓存条件，否则无法判断哪项变更起作用。
+
+比较至少包含 p50/p95 耗时、排队时间、扫描字节、Spill、Credit 和结果正确性。对关键报表还要保留 Query ID、SQL 版本和验收结果，以便后续回归时复用。
+
+## 常见误判
+
+- 总耗时增加，不代表算子执行变慢。
+- Join 输出行数膨胀，应先查基数和关联条件，而不是直接扩仓。
+- Spill 既可能与仓库规格有关，也可能来自查询中间结果过大。
+- 扫描微分区多，要结合过滤条件、选择性和数据分布判断。
+- 查询级 Credit 不能代表所有账户费用。
 
 ## 自测
 
-1. Query History 显示 QUEUED_OVERLOAD_TIME 很高，但 Query Profile 算子执行正常，应先检查什么？
-2. Join 输出行数异常膨胀，可能有哪些数据或 SQL 原因？
-3. 执行时间增长且扫描微分区数量上升，如何判断是数据分布变化还是过滤逻辑失效？
-4. 一次优化让查询从 4 分钟下降到 40 秒，但订单金额也发生变化，是否可以判定优化完成？
+1. QUEUED_OVERLOAD_TIME 很高，但 Query Profile 的执行算子正常。应该先看哪些仓库负载证据？
+2. Join 输出行数突然放大十倍，哪两类数据问题最值得先排查？
+3. ACCOUNT_USAGE.QUERY_HISTORY 没有刚执行的 Query ID，是否说明查询没有运行？应改用什么观察入口？
+4. 优化后查询从 4 分钟降到 40 秒，但订单金额也下降了。为什么不能判定优化完成？
 
 ## 参考资料
 

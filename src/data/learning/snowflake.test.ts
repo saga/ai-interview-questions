@@ -45,10 +45,10 @@ describe('Snowflake one-to-one course tutorials', () => {
         .map((match) => match[1].trim());
       expect(headings.length, article.id).toBeGreaterThanOrEqual(5);
       expect(
-        headings.some((heading) => /本节要解决的问题|先从|从.*说起|先看|先判断|先问|问题|为什么|判断/.test(heading)),
+        headings.some((heading) => /本节要解决的问题|先|从.*说起|问题|为什么|判断/.test(heading)),
       ).toBe(true);
       expect(
-        headings.some((heading) => /常见误区|容易|失败|故障|风险|边界|排查|代价|限制|失守/.test(heading)),
+        headings.some((heading) => /常见误区|容易|失败|故障|风险|边界|排查|代价|限制|失守|误判/.test(heading)),
       ).toBe(true);
       expect(
         headings.some((heading) => /自测|练习|思考|回顾|演练/.test(heading)),

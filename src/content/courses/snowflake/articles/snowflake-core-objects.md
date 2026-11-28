@@ -1,75 +1,93 @@
 # Snowflake 核心对象与会话执行边界
 
-## 本节要解决的问题
+## 先辨认一次连接到底带来了什么
 
-理解 Database、Schema、Table、View、Stage、File Format、Warehouse 和 Role 的职责，并掌握会话上下文如何影响对象名称解析与操作权限。日常 SQL 出错时，首先要区分对象不存在、当前上下文错误、仓库未选择和角色授权不足。
+一个部署脚本在开发环境能执行 SELECT，在生产环境却报对象不存在。运维准备重建表，开发人员怀疑权限，ETL 同事则认为 Warehouse 没启动。
 
-## 核心知识
+这几个判断都可能错。Snowflake 会话带有一组上下文：当前 Role、辅助角色、Warehouse、Database、Schema，以及查询时使用的对象搜索路径。它们决定 SQL 在哪里解析、用什么计算资源、以什么权限执行。
 
-### Database 与 Schema 组织对象，Table/View 承载数据访问
+先运行下面的查询，确认连接实际处于什么状态：
 
-Database 是逻辑命名空间，Schema 位于 Database 之下，表、视图、Stage、File Format、Sequence、Procedure 等对象通常属于某个 Schema。常见对象名可以写成 \`DATABASE.SCHEMA.OBJECT\`。
+~~~sql
+SELECT
+  CURRENT_ROLE(),
+  CURRENT_SECONDARY_ROLES(),
+  CURRENT_WAREHOUSE(),
+  CURRENT_DATABASE(),
+  CURRENT_SCHEMA(),
+  CURRENT_SCHEMAS();
+~~~
 
-未写全限定名时，Snowflake 会使用当前会话的 Database 和 Schema 补全名称。切换 Database 也会影响当前 Schema，因此脚本不能假定连接时的默认上下文永远不变。
+尤其要注意 CURRENT_SCHEMA 与 CURRENT_SCHEMAS 并不相同：前者返回当前 Schema，后者反映查询未限定对象名时会搜索哪些 Schema。
 
-### Stage 与 File Format 是文件摄取/导出的入口配置
+## 对象名称和会话上下文是怎样关联的
 
-Stage 指向文件存放位置，可以是 Internal Stage 或 External Stage。File Format 描述 CSV、JSON、Parquet 等文件的解析选项。它们不是目标业务表，也不会自动完成数据质量校验。
+### Database 与 Schema 是命名空间
 
-加载链路应分开检查文件是否存在、格式是否解析正确、COPY INTO 是否成功、拒绝行是否处理，以及目标表是否达到预期行数。
+Database 是逻辑命名空间，Schema 位于 Database 之下。Table、View、Stage、File Format、Sequence 和 Procedure 等对象通常属于某个 Schema。对象可以使用完整名称：
 
-### Warehouse 是计算资源，不属于表的命名层级
+~~~sql
+SELECT *
+FROM ANALYTICS.MART.ORDERS;
+~~~
 
-Warehouse 执行 SQL 和相关计算。它不是 Database、Schema 或 Table 的子对象，也不代表数据存储位置。没有选择合适的 Warehouse 时，查询可能因会话未设置计算资源而无法执行；但 Warehouse 可用不代表当前角色拥有表访问权限。
+在 DDL 和 DML 中，省略 Database 或 Schema 时，Snowflake 会用当前会话上下文补全名称。当前 Schema 始终属于当前 Database；切换 Database 时，当前 Schema 可能随之重置。
 
-### Role 决定可执行的操作，会话上下文决定当前使用哪些对象和资源
+查询语句中的未限定对象名还有一个区别：它按 Session 的 SEARCH_PATH 解析。默认路径通常包含当前 Schema 和当前 Database 的 PUBLIC Schema，但用户可以通过 ALTER SESSION 修改搜索路径。因此，“当前 Schema 是 MART”并不能证明所有未限定查询只会在 MART 中查找对象。
 
-Role 是权限主体，用户通过活动角色及已激活的辅助角色取得对象权限。对象所有权通常包含更广泛的管理能力；Managed Access Schema 会将对象授权决策集中到 Schema Owner 或拥有 MANAGE GRANTS 的角色。
+### Stage 与 File Format 解决的是文件入口，不是业务表
 
-Warehouse 的 USAGE、Database/Schema 的 USAGE 和目标表的 SELECT/INSERT 等权限是不同的授权边界。仅能看到对象名不代表有权查询对象。
+Stage 提供内部或外部文件位置的访问入口。File Format 描述 CSV、JSON、Parquet 等文件怎样解析。它们不会因为文件存在就自动把数据写进 Table，也不负责判断数据是否符合业务规则。
 
-## 工程实施步骤
+加载文件时，至少要分别确认 Stage 路径、文件名匹配、File Format、COPY INTO 返回结果、拒绝行以及目标表行数。把这些步骤混在一起，往往会把解析错误误判为目标表问题。
 
-1. **确认上下文。** 运行 \`SELECT CURRENT_ROLE(), CURRENT_SECONDARY_ROLES(), CURRENT_WAREHOUSE(), CURRENT_DATABASE(), CURRENT_SCHEMA();\` 记录当前会话设置。
-2. **检查命名。** 对关键表使用全限定名，执行 SHOW TABLES/SHOW VIEWS/SHOW STAGES，并用 DESCRIBE 确认对象结构。
-3. **检查文件入口。** 对 Stage 使用 LIST 检查文件，对 File Format 检查类型和解析选项；加载前明确文件匹配规则和失败处理。
-4. **检查执行资源。** 确认当前 Warehouse 存在、已启动且有 USAGE 权限。不要通过变更 Database 或 Schema 来代替仓库授权。
-5. **检查授权链。** 从用户拥有的 Role、当前活动 Role、角色继承和辅助角色出发，检查 Database、Schema、目标对象及 Warehouse 的所需权限。
-6. **检查所有权和管理边界。** 对 CREATE/ALTER/DROP 操作确认执行角色拥有相应权限；在 Managed Access Schema 中，检查授权是否由 Schema Owner 或 MANAGE GRANTS 角色管理。
-7. **固化部署上下文。** 在 ETL、应用连接和 CI 脚本中显式设置 Role、Warehouse、Database 和 Schema，减少连接配置差异造成的问题。
+### Warehouse 是计算资源，不属于对象命名层级
 
-## 场景分析
+Warehouse 执行 SQL 和相关计算，不是 Database、Schema 或 Table 的子对象，也不代表数据存储位置。没有选择 Warehouse 或当前角色无权使用 Warehouse，查询可能无法启动；但 Warehouse 可用不代表当前角色拥有表访问权限。
 
-部署脚本在开发环境能执行 \`SELECT * FROM ORDERS\`，在生产环境却提示对象不存在。团队怀疑生产表没有部署，准备重新创建。
+### Role 决定操作权限，所有权还包含管理责任
 
-不要先创建对象。先运行 CURRENT_DATABASE 和 CURRENT_SCHEMA，检查连接是否落在预期 Database/Schema；再用全限定名测试对象是否存在。如果全限定名可见但查询失败，检查当前 Role 的 USAGE 与 SELECT 权限。如果表能查询但 DDL 失败，继续检查 OWNERSHIP 或相应 CREATE/ALTER 权限。若错误发生在加载文件时，再检查 Stage、File Format 和 Warehouse。
+Role 是权限主体。权限授予 Role，再由用户在 Session 中激活相应角色；启用的 Secondary Roles 也可能参与权限判断。对象的 USAGE、SELECT、INSERT、CREATE 和 OWNERSHIP 各自代表不同边界。
 
-该排查顺序可以避免因上下文或权限错误而创建重名对象，导致后续数据写入到错误的 Schema。
+普通 Schema 中对象 Owner 通常可以管理该对象的 Grants；Managed Access Schema 则将授权决策集中到 Schema Owner 或拥有 MANAGE GRANTS 的 Role。不要把“可以查询”“可以修改对象”和“可以把权限授给别人”视为同一能力。
 
-## 常见误区
+## 按错误发生的位置排查
 
-- **把 Warehouse 当作 Database 的一部分。** Warehouse 是独立计算资源，不属于 Database.Schema.Object 命名路径。
-- **认为切换 Database 不会影响 Schema。** 当前 Schema 属于当前 Database；切换 Database 可能同时改变当前 Schema 上下文。
-- **将 Stage 当成目标表。** Stage 提供文件访问入口，File Format 负责解析规则，COPY INTO 才执行加载。
-- **认为拥有对象名称就有 SELECT 权限。** 权限由活动角色及对象授权决定，不能仅从名称可见性推断。
-- **忽略 Managed Access Schema。** 该模式下普通对象 Owner 的授权能力受到限制，授权由 Schema Owner 或 MANAGE GRANTS 角色集中管理。
+回到开头的部署问题，可以按以下顺序处理：
 
-## 完成标准
+| 观察到的结果 | 优先检查 | 不要先做什么 |
+| --- | --- | --- |
+| 未限定对象名时提示对象不存在 | CURRENT_DATABASE、CURRENT_SCHEMA、SEARCH_PATH | 重新创建同名对象 |
+| 全限定名能解析但查询被拒绝 | 当前 Role、父级容器 USAGE、对象 SELECT | 换一个 Warehouse |
+| 表可以查询，但 CREATE/ALTER 失败 | Schema CREATE 权限、对象 OWNERSHIP、Managed Access 规则 | 给用户账户级管理员权限 |
+| Stage 文件存在，但 COPY 没写入预期行数 | 文件匹配、File Format、加载错误和目标行数 | 只检查目标表结构 |
+| SQL 无法启动或因无权使用仓库失败 | CURRENT_WAREHOUSE、Warehouse 状态与 USAGE | 修改 Database/Schema |
 
-- [ ] 能说明 Database、Schema、Table、View、Stage 和 File Format 的关系。
-- [ ] 能区分 Warehouse 计算资源与数据库对象命名空间。
-- [ ] 能用 CURRENT_* 函数还原会话上下文。
-- [ ] 能按 Role、USAGE 和对象权限定位授权错误。
-- [ ] 能说明普通 Schema 与 Managed Access Schema 的授权管理差异。
+例如，生产脚本使用全限定名仍然查询失败，就没有必要继续怀疑搜索路径；应该转向 Role 和对象授权。相反，如果只有未限定名称失败，重新授予 SELECT 往往并不能解决问题。
+
+## 把连接上下文固定在应用与部署配置里
+
+ETL、应用连接和 CI 脚本应显式设置需要的 Role、Warehouse、Database 和 Schema，避免把个人 Snowsight 工作区的默认值带入生产。对关键表使用全限定名，能减少对象搜索路径变化带来的歧义。
+
+还要区分权限配置和运行资源配置：部署身份需要 CREATE/OWNERSHIP 等对象操作权限；查询服务身份通常只需要必要的 USAGE、SELECT 和 Warehouse USAGE。两类身份不应为了减少配置工作而合并。
+
+## 容易出现的几种误判
+
+- Warehouse 不属于 Database.Schema.Object 命名路径。
+- Stage 是文件访问入口，File Format 是解析规则，COPY INTO 才执行加载。
+- 当前 Schema 不等于查询时唯一会搜索的 Schema。
+- 能看见对象名称不代表有 SELECT 权限。
+- 拥有对象不等于能在 Managed Access Schema 中自行决定所有 Grants。
 
 ## 自测
 
-1. 当前 Database 正确，但查询未限定名称的表时提示找不到对象，应该先检查哪些会话上下文？
-2. 一个角色可以使用 Warehouse，却无法查询某张表。为什么这两项权限互不替代？
-3. CSV 文件已存在于 Stage，但 COPY INTO 后目标表没有预期行数。应分哪几个环节排查？
+1. CURRENT_SCHEMA 返回 MART，但未限定表名仍命中了其他 Schema。接下来应该检查哪个 Session 参数或函数？
+2. 一个 Role 能使用 Warehouse，却无法读取订单表。为什么需要分开检查计算权限和数据对象权限？
+3. 文件已出现在 Stage，COPY INTO 的目标表行数却少于源文件记录数。应分别检查哪些环节？
+4. 在 Managed Access Schema 中，谁负责给对象授予访问权限？为什么对象 Owner 不一定能直接授权？
 
 ## 参考资料
 
-- [USE 命令与当前会话上下文](https://docs.snowflake.com/en/sql-reference/sql/use)
 - [Object name resolution](https://docs.snowflake.com/en/sql-reference/name-resolution)
+- [USE 命令与当前会话上下文](https://docs.snowflake.com/en/sql-reference/sql/use)
 - [Overview of access control](https://docs.snowflake.com/en/user-guide/security-access-control-overview)
