@@ -406,16 +406,21 @@
     "area": "data-platform",
     "topic": "snowflake-agent-ml",
     "priority": "P1",
-    "summary": "处理超时、部分成功、重复调用和不可逆副作用，定义安全重试与人工升级路径。",
+    "summary": "按 Agent/API、工具和外部副作用区分失败，设计有界重试、执行状态查询、业务幂等键、Saga 补偿和人工接管，避免超时后重复执行不可逆操作。",
     "required": [
-      "区分可重试错误、需修正输入的错误和不可重试错误",
-      "对有副作用工具使用幂等键和执行状态查询",
-      "超出重试预算时停止并提供证据和人工接管入口"
+      "区分客户端网络、Cortex Agent API、编排、工具调用和外部副作用失败，保存 typed error、HTTP 状态、request_id、run_id 和工具证据。",
+      "理解 Cortex Agent SDK 对 GET/HEAD/OPTIONS、写操作和流式请求的不同重试默认值，并为 408/409/429/5xx 设置有界退避和显式 per-request 策略。",
+      "对写操作使用稳定 operation_id 与 payload_hash；超时后先查询外部执行状态，使用 OUTCOME_UNKNOWN 避免重复执行。",
+      "为外部业务副作用建立持久化状态机；区分 forward recovery、Saga compensation 和不可逆动作。",
+      "定义最大重试次数、时间预算、补偿失败和结果不明时的停止/人工接管条件；Thread 不能代替业务操作状态库。"
     ],
     "misconceptions": [
-      "对所有工具错误都使用相同的无限重试",
-      "不查询执行状态就重放非幂等动作",
-      "只向用户展示成功/失败而不保留恢复证据"
+      "把客户端超时当成服务端没有执行",
+      "对所有错误和所有 Agent Run 使用相同的自动重试",
+      "把 Thread ID 当作业务幂等键或持久化工作流状态",
+      "只在外部调用成功后才记录操作，导致成功后响应丢失无法识别",
+      "把补偿事务当成可以回滚所有外部副作用",
+      "让 Agent 自行决定无限重试、执行补偿或跨越审批边界"
     ],
     "angles": [
       "mechanism",
