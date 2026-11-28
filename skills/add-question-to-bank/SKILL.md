@@ -41,7 +41,8 @@ description: "写新题并落库。用户要求新增面试题、起草题目或
 每道题必须满足：
 
 - 全局唯一、稳定且可读的 `id`。
-- 合法的 `category`、`topic`、`difficulty` 和 `angle`。
+- 合法的 `category`、`topic`、`difficulty`、`angle` 和 `cognitiveTask`。新题必须填写认知任务。
+- 新题必须填写 `source.materialId`，关联实际使用的教学材料或官方来源；不得虚构来源标识。
 - 题干自包含，不依赖"上述方法""原题""本文"等上下文。
 - 题干不得要求考生预先知道来源文章、Lens、认证框架或其分类；禁止"哪种做法符合某 Lens/框架"类问法。将来源原则写成包含目标、约束和验收标准的通用场景，来源名称只放在 `source` metadata。
 - `explanation` 明确解释正确答案和关键误区。
@@ -130,10 +131,22 @@ description: "写新题并落库。用户要求新增面试题、起草题目或
      加题后缺口数不变是正常的，别拿它当验收标准。全库覆盖审计转 **check-question-bank-quality**。
    - `uv run --project analysis --extra analysis python analysis/question_analysis.py --semantic --json`
      使用本地字符级 TF-IDF 向量检查近重复题（完全离线）；这是人工复核信号，不替代 TypeScript/Zod 契约校验。
-5. 再运行 `npm run build` 和 `npm run test`。
+5. 使用实际来源摘录执行事实核验：
+   ```bash
+   npm run questions:manage -- verify --ids=<id1,id2> --evidence-file=reports/question-evidence.json --gate
+   ```
+   证据文件格式见 `docs/question-correctness-verification.md`。没有匹配来源摘录、独立答案不一致或选项/解析证据不完整时，不得标记 VERIFIED。
+6. 再运行 `npm run build` 和 `npm run test`。
 6. 运行 `git diff --check`，确认没有意外改动。
 7. 最终说明新增题的 id、覆盖的知识缺口、语义重复候选、验证结果、检索可见性确认（"遮住正确项后题干仍成立"、hint 模式不漏题）和仍需人工复核的事实。
 
 ## LLM 使用边界
 
 LLM 可以辅助起草题干、干扰项和参考答案，但不能替代事实核对。生成后必须人工或基于可信来源检查：答案唯一性、解释一致性、技术版本、计算过程和知识点覆盖。不要把实时 LLM 生成结果直接写入题库。
+
+
+## 事实正确性验证
+
+结构校验和语义质询都不能代替事实核验。新题发布前，先让独立解题阶段在看不到答案与解析的情况下作答；第二阶段才向核验模型展示存储答案、解析和实际来源摘录，逐项检查选项、开放题参考答案和解释。
+
+`source.materialId` 必须匹配证据文件中的材料 ID。引用句必须能在提供的材料正文中逐字找到。没有证据的主张、条件不明确的结论和无法确认的版本行为均留在 REVIEW / NEEDS_EVIDENCE，不自动放行。

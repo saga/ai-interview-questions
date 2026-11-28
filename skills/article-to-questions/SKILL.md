@@ -44,12 +44,14 @@ description: "把一篇技术文章转成题库题目。用户提供文章链接
    - `id`：全局唯一、可读、体现主题（参考同 topic 现有 id 风格）
    - `category`/`topic`：与目标知识节点一致
    - `angle`：来自枚举，不得自造
-   - `difficulty`：easy/medium/hard，依题目认知要求判断
+   - `difficulty`：easy/medium/hard，依题目认知要求判断；
+   - `cognitiveTask`：从 schema 合法枚举中选择真实的作答认知行为；
+   - `source.materialId`：填写当前实际使用材料的稳定 ID，不得省略或虚构
    - `formats.choice`：`type`/`options`/`answer`，single 恰好 1 个答案、multiple 至少 2 个；
      **默认按 multiple 起草**，只有结论唯一的题才用 single（题型分布要求见 `spec §9`）
    - `explanation`：解释正确答案和关键误区
 5. 运行 `npm run questions:manage -- coverage`，确认这些题解决的是真实缺口而不是已饱和的 topic × angle 组合；如果发现更值得补的缺口，改用 **fill-coverage-gap** skill 的蓝图再决定题目方向。
-6. 把草稿交给 **add-question-to-bank** skill 的完整校验与写入流程（`question:add --check`、去重、语义重复检查、`validate:questions`、`typecheck`、`test`）。本 skill 不重复实现写入逻辑。
+6. 把草稿交给 **add-question-to-bank** skill 的完整校验与写入流程（`question:add --check`、去重、语义重复检查、`validate:questions`、事实正确性核验、`typecheck`、`test`）。本 skill 不重复实现写入逻辑。
 
 ## 表达质量审查
 

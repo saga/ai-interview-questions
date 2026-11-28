@@ -129,7 +129,10 @@ for (const question of incoming) {
   if (!validAngles.has(question.angle)) errors.push(`${question.id}: angle 不合法`);
   // 只查「缺失」：非法值在 `parseQuestionArray`（Zod）阶段就已抛错，到不了这里。
   if (!question.cognitiveTask) {
-    warnings.push(`${question.id}: 缺 cognitiveTask（ADR-077 起是 assessment contract 第四维，新题应填）`);
+    errors.push(`${question.id}: 缺 cognitiveTask（新题必须明确测量的认知任务）`);
+  }
+  if (!question.source?.materialId?.trim()) {
+    errors.push(`${question.id}: 缺 source.materialId（新题必须声明可追溯的教学来源）`);
   }
   // 规范化后重复 = 硬失败。此前只 warn，导入照样写盘，结果同一道题以两种标点/大小写
   // 形态并存于题库：覆盖矩阵把它算成 2 题（虚高），练习时用户会连着答两遍同一题。

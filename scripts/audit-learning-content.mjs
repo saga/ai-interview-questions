@@ -90,8 +90,9 @@ if (changed && targets.length === 0) {
 
 const missing = [];
 const paragraphIndex = new Map();
+const changedIds = new Set(targets.map((doc) => doc.id));
 const pendingSources = [];
-for (const doc of targets) {
+for (const doc of docs) {
   if (doc.missing) {
     missing.push({ id: doc.id, path: doc.path, problem: '文件不存在' });
     continue;
@@ -111,6 +112,7 @@ for (const doc of targets) {
 }
 const duplicates = [...paragraphIndex.values()]
   .filter((group) => new Set(group.ids).size > 1)
+  .filter((group) => !strict || group.ids.some((id) => changedIds.has(id)))
   .map((group) => ({ ...group, ids: [...new Set(group.ids)] }))
   .sort((a, b) => b.ids.length - a.ids.length || a.heading.localeCompare(b.heading));
 

@@ -39,6 +39,15 @@ jobs:
           else
             node scripts/audit-learning-content.mjs --strict --base HEAD~1
           fi
+      - name: Validate evidence metadata on changed questions
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            node scripts/validate-new-question-evidence.mjs --since ${{ github.event.pull_request.base.sha }}
+          elif [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]; then
+            node scripts/validate-new-question-evidence.mjs --since ${{ github.event.before }}
+          else
+            node scripts/validate-new-question-evidence.mjs --since HEAD~1
+          fi
       - name: Validate variants
         run: npx vite-node scripts/validate-variants.ts
 

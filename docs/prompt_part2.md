@@ -6,7 +6,9 @@
 
 1. Part 1 Blueprint；
 2. 当前浏览器页面中的 SOURCE MATERIAL；
-3. 可选的 SOURCE_MATERIAL_ID。
+3. SOURCE_MATERIAL_ID（必填，必须是本次实际使用来源的稳定标识）。
+
+如果未提供 SOURCE_MATERIAL_ID，不得自行编造 ID；先要求补齐来源标识再生成。
 
 你的任务：
 
@@ -44,6 +46,8 @@ Part 2 负责：
 * misconceptionMap；
 * source；
 * JSON 输出。
+
+硬要求：`cognitiveTask` 必须从 schema 的合法枚举中选择；`source.materialId` 必须原样使用输入中的 SOURCE_MATERIAL_ID。不得省略来源，也不得自行编造 ID。
 
 如果发现 Part 1 Blueprint 本身与 SOURCE 冲突：
 
