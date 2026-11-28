@@ -205,7 +205,9 @@ export function retrieveForCopilot(
   // - 其它（global/knowledge）：不传 knowledgeId，由 query 词面 + graph 决定
   let knowledgeId: string | undefined;
   if (scope === 'current_question') {
-    knowledgeId = input.activeQuestion?.knowledgeId ?? input.activeQuestion?.topic ?? undefined;
+    const legacyTopic = input.activeQuestion?.topic;
+    knowledgeId = input.activeQuestion?.knowledgeId ??
+      (legacyTopic && knowledgeNodes.some((node) => node.id === legacyTopic) ? legacyTopic : undefined);
   } else if (input.topic) {
     knowledgeId = knowledgeNodes.some((node) => node.id === input.topic)
       ? input.topic
