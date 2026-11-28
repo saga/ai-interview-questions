@@ -167,7 +167,7 @@ export default function StudyPage({ nodes, questions, onGoTrain }: Props) {
           };
         }),
       };
-    }).filter((item) => item.children.length > 0);
+    }).filter((item) => Boolean(item.children?.length));
     const unregistered = nodes.filter((node) => !knownTopics.has(node.topic));
     if (unregistered.length) {
       grouped.push({
@@ -251,7 +251,7 @@ export default function StudyPage({ nodes, questions, onGoTrain }: Props) {
             size="small"
             title="课程知识体系"
             extra={<Typography.Text type="secondary">{nodes.length} 个节点</Typography.Text>}
-            bodyStyle={{ maxHeight: '68vh', overflowY: 'auto' }}
+            styles={{ body: { maxHeight: '68vh', overflowY: 'auto' } }}
           >
             <Tree
               blockNode
