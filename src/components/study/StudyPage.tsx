@@ -51,6 +51,7 @@ import {
   recordArticleOpened,
 } from '../../storage/study';
 import type { StoredStudyProgress } from '../../storage/db';
+import { questionsForKnowledgeNode } from '../../domain/learningTracks';
 
 interface Props {
   trackId: LearningTrackId;
@@ -145,9 +146,7 @@ export default function StudyPage({ trackId, nodes, questions, onGoTrain, onAskT
     ? Math.round((completedNodeCount / nodes.length) * 100)
     : 0;
   const questionCount = selectedNode
-    ? questions.filter((question) =>
-        question.knowledgeId === selectedNode.id || question.topic === selectedNode.id,
-      ).length
+    ? questionsForKnowledgeNode(questions, selectedNode.id).length
     : 0;
 
   useEffect(() => {
