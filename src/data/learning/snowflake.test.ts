@@ -60,6 +60,17 @@ describe('Snowflake learning content', () => {
     }
   });
 
+  it('includes public customer cases where operational examples add value', () => {
+    const warehouse = SNOWFLAKE_LEARNING_CONTENT.find((pack) => pack.nodeId === 'virtual-warehouse');
+    const ingestion = SNOWFLAKE_LEARNING_CONTENT.find((pack) => pack.nodeId === 'snowflake-data-loading');
+    expect(warehouse?.references.some((reference) =>
+      reference.type === 'case' && reference.id === 'case-orderco-workload-isolation',
+    )).toBe(true);
+    expect(ingestion?.references.some((reference) =>
+      reference.type === 'case' && reference.id === 'case-chocolate-finance-ingestion',
+    )).toBe(true);
+  });
+
   it('every POC knowledge node is connected to at least one exam question', () => {
     for (const pack of SNOWFLAKE_LEARNING_CONTENT) {
       expect(
