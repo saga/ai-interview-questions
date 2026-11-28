@@ -588,15 +588,20 @@
     "area": "data-platform",
     "topic": "snowflake-devops",
     "priority": "P1",
-    "summary": "通过 Git 版本、分支和差异审查协作维护 SQL/Notebook，避免源文件与生产对象漂移。",
+    "summary": "使用 Snowflake Workspaces 建立 Git 开发副本，管理分支、同步、差异与冲突；区分用户拥有的 Git Workspace、Role 拥有的 Git Repository Clone 和实际数据库对象部署。",
     "required": [
-      "区分代码同步与对象部署",
-      "审查 SQL/Notebook 差异、秘密和输出泄露",
-      "关联 commit、执行身份、部署结果与回滚版本"
+      "说明 My Workspace/Shared Workspace 与 Git-connected Workspace 的用途、用户所有权及不能共享的限制。",
+      "使用 Create Branch、Fetch、Pull、Commit、Push 和 Diff 完成协作，并正确处理冲突。",
+      "区分 Git Workspace 与 Role-owned Git Repository Clone，确定 Snowflake Task/Procedure 何时需要 Clone 读取仓库文件。",
+      "验证 Git 推送只同步源文件，不会自动执行 SQL 或更新生产 View/Task/Procedure。",
+      "关联 Commit SHA、执行身份、目标环境、Query ID 和部署结果，保留可审查发布证据。"
     ],
     "misconceptions": [
-      "把 Git 同步当作自动发布",
-      "忽略工作区与生产状态漂移"
+      "认为 Git-connected Workspace 可以直接共享给其他 Role",
+      "将 Fetch、Pull、Commit 与 Push 混为一谈",
+      "把个人 Git Workspace 当成生产 Task 的运行时文件入口",
+      "认为 Git Push 自动部署数据库对象",
+      "发生冲突时不审查语义就覆盖本地或远端文件"
     ],
     "angles": [
       "mechanism",
@@ -688,15 +693,21 @@
     "area": "data-platform",
     "topic": "snowflake-devops",
     "priority": "P1",
-    "summary": "以业务日期、时区和上游完成信号设计定时作业，并管理重叠运行、补跑和告警恢复。",
+    "summary": "使用 Snowflake Tasks 实现带时区的定时执行、Triggered Task 与 Task Graph；理解计划跳过、依赖并行、Graph overlap policy、重试和业务批次恢复。",
     "required": [
-      "区分触发时间与数据可用时间",
-      "为批次补跑、重叠和重试定义幂等策略",
-      "记录计划/实际时间、输入批次、质量检查和恢复状态"
+      "使用间隔或带 IANA 时区的 Cron 定义 Root Task，区分创建、Resume 与 Execute Task。",
+      "解释普通定时 Task 的单实例调度行为：运行跨过下一计划时点会跳过该时点，而不是自动排队或并行。",
+      "使用 AFTER 建立 Task Graph，正确启用 Root/Child 任务并识别可并行分支。",
+      "区分 NO_OVERLAP、ALLOW_CHILD_OVERLAP 和 ALLOW_ALL_OVERLAP 对整图执行实例的影响。",
+      "使用 SYSTEM$STREAM_HAS_DATA 建立 Triggered Task，并设计 Stream 消费、自动重试、失败通知与批次幂等恢复。"
     ],
     "misconceptions": [
-      "把调度成功等同于报告交付成功",
-      "忽略时区与重叠执行"
+      "把 Schedule 当作完成 SLA 或保证补跑机制",
+      "认为单个定时 Task 会排队补跑错过的计划时点",
+      "把 Task Graph OVERLAP_POLICY 当成单 Task 通用开关",
+      "误解 ALLOW_CHILD_OVERLAP 为只允许同一个 Graph 内部 child 并行",
+      "把 Task 执行成功当成上游批次完整或数据发布正确",
+      "开启自动重试却没有为 DML/外部副作用建立幂等键"
     ],
     "angles": [
       "mechanism",
