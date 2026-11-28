@@ -46,13 +46,16 @@ export interface BlueprintKnowledgeIdentity {
 
 /**
  * Check the identity carried from Part 1 Blueprint through the Part 2 Question.
- * A course topic may be shared by many KnowledgeNodes, so compare blueprintKnowledgeId
- * with knowledgeId, never with topic.
+ * Question.topic and knowledgeId must both identify the same KnowledgeNode.id.
+ * KnowledgeNode.topic is the shared classification field, not Question.topic.
  */
 export function validateBlueprintKnowledgeIdentity(item: BlueprintKnowledgeIdentity): string[] {
   const problems: string[] = [];
   if (item.courseId && !item.knowledgeId) {
     problems.push(`${item.id}: 课程题缺少精确 knowledgeId`);
+  }
+  if (item.courseId && item.knowledgeId && item.topic !== item.knowledgeId) {
+    problems.push(`${item.id}: 课程题的 topic 必须等于 knowledgeId（KnowledgeNode.id）`);
   }
   if (item.blueprintKnowledgeId && item.knowledgeId && item.blueprintKnowledgeId !== item.knowledgeId) {
     problems.push(
