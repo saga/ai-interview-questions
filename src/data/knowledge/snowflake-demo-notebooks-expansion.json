@@ -279,15 +279,21 @@
     "area": "data-platform",
     "topic": "snowflake-genai",
     "priority": "P1",
-    "summary": "按分类、情感、改写、提取等任务选择 Cortex 能力，并管理输出结构、质量、成本与数据边界。",
+    "summary": "按分类、布尔过滤、字段抽取、文档解析、生成和跨行聚合等任务选择 Cortex AI Functions，并验证函数输出、错误状态、权限和成本。",
     "required": [
-      "为任务定义输入输出格式和可测量质量标准",
-      "校验生成内容与结构化输出，处理失败及未知类别",
-      "用代表性样本评估正确性、延迟和成本"
+      "区分 AI_CLASSIFY、AI_FILTER、AI_EXTRACT、AI_PARSE_DOCUMENT、AI_COMPLETE、AI_SENTIMENT 与 AI_AGG 等函数的输入、输出和适用任务。",
+      "为分类定义互斥类别，为提取定义 responseFormat/schema；对生成内容和抽取字段执行类型、业务规则和来源校验。",
+      "区分函数返回 NULL、字段缺失、低评分和业务上确实无信息，设计错误处理和人工复核路径。",
+      "根据文件类型选择 AI_PARSE_DOCUMENT 的 LAYOUT、OCR 或 AGENTIC 模式，并识别 Preview、区域和格式限制。",
+      "检查 USE AI FUNCTIONS、CORTEX_USER/AI_FUNCTIONS_USER、模型访问控制、批量/低延迟场景和 Token 成本。"
     ],
     "misconceptions": [
-      "将生成结果当作确定性真值",
-      "只凭模型名称或单次演示评估质量"
+      "所有任务都用 AI_COMPLETE，放弃专用函数的明确输出契约",
+      "把 AI_FILTER 的布尔结果和 AI_CLASSIFY 的类别标签混为一谈",
+      "把 AI_EXTRACT 返回的字符串直接写入业务字段，不做类型和主数据验证",
+      "把评分当成正确概率，或把模型结果直接当成审批结论",
+      "把 AI_PARSE_DOCUMENT 的 LAYOUT、OCR 和 AGENTIC 模式当成相同能力",
+      "忽略函数错误返回 NULL、权限和区域可用性"
     ],
     "angles": [
       "definition",
