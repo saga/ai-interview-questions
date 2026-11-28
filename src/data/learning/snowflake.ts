@@ -7,6 +7,7 @@ export type LearningReferenceKind = 'official' | 'paper' | 'standard' | 'enginee
 
 export interface LearningArticle {
   id: string;
+  nodeId: string;
   title: string;
   kind: LearningArticleKind;
   level: LearningArticleLevel;
@@ -26,17 +27,22 @@ export interface LearningReference {
 
 export interface KnowledgeLearningPack {
   nodeId: string;
-  articles: LearningArticle[];
+  articles: [LearningArticle];
   references: LearningReference[];
 }
 
 interface ArticleManifestEntry extends Omit<LearningArticle, 'content'> {
+  knowledgeId: string;
   file: string;
-  topics: string[];
+  topic: string;
+  priority: string;
+  summary: string;
   references: LearningReference[];
 }
 
 interface LearningManifest {
+  schemaVersion: number;
+  binding: 'one-article-per-knowledge-node';
   overview: {
     introduction: string;
     audience: string;
@@ -44,10 +50,14 @@ interface LearningManifest {
     roadmap: string[];
     notes: string;
   };
-  articles: ArticleManifestEntry[];
+  nodes: ArticleManifestEntry[];
 }
 
 const typedManifest = manifest as LearningManifest;
+if (typedManifest.schemaVersion !== 2 || typedManifest.binding !== 'one-article-per-knowledge-node') {
+  throw new Error('课程教材索引版本或一对一绑定声明无效');
+}
+
 const markdownModules = import.meta.glob('../../content/courses/snowflake/articles/*.md', {
   eager: true,
   query: '?raw',
@@ -56,12 +66,37 @@ const markdownModules = import.meta.glob('../../content/courses/snowflake/articl
 
 export const SNOWFLAKE_LEARNING_OVERVIEW = typedManifest.overview;
 
-export const SNOWFLAKE_LEARNING_ARTICLES: LearningArticle[] = typedManifest.articles.map((entry) => {
+const courseNodes = knowledgeNodes.filter((node) =>
+  node.courseId === 'snowflake' || (!node.courseId && node.area === 'data-platform'),
+);
+const nodeById = new Map(courseNodes.map((node) => [node.id, node]));
+const manifestByNodeId = new Map(typedManifest.nodes.map((entry) => [entry.knowledgeId, entry]));
+if (manifestByNodeId.size !== typedManifest.nodes.length) {
+  throw new Error('教材索引存在重复 KnowledgeNode ID');
+}
+if (manifestByNodeId.size !== courseNodes.length) {
+  throw new Error(`教材与知识点数量不一致：articles=${manifestByNodeId.size}, nodes=${courseNodes.length}`);
+}
+
+export const SNOWFLAKE_LEARNING_ARTICLES: LearningArticle[] = typedManifest.nodes.map((entry) => {
+  if (entry.id !== entry.nodeId || entry.id !== entry.knowledgeId) {
+    throw new Error(`教程必须与 KnowledgeNode 一对一绑定：${entry.id}`);
+  }
+  const node = nodeById.get(entry.knowledgeId);
+  if (!node) {
+    throw new Error(`教程引用了不存在的 KnowledgeNode：${entry.knowledgeId}`);
+  }
+  if (entry.title !== node.name || entry.topic !== node.topic) {
+    throw new Error(`教程标题或主题与 KnowledgeNode 不一致：${entry.knowledgeId}`);
+  }
   const key = `../../content/courses/snowflake/articles/${entry.file}`;
   const content = markdownModules[key];
-  if (typeof content !== 'string') throw new Error(`课程文章未找到：${entry.file}`);
+  if (typeof content !== 'string') {
+    throw new Error(`课程文章未找到：${entry.file}`);
+  }
   return {
     id: entry.id,
+    nodeId: entry.nodeId,
     title: entry.title,
     kind: entry.kind,
     level: entry.level,
@@ -70,41 +105,20 @@ export const SNOWFLAKE_LEARNING_ARTICLES: LearningArticle[] = typedManifest.arti
   };
 });
 
-const articleById = new Map(SNOWFLAKE_LEARNING_ARTICLES.map((article) => [article.id, article]));
-if (articleById.size !== SNOWFLAKE_LEARNING_ARTICLES.length) {
-  throw new Error('Snowflake 教材索引存在重复 article id');
+const articleByNodeId = new Map(SNOWFLAKE_LEARNING_ARTICLES.map((article) => [article.nodeId, article]));
+if (articleByNodeId.size !== SNOWFLAKE_LEARNING_ARTICLES.length) {
+  throw new Error('主教程存在重复 KnowledgeNode 绑定');
 }
 
-const manifestByTopic = new Map<string, ArticleManifestEntry[]>();
-for (const entry of typedManifest.articles) {
-  for (const topic of entry.topics) {
-    const current = manifestByTopic.get(topic) ?? [];
-    current.push(entry);
-    manifestByTopic.set(topic, current);
+export const SNOWFLAKE_LEARNING_CONTENT: KnowledgeLearningPack[] = courseNodes.map((node) => {
+  const entry = manifestByNodeId.get(node.id);
+  const article = articleByNodeId.get(node.id);
+  if (!entry || !article || article.id !== node.id) {
+    throw new Error(`KnowledgeNode 缺少唯一主教程：${node.id}`);
   }
-}
-
-function isSnowflakeNode(node: (typeof knowledgeNodes)[number]): boolean {
-  return node.courseId === 'snowflake' || (!node.courseId && node.area === 'data-platform');
-}
-
-function referencesFor(entries: ArticleManifestEntry[]): LearningReference[] {
-  const seen = new Set<string>();
-  return entries.flatMap((entry) => entry.references).filter((reference) => {
-    if (seen.has(reference.id)) return false;
-    seen.add(reference.id);
-    return true;
-  });
-}
-
-/** 每个 KnowledgeNode 自动关联所属课程主题的教材，不再手工维护五个 P0 pack。 */
-export const SNOWFLAKE_LEARNING_CONTENT: KnowledgeLearningPack[] = knowledgeNodes
-  .filter(isSnowflakeNode)
-  .map((node) => {
-    const entries = manifestByTopic.get(node.topic) ?? [];
-    return {
-      nodeId: node.id,
-      articles: entries.map((entry) => articleById.get(entry.id)).filter((article): article is LearningArticle => Boolean(article)),
-      references: referencesFor(entries),
-    };
-  });
+  return {
+    nodeId: node.id,
+    articles: [article],
+    references: entry.references,
+  };
+});

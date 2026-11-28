@@ -380,7 +380,7 @@ export default function StudyPage({ nodes, questions, onGoTrain }: Props) {
                             </Typography.Link>
                           </Space>
                           <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                            {reference.publisher} · 核对日期 {reference.verifiedAt}
+                            {reference.publisher} · {reference.verifiedAt === '待核验' ? '来源待复核' : `核对日期 ${reference.verifiedAt}`}
                           </Typography.Text>
                           <Typography.Text type="secondary">{reference.relevance}</Typography.Text>
                         </Space>

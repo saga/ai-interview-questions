@@ -1,3 +1,10 @@
+## 2026-11-28 · 教材改为 194 个知识点一对一
+
+- 为全部 194 个 KnowledgeNode 建立独立 Markdown 主教程，Article ID 与 KnowledgeNode ID 相同。
+- 移除此前按主题共享的 37 篇文章，不再采用 topic 继承教材。
+- 学习进度和测试改为严格一对一。
+- 复核报告：`docs/snowflake-learning-article-coverage.md`。
+
 ## 2026-11-28 · 新增中文 Unslop 内容表达 Skill
 
 - 新增 `skills/unslop/SKILL.md` 和中文表达例子库，覆盖学习文章、技术教材、题干、选项、解析和参考答案。
