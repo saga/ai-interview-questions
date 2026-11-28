@@ -104,10 +104,43 @@ Cortex Agent Evaluation 有边界，例如依赖 Session Attributes 的 Row Acce
 - 测试 Custom Tool 的写操作、幂等键、超时和人工审批；
 - 检查输出文件是否落到正确 Stage，以及下载权限是否正确。
 
-### 评测 Role 的权限不完整会制造假失败
+### Agent Evaluation 权限不完整会制造假失败
 
-Agent Evaluation 和 Analyst Evaluation 都需要额外权限。特别是 Analyst Evaluation 使用 Task 运行，相关权限需要在同一个 Primary Role 下具备，不能依靠 Secondary Roles 补齐。若 Judge Model 不可访问，评测可能出现异常分数或调用失败。应先检查评测权限，再把 0 分解释成模型质量退化。
+Agent Evaluation 是批量评测，会创建 Task 并调用被测 Agent 和 Judge Model。执行角色至少需要：
 
+- Cortex 数据库角色：SNOWFLAKE.CORTEX_USER、SNOWFLAKE.CORTEX_AGENT_USER、SNOWFLAKE.CORTEX_ANALYST_USER 或 SNOWFLAKE.CORTEX_REST_API_USER 之一。
+- 账户级 EXECUTE TASK。
+- 被测 Agent 所在 Database/Schema 的 USAGE，以及评测数据所在 Database/Schema 的 USAGE。
+- 若评测要创建输入表，需要评测 Schema 的 CREATE TABLE；若从输入表创建 Dataset，需要 CREATE DATASET。
+- 当前执行 Database/Schema 的 USAGE、CREATE FILE FORMAT 和 CREATE TASK；若需要创建评测配置 Stage，还要 CREATE STAGE。
+- 被测 Agent 的 USAGE 或 OWNERSHIP，以及 MONITOR 或 OWNERSHIP。
+- Agent 所使用的每一个工具的权限；在 Snowsight 中运行或查看评测，还需要评测 Warehouse 的 USAGE。
+- 若读取外部配置文件，需要配置 Stage 的 READ 权限。
+
+如果账户启用了 Judge Model allowlist 或模型级访问控制，角色还必须获得每个所选 System Metric Version 对应 Judge Model 的使用权限，以及 Custom Metric 指定模型的权限。缺少 Judge Model 权限时，评测可能返回 0 分而没有可操作的错误，即使同一角色直接调用 AI_COMPLETE 能成功。因此 0 分首先要区分授权失败和真实质量退化。
+
+### 四项 Agent System Metric 测量不同阶段
+
+Cortex Agent Evaluation 的四项 System Metric 覆盖 Goal-Plan-Action 链：
+
+- Answer Correctness：比较最终回答与 Ground Truth。
+- Logical Consistency：检查 Instructions、规划和工具调用是否前后一致，不要求 Ground Truth。
+- Tool Selection Accuracy（TSA，Public Preview）：比较 Ground Truth 中预期工具名称与真实调用，按匹配数量计分，不要求调用顺序一致。
+- Tool Execution Accuracy（TEA，Public Preview）：比较工具输入和输出是否符合 Ground Truth；未调用预期工具会拉低分数。额外调用应由 TSA 识别，未列入 TSA/TEA 当前支持范围的工具不会进入这两项工具指标的分数。
+
+TSA 是确定性工具名称匹配；TEA 使用语义 Judge 对提供的 tool_input/tool_output 进行匹配。若 Ground Truth 不提供输入和输出，TEA 只能确认工具是否被调用，不能证明参数和结果正确。对于 MCP、Code Execution 或自定义工具等未在 TSA/TEA 当前支持名单中的类型，应使用 Answer Correctness、Logical Consistency 或自定义 Metric 评估，另外安排独立集成与安全测试。
+
+### Analyst Evaluation 的权限与 Ground Truth 有另一套规则
+
+Cortex Analyst Evaluation 使用 Semantic View 的 Verified Queries 建立 Ground Truth。执行角色需要 SNOWFLAKE.CORTEX_USER、USE AI FUNCTIONS（或相应的 AI_COMPLETE 函数权限）、账户级 EXECUTE TASK、Semantic View 所在 Schema 的 CREATE TASK 和 CREATE DATASET，以及 Semantic View 与底层表的 SELECT、Semantic View 的 MONITOR。Judge Model 访问权限同样适用。
+
+这些权限必须授予同一个 Primary Role；Task 不会考虑 Secondary Roles。选作 Ground Truth 的 Verified Query 会从临时 Semantic View 副本中移除，防止模型直接命中原问题而高估 SQL 生成能力。没有被选中的 Verified Query 仍可作为运行时参考。Cortex Analyst Evaluation 当前只使用 SQL Correctness 指标，并记录 Accuracy、Regressions 和 Latency。
+
+SQL Correctness 的 Judge Version 目前有 v1、v2、v3。v1 依赖的 Judge Model 已于 2026 年 10 月 14 日 End of Life；默认版本已切换到 v3。CI/CD 评测应固定当前可用版本，例如 v3_0，并在升级 Judge Version 时建立新基线，不要直接比较不同版本的分数。
+
+Cortex Agent Evaluation 与 Cortex Analyst Evaluation 不能互相替代。一个 Agent 可能调用 Analyst 正确生成 SQL，却在后续 Search 或解释环节出错；反过来，Agent 最终回答正确，也不能证明所有 SQL 模板都可靠。两种评测需要分别准备数据集、角色、工具和门槛。
+
+Agent Evaluation 在 Snowsight 中使用 Agent 的 Database/Schema；通过 SQL 执行时则使用 Session 的 Database/Schema。Analyst Evaluation 使用 Semantic View 所在 Schema 和评测配置文件。权限检查应按实际执行入口进行，不能只在一个角色上验证后假定另一个入口也可用。
 ## 晋级流程与回滚边界
 
 ### 版本化的候选对象通过门禁后再切换消费者
@@ -199,3 +232,5 @@ Agent Evaluation 和 Analyst Evaluation 都需要额外权限。特别是 Analys
 - [Cortex Agent evaluations](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-agents-evaluations)
 - [Cortex Agents overview](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-agents)
 - [Access control and authentication](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-agents-setup)
+- [Cortex Agents access control and authentication](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-agents-setup)
+- [Cortex Analyst Verified Query Repository](https://docs.snowflake.com/en/user-guide/views-semantic/verified-query-repository)
