@@ -427,17 +427,20 @@
     "area": "data-platform",
     "topic": "snowflake-agent-ml",
     "priority": "P1",
-    "summary": "对不同类型的数据平台对象运行健康检查并输出分级调查报告",
+    "summary": "以 Snowflake 元数据和运行 History 为依据，按数据库/Schema 和对象范围审计 Task、Dynamic Table、Pipe、Stream 与数据质量，输出带证据和 severity 的 JSON 报告；审计建议与生产修复使用独立权限。",
     "required": [
-      "对不同类型的数据平台对象运行健康检查并输出分级调查报告",
-      "限定审计范围，调用受限检查工具并返回证据、时间戳与 severity 字段",
-      "限制审计范围和工具权限，把建议与生产改动分开审批"
+      "按批准的 Database、Schema、对象类型和 Pipeline Registry 限定审计范围，不能把全账户自动发现当作默认授权。",
+      "分别使用 Task History、Dynamic Table Refresh History、SYSTEM$PIPE_STATUS、COPY_HISTORY、Stream 元数据和 DMF 采集对象级证据。",
+      "以业务截止时间和 DATA_TIMESTAMP 判断端到端状态，区分技术执行成功、数据新鲜度、质量异常和证据不足。",
+      "输出可复核的 JSON findings，包含对象、category、severity、observed_at、Query ID、证据引用和 owner。",
+      "分离只读 Audit Role 与修复权限；AI 可生成建议，生产变更必须由授权人员审核并通过受控流程执行。"
     ],
     "misconceptions": [
-      "语言解释流畅便可省略原始运行数据",
-      "缺状态时由模型补齐根因",
-      "覆盖更多对象就无需限制查询权限",
-      "诊断与生产修复无需区分"
+      "把 Task SUCCEEDED 当作整条管道交付成功",
+      "使用 LAST_ALTERED 作为所有表的业务新鲜度指标",
+      "把 Stream 为空、未消费和 stale 当成同一种状态",
+      "缺少 History 或没有访问权限时把对象判为不存在或健康",
+      "让 Auditor 自动恢复 Task、刷新 Pipe 或重载数据"
     ],
     "angles": [
       "fundamental",
