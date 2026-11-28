@@ -189,15 +189,7 @@ for (const doc of docs) {
       reviewNotes.push({ id: doc.id, path: doc.path, problem: '未检测到具体样例；请人工确认是否有可复核的机制解释或决策案例（不要求每篇都使用代码或表格）' });
     }
     for (const [name, pattern] of boilerplatePatterns) {
-      if (pattern.test(doc.markdown)) qualityProblems.push({ id: doc.id, path: doc.path, problem: `模板残留：${name}` });
-    }
-  }
-
-    for (const [passed, message] of checks) {
-      if (!passed) qualityProblems.push({ id: doc.id, path: doc.path, problem: message });
-    }
-    for (const [name, pattern] of boilerplatePatterns) {
-      if (pattern.test(doc.markdown)) qualityProblems.push({ id: doc.id, path: doc.path, problem: `模板残留：${name}` });
+      if (pattern.test(doc.markdown)) qualityProblems.push({ id: doc.id, path: doc.path, problem: '模板残留：' + name });
     }
   }
 
@@ -254,7 +246,10 @@ const duplicates = [...paragraphIndex.values()]
   }))
   .sort((a, b) => b.ids.length - a.ids.length || a.heading.localeCompare(b.heading));
 
-console.log(\`学习内容审计：\${targets.length} 篇教程；\${duplicates.length} 组重复段落（含同篇复用）；\${structureProblems.length} 处结构问题；\${qualityProblems.length} 处质量问题；\${reviewNotes.length} 条内容复核提示；\${pendingSources.length} 篇含待核验来源；\${sourceMissing.length} 篇缺少来源元数据。\`);
+console.log('学习内容审计：' + targets.length + ' 篇教程；' + duplicates.length
+  + ' 组重复段落（含同篇复用）；' + structureProblems.length + ' 处结构问题；'
+  + qualityProblems.length + ' 处质量问题；' + reviewNotes.length + ' 条内容复核提示；'
+  + pendingSources.length + ' 篇含待核验来源；' + sourceMissing.length + ' 篇缺少来源元数据。');
 for (const item of duplicates.slice(0, 20)) {
   console.log(`  ${item.repeatedWithinArticle ? '同篇重复' : '跨篇重复'} [${item.kind} / ${item.heading}] · ${item.ids.length} 篇 / ${item.occurrences} 次：${item.ids.slice(0, 8).join(', ')}`);
   console.log(`    ${item.paragraph.replace(/\n/g, ' ').slice(0, 180)}`);
