@@ -9,7 +9,7 @@
 - `KnowledgeNode` 是课程知识点的唯一索引。
 - 当前有 **194 个 KnowledgeNode，对应 194 篇独立 Markdown 主教程**。每篇教程的 ID 与 KnowledgeNode ID 相同，不按 topic 共享文章。
 - 另有 **8 篇综合工程教程**，以端到端场景串联多个节点；它们不伪装成 KnowledgeNode，也不计入 194 篇节点教程的阅读进度。
-- 教程支持 Markdown、Mermaid、表格和 SQL 代码块；每个节点维护自己的参考资料。
+- 教程支持 Markdown、Mermaid、表格和 SQL 代码块；节点教程要求来源完成核验。综合教程的链接与来源元数据单独管理，当前仍有待复核项，不把登记链接当成已验证证据。
 - 其他 LearningTrack 暂时提供结构化知识摘要，界面明确标注“知识摘要”，不把摘要包装成完整教材。
 
 具体覆盖和一对一映射见 [教材覆盖复核](./snowflake-learning-article-coverage.md)，课程范围见 [课程路线](./snowflake-course-roadmap.md)。
@@ -68,11 +68,15 @@ npm run questions:manage -- verify --knowledge-id=<KnowledgeNode-id> \
 
 需要单题时使用 `--ids=id1,id2`。旧题库仍可用 `--topic` 按历史 topic 字段筛选。
 
+## 综合教程内容门禁
+
+8 篇综合教程也纳入 `learning:content-audit`。除必需章节和跨文档重复外，还检查场景描述、Mermaid 架构图的连通关系、实施步骤、关键取舍、验收条件、关联节点教程，以及正文链接与来源元数据的一致性。当前 8 篇教程的 24 条参考资料元数据仍标记为“待核验”；审计会报告这些条目，但不把它们伪装成已经复核的来源。
+
 ## 学习诊断的边界
 
 当前系统能把训练结果按知识点和主题记录，显示薄弱项并安排复习；尚未实现完整的 IRT / Q-matrix 校准，也不能仅凭阅读完成或少量题目得分宣称达到统计意义上的掌握度。诊断质量取决于题目与 KnowledgeNode 的映射质量、误区覆盖、题量和重复测量。
 
-DeepTutor 的可借鉴点是把课程阅读、知识路径、来源依据、练习和学习证据放在同一学习上下文里，同时区分“看过解释”和“独立作答”。本项目已有节点教材、Copilot 讲解、精确节点专项训练和独立学习进度；没有必要照搬多引擎知识库、复杂 Agent 编排或全套学习工作台。
+DeepTutor 的 [Learning 工作区](https://github.com/HKUDS/DeepTutor)把 Book、Mastery Path、Immersive Reading 和 Practice 分开组织，但共享课程与来源上下文；可借鉴的是阅读、知识路径、来源依据、练习和学习证据之间的衔接，以及区分“看过解释”和“独立作答”。本项目已有节点教材、Copilot 讲解、精确节点专项训练和独立学习进度；没有必要照搬多引擎知识库、复杂 Agent 编排或全套学习工作台。
 
 ## 验证
 
