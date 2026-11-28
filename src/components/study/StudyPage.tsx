@@ -81,6 +81,12 @@ export default function StudyPage({ nodes, questions, onGoTrain }: Props) {
   );
   const selectedNode = nodeById.get(selectedNodeId) ?? nodes[0];
   const selectedPack = selectedNode ? contentByNode.get(selectedNode.id) : undefined;
+  const selectedTopic = selectedNode
+    ? SNOWFLAKE_COURSE_TOPICS.find((topic) => topic.id === selectedNode.topic)
+    : undefined;
+  const selectedTopicDescription = selectedTopic && 'description' in selectedTopic
+    ? selectedTopic.description
+    : undefined;
   const selectedProgress = selectedNode ? progressByNode.get(selectedNode.id) : undefined;
   const selectedArticle =
     selectedPack?.articles.find((article) => article.id === selectedArticleId) ??
@@ -207,6 +213,9 @@ export default function StudyPage({ nodes, questions, onGoTrain }: Props) {
       <Typography.Paragraph type="secondary" style={{ maxWidth: 980 }}>
         {SNOWFLAKE_LEARNING_OVERVIEW.introduction}
       </Typography.Paragraph>
+      <Typography.Paragraph type="secondary" style={{ maxWidth: 980 }}>
+        <Typography.Text strong>适合人群：</Typography.Text> {SNOWFLAKE_LEARNING_OVERVIEW.audience}
+      </Typography.Paragraph>
 
       <Row gutter={[12, 12]} style={{ marginBottom: 16 }}>
         <Col xs={12} md={6}>
@@ -306,6 +315,9 @@ export default function StudyPage({ nodes, questions, onGoTrain }: Props) {
               }
             >
               <Typography.Paragraph type="secondary">{selectedNode.summary}</Typography.Paragraph>
+              {selectedTopicDescription && (
+                <Typography.Paragraph type="secondary">{selectedTopicDescription}</Typography.Paragraph>
+              )}
 
               {selectedPack && selectedArticle ? (
                 <>
