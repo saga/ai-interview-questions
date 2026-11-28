@@ -89,11 +89,22 @@ export interface StoredAgentSession {
   updatedAt: number;
 }
 
+/** Per-course reading progress; deliberately separate from assessed learner mastery. */
+export interface StoredStudyProgress {
+  id: string;
+  trackId: string;
+  nodeId: string;
+  completedArticleIds: string[];
+  lastArticleId?: string;
+  updatedAt: number;
+}
+
 export class TrainerDB extends Dexie {
   learner!: Table<StoredLearner, string>;
   sessions!: Table<StoredSession, string>;
   errorLog!: Table<ErrorLogEntry, number>;
   agentSessions!: Table<StoredAgentSession, string>;
+  studyProgress!: Table<StoredStudyProgress, string>;
 
   constructor() {
     super('ai-interview-trainer');
@@ -124,6 +135,14 @@ export class TrainerDB extends Dexie {
       sessions: 'id, startedAt, overall, *topics',
       errorLog: '++id, scope, createdAt, kind, event, level',
       agentSessions: 'id, updatedAt',
+    });
+    // v5: reading progress is separate from exam mastery and agent state.
+    this.version(5).stores({
+      learner: 'id',
+      sessions: 'id, startedAt, overall, *topics',
+      errorLog: '++id, scope, createdAt, kind, event, level',
+      agentSessions: 'id, updatedAt',
+      studyProgress: 'id, trackId, nodeId, updatedAt',
     });
   }
 }
