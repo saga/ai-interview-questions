@@ -26,6 +26,16 @@ Use public Coursera module titles and learning objectives to order instruction. 
 
 Official documentation IDs such as `docs-snowflake-architecture`, `docs-time-travel`, `docs-iceberg`, `docs-cli`, `docs-cortex-search`, `docs-cortex-analyst`, and `docs-cortex-agents` are catalogued in `docs/snowflake-course-roadmap.md`. Add new IDs to the roadmap before using them.
 
+## Learning article authoring and expression review
+
+When writing or materially revising a Snowflake lesson, concept explainer, architecture note or case study:
+
+1. Confirm the learning objective and technical behavior against the course source and current Snowflake documentation.
+2. Explain the mechanism, preconditions, limitations, operational impact and verification method. Keep product claims separate from examples and design recommendations.
+3. Use diagrams, SQL and tables only when they clarify a relationship, decision or procedure. Do not force every article into the same “definition / advantages / challenges / summary” template.
+4. Label invented teaching scenarios as teaching examples. A public customer story requires a traceable source; do not invent customer details, metrics or first-hand experience.
+5. Before finalizing, apply `skills/unslop/SKILL.md` to the Chinese prose. Preserve technical terminology, source attribution, figures, conditions, exceptions and uncertainty. The skill changes expression, not Snowflake semantics.
+
 ## Source and schema requirements
 
 Every new canonical question must include `courseId: "snowflake"`, `knowledgeId` equal to a valid knowledge node ID, `source.materialId` and `source.section` for its primary course/module, and `source.relatedMaterials` for authoritative documentation cross-checks. Use a globally unique question ID, a valid `angle`, and both `formats.choice` and `formats.open`.
