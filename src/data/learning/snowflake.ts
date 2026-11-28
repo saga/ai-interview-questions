@@ -222,12 +222,12 @@ export const SNOWFLAKE_LEARNING_CONTENT: KnowledgeLearningPack[] = [
         "verifiedAt": "2026-11-28"
       },
       {
-        "id": "docs-dynamic-table-best-practices",
+        "id": "docs-dynamic-table-target-lag",
         "type": "official",
-        "title": "Quick-start best practices for dynamic tables",
-        "url": "https://docs.snowflake.com/en/user-guide/dynamic-tables/best-practices",
+        "title": "Set the target lag for a dynamic table",
+        "url": "https://docs.snowflake.com/en/user-guide/dynamic-tables/target-lag",
         "publisher": "Snowflake Documentation",
-        "relevance": "TARGET_LAG 和生产刷新配置建议。",
+        "relevance": "TARGET_LAG 的准确语义、best-effort 约束和管道调度行为。",
         "verifiedAt": "2026-11-28"
       },
       {
