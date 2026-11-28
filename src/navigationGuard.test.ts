@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { attemptNavigate, isTrainingSessionRunning, type Page } from './navigationGuard';
 
-const NON_TRAIN: Page[] = ['learn', 'progress', 'map', 'settings', 'agent', 'interview'];
+const NON_TRAIN: Page[] = ['learn', 'study', 'progress', 'map', 'settings', 'agent', 'interview'];
 
 describe('isTrainingSessionRunning', () => {
   it('quiz / result 视为进行中', () => {
