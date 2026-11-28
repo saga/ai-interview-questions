@@ -37,25 +37,23 @@ MERGE 适合“有则更新、无则插入”的同步，但正确性取决于�
 正确做法是在 MERGE 前按业务规则缩成每个订单一行。例如“取源系统更新时间最新的记录，同一时间再按摄取序号确定顺序”：
 
 ~~~sql
-WITH source_ranked AS (
-  SELECT
-    order_id,
-    amount,
-    source_updated_at,
-    ingest_id,
-    ROW_NUMBER() OVER (
-      PARTITION BY order_id
-      ORDER BY source_updated_at DESC, ingest_id DESC
-    ) AS rn
-  FROM stg_order_changes
-),
-source_one_row AS (
-  SELECT order_id, amount, source_updated_at
-  FROM source_ranked
-  WHERE rn = 1
-)
 MERGE INTO fact_order AS target
-USING source_one_row AS source
+USING (
+  SELECT order_id, amount, source_updated_at
+  FROM (
+    SELECT
+      order_id,
+      amount,
+      source_updated_at,
+      ingest_id,
+      ROW_NUMBER() OVER (
+        PARTITION BY order_id
+        ORDER BY source_updated_at DESC, ingest_id DESC
+      ) AS rn
+    FROM stg_order_changes
+  )
+  WHERE rn = 1
+) AS source
   ON target.order_id = source.order_id
 WHEN MATCHED
   AND source.source_updated_at > target.updated_at
@@ -67,7 +65,6 @@ WHEN NOT MATCHED THEN INSERT (
 ) VALUES (
   source.order_id, source.amount, source.source_updated_at
 );
-~~~
 
 这里的 tie-breaker 不能随意挑一个。若 ingest_id 并不代表业务版本先后，就需要向源系统确认事件版本或变更序号。ROW_NUMBER 只是执行规则，正确的排序规则仍然来自业务。
 
