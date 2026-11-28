@@ -168,8 +168,8 @@ for (const doc of docs) {
     const genericReference = doc.refs.some((reference) =>
       /核对.+涉及的产品行为、配置边界和工程机制|用于核对本综合教程涉及的产品行为、配置边界和工程机制|用于核对本教程涉及的产品行为、配置边界和工程机制/.test(reference.relevance ?? ''),
     );
-    const codeBlockCount = countMatches(doc.markdown, /~~~[a-z0-9_-]*\\s+[\\s\\S]*?~~~/gi);
-    const tableRowCount = countMatches(doc.markdown, /^\\|.*\\|$/gm);
+    const codeBlockCount = countMatches(doc.markdown, /~~~[a-z0-9_-]*\s+[\s\S]*?~~~/gi);
+    const tableRowCount = countMatches(doc.markdown, /^\|.*\|$/gm);
     const hasInspectableExample = codeBlockCount > 0 || tableRowCount >= 3
       || /例如|假设|样例|一笔订单|一条记录|输入为|输出为/.test(core + scenario);
     const checks = [
@@ -254,8 +254,7 @@ const duplicates = [...paragraphIndex.values()]
   }))
   .sort((a, b) => b.ids.length - a.ids.length || a.heading.localeCompare(b.heading));
 
-console.log(`学习内容审计：${targets.length} 篇教程；${duplicates.length} 组重复段落（含同篇复用）；${structureProblems.length} 处结构问题；${qualityProblems.length} 处质量问题；${reviewNotes.length} 条内容复核提示；${pendingSources.length} 篇含待核验来源；${sourceMissing.length} 篇缺少来源元数据。`);
-：${targets.length} 篇教程；${duplicates.length} 组重复段落（含同篇复用）；${structureProblems.length} 处结构问题；${qualityProblems.length} 处内容质量问题；${pendingSources.length} 篇含待核验来源；${sourceMissing.length} 篇缺少来源元数据。`);
+console.log(\`学习内容审计：\${targets.length} 篇教程；\${duplicates.length} 组重复段落（含同篇复用）；\${structureProblems.length} 处结构问题；\${qualityProblems.length} 处质量问题；\${reviewNotes.length} 条内容复核提示；\${pendingSources.length} 篇含待核验来源；\${sourceMissing.length} 篇缺少来源元数据。\`);
 for (const item of duplicates.slice(0, 20)) {
   console.log(`  ${item.repeatedWithinArticle ? '同篇重复' : '跨篇重复'} [${item.kind} / ${item.heading}] · ${item.ids.length} 篇 / ${item.occurrences} 次：${item.ids.slice(0, 8).join(', ')}`);
   console.log(`    ${item.paragraph.replace(/\n/g, ' ').slice(0, 180)}`);
