@@ -206,14 +206,21 @@ export function retrieveForCopilot(
   let knowledgeId: string | undefined;
   if (scope === 'current_question') {
     knowledgeId = input.activeQuestion?.knowledgeId ?? input.activeQuestion?.topic ?? undefined;
+  } else if (input.topic) {
+    knowledgeId = knowledgeNodes.some((node) => node.id === input.topic)
+      ? input.topic
+      : detectQueryTopic(input.query ?? '');
+  } else {
+    knowledgeId = detectQueryTopic(input.query ?? '') ?? undefined;
   }
-  else if (input.topic) knowledgeId = input.topic;
-  else knowledgeId = detectQueryTopic(input.query ?? '') ?? undefined;
   const questionId = scope === 'current_question' ? input.activeQuestion?.id ?? undefined : undefined;
   // ADR-066 P1：把"当前解析出的锚点（topic / 命中节点）+ 上一轮知识锚点"合并为 graph 种子，
   // 让确定性 follow-up 也能吃到上一轮知识点邻域，而不只靠 combineFollowUp 的字符串拼接。
+  const explicitTopicNode = input.topic && knowledgeNodes.some((node) => node.id === input.topic)
+    ? input.topic
+    : undefined;
   const seeds = [
-    ...(input.topic ? [input.topic] : []),
+    ...(explicitTopicNode ? [explicitTopicNode] : []),
     ...(knowledgeId ? [knowledgeId] : []),
     ...(input.priorKnowledgeIds ?? []),
   ];
