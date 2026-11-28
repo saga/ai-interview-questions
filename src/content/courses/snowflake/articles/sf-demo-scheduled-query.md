@@ -72,7 +72,7 @@ AS
   CALL publish_report_if_reconciled();
 ~~~
 
-在创建完成后，要启用 Root Task 让整个 Graph 按计划运行。AFTER 表示执行依赖，并不是“父任务 SQL 成功就说明数据正确”。子任务仍要检查输入批次、质量状态和业务对账结果。
+在创建完成后，Graph 中的子任务必须处于 RESUMED 状态，Root Task 才能按计划驱动它们。可以逐个 Resume 需要参与运行的 Child Task，再 Resume Root；也可以调用 SYSTEM$TASK_DEPENDENTS_ENABLE(root_task_name) 启用整张图。手动执行一次 Graph 时，先 Resume 需要执行的 Child Task，再对 Root 执行 EXECUTE TASK；被挂起的 Child Task 会被跳过。AFTER 表示执行依赖，并不是“父任务 SQL 成功就说明数据正确”。子任务仍要检查输入批次、质量状态和业务对账结果。
 
 互相独立的子任务可以并行。例如 NAV 和风险限额计算都依赖标准化持仓，但彼此不依赖时，可让它们成为同一个 root 的不同 child；最终发布任务再依赖两个 child 完成。
 
@@ -82,9 +82,9 @@ Task Graph 与单个定时 Task 的重叠行为要分开理解。Root Task 的 O
 
 | OVERLAP_POLICY | 含义 |
 |---|---|
-| NO_OVERLAP（默认） | 上一次 Graph 完成后才调度下一次，整个图不重叠 |
-| ALLOW_CHILD_OVERLAP | 子任务可以并行；Root 不与自己的下一次运行重叠 |
-| ALLOW_ALL_OVERLAP | 允许多个完整 Graph 实例并行运行 |
+| NO_OVERLAP（默认） | 只有整张 Graph 的所有 Child Task 都结束后，才调度下一次 Root；若整图耗时超过计划间隔，会跳过至少一次计划 |
+| ALLOW_CHILD_OVERLAP | 若下一次计划到来时前一轮仍有 Child Task 在运行，可以启动新的 Graph 实例；Root 本身不会与上一轮 Root 重叠 |
+| ALLOW_ALL_OVERLAP | 允许完整 Graph 实例并行，包括 Root 与各 Child Task |
 
 允许 Graph 重叠前，要确认所有写操作具备批次隔离和幂等性。若两次运行同时写入同一张汇总表，可能重复累计、覆盖新批次或在前后批次之间读到混合状态。只要数据写入不是天然安全的，就先使用 NO_OVERLAP 并将并行度放在独立的子任务上。
 
