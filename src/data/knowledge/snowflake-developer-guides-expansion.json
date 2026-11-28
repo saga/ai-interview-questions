@@ -530,17 +530,23 @@
     "area": "data-platform",
     "topic": "data-architecture",
     "priority": "P1",
-    "summary": "将恢复设计与业务可接受数据丢失窗口和恢复时间对齐",
+    "summary": "基于业务 RPO/RTO 设计跨区域复制与故障切换，选择 Replication/Failover Group、Optimized Refresh 或 RPO Assurance，并验证身份、任务、网络、数据和 Failback 的端到端恢复。",
     "required": [
-      "将恢复设计与业务可接受数据丢失窗口和恢复时间对齐",
-      "定义 RPO/RTO，评估复制/Failover、外部依赖和切换后的端到端功能",
-      "维护覆盖数据、配置、身份、任务和外部依赖的 Runbook 并定期演练"
+      "将业务 RPO/RTO 映射为复制刷新目标、故障决策时限和端到端业务恢复指标，不能把 schedule 间隔当作 RPO SLA。",
+      "区分 Replication Group、Failover Group、Optimized Refresh 和 RPO Assurance 的读写、提升、Edition、刷新与 SLA 边界。",
+      "根据数据和账号对象依赖创建 Primary/Secondary Failover Groups，并验证允许区域、数据库、身份、角色、仓库和 Integration 的复制覆盖范围。",
+      "使用 Refresh History、Refresh Progress、Replica Lag 和 Usage History 监控复制状态、失败、时间戳、传输数据量和成本。",
+      "执行 Failover 前检查进行中的刷新、主端写入隔离和审批；提升后恢复客户端入口、身份、Warehouse、Task、Dynamic Table 和外部依赖并完成业务对账。",
+      "为 Replication Group BCDR、Streams、Tasks、Dynamic Tables、PrivateLink 和 Client Redirect 设计边界测试及 Failback Runbook。"
     ],
     "misconceptions": [
-      "复制数据意味着所有 Task 都自动恢复",
-      "每天复制一次天然满足五分钟 RPO",
-      "能登录数据库就算业务已恢复",
-      "灾备无需考虑身份和外部依赖"
+      "认为 Replication Group 是可直接提升为可写主端的 Failover Group",
+      "将 REPLICATION_SCHEDULE 间隔当成实际 RPO 保证",
+      "将 Optimized Refresh 和 RPO Assurance 混为一种产品能力",
+      "认为数据库复制后 Tasks、身份、仓库、Integrations 和网络都自动正常",
+      "在刷新进行中强制 failover 而不评估 Secondary 一致性风险",
+      "认为所有 Stream 和 Dynamic Table 在故障切换后都保持可读和原状态",
+      "只演练 Failover，不演练连接重定向、业务验收与 Failback"
     ],
     "angles": [
       "fundamental",
