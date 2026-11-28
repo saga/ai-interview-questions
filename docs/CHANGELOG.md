@@ -1,3 +1,12 @@
+## 2026-11-28 · Snowflake 学习模式 POC
+
+- 新增独立学习入口与课程导览，Snowflake 课程树复用现有 KnowledgeNode / LearningTrack，不复制知识体系。
+- 为五个基础主干 P0 节点新增核心教材，包含架构图、SQL 示例、常见误区、自检问题和 Snowflake 官方资料引用；案例明确区分教学场景与公开客户案例。
+- 新增 Dexie `studyProgress` 表（v5），独立保存文章阅读位置与完成状态，不改变考试掌握度。
+- 教材页面可从当前 KnowledgeNode 进入专项训练；Interview Engine 普通组卷与自适应选题均按 `definition.topic` 严格过滤题池。
+- 新增学习内容覆盖、来源和阅读进度测试；完整实施说明见 `docs/snowflake-learning-mode-poc.md`。
+- 本轮通过 GitHub 文件接口直接修改，未在本地执行 TypeScript 构建和 Vitest；需要在项目环境运行 `npm run build` 与 `npm run test`。
+
 ## 2026-11-25 · 题目语义质询固定使用 CodeBuddy
 - 批量质询脚本不再读取 `CHALLENGER_PROVIDER`、API Key 或应用 Provider 配置，直接调用服务端 `CodeBuddySdkRuntime`。
 - 默认模型设为 `hy4flash-free`，允许通过 `CHALLENGER_MODEL` 显式覆盖；质询并发、报告格式和 `--gate` 行为保持不变。
