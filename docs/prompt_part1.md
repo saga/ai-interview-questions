@@ -57,6 +57,8 @@ Part 2 将把你的输出转换为最终题目。
 
 不要声称已经验证某个 ID 存在。课程题只有在拿到真实课程节点清单后才能确定 `knowledgeId`；缺少清单时标记待确认，不得编造。
 
+如果任务明确属于某个 LearningTrack，且提供了课程 ID，则 Blueprint 顶层必须输出 `courseId` 和精确 `knowledgeId`。非课程题省略 `courseId`。`canonical.topic` 与 `variants[].topic` 仍沿用题库的正式主题键；它们不能替代 `knowledgeId`。
+
 如果 SOURCE 明显对应一个已有、成熟、常见的 Knowledge：
 
 使用简洁、稳定、与现有题库命名风格一致的 topic。
@@ -1028,6 +1030,7 @@ Canonical 示例：
 
 [
 {
+"courseId": "xxx",
 "knowledgeId": "xxx",
 "knowledgeSummary": "...",
 "canonical": {
