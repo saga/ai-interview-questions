@@ -35,7 +35,7 @@ export type RetrievalScope = 'current_question' | 'topic' | 'knowledge' | 'globa
 
 export interface KnowledgeDocumentMetadata {
   area?: KnowledgeArea;
-  /** 知识节点 id（= Question.topic 的 concept slug） */
+  /** 知识节点 ID；旧题回退为 Question.topic，新课程题使用 Question.knowledgeId。 */
   knowledgeId?: string;
   /** 知识节点自身的中间层主题（如 Inference / RAG / Agents） */
   topic?: string;
