@@ -67,7 +67,7 @@ describe('course learner profile projection', () => {
     const profile = emptyProfile();
     const stat = {
       attempts: 1, avgScore: 80, lastScore: 80, mastery: 0.8,
-      trend: 'stable', commonWeaknesses: [], lastSeen: 1,
+      trend: 'flat', commonWeaknesses: [], lastSeen: 1,
     } as const;
     profile.topicStats['snowflake-architecture'] = stat;
     profile.topicStats[snowflakeNode!.topic] = stat;
