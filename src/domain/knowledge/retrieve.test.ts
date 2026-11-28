@@ -114,6 +114,18 @@ describe('KnowledgeDocument 投影', () => {
     expect(doc.sensitive).toBe(false);
   });
 
+  it('课程题使用精确 knowledgeId，旧题继续回退到 topic', () => {
+    const courseQuestion = {
+      ...questions[0],
+      id: 'q-course-node',
+      topic: 'snowflake',
+      knowledgeId: 'snowflake-architecture',
+      courseId: 'snowflake',
+    } as Question;
+    expect(questionDocument(courseQuestion).metadata.knowledgeId).toBe('snowflake-architecture');
+    expect(questionDocument(questions[0]).metadata.knowledgeId).toBe('kv-cache');
+  });
+
   it('题目把真值隔离到 sensitiveText', () => {
     const doc = questionDocument(questions[0]);
     expect(doc.text).toContain('KV Cache 为什么能降低自回归解码的延迟？');
