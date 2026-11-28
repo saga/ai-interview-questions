@@ -43,6 +43,7 @@ description: "写新题并落库。用户要求新增面试题、起草题目或
 - 全局唯一、稳定且可读的 `id`。
 - 合法的 `category`、`topic`、`difficulty`、`angle` 和 `cognitiveTask`。新题必须填写认知任务。
 - 新题必须填写 `source.materialId`，关联实际使用的教学材料或官方来源；不得虚构来源标识。
+- Snowflake 课程题还必须提供 `source.section` 和至少一条 `source.relatedMaterials` 官方文档 ID；导入门禁会检查这两项。
 - 题干自包含，不依赖"上述方法""原题""本文"等上下文。
 - 题干不得要求考生预先知道来源文章、Lens、认证框架或其分类；禁止"哪种做法符合某 Lens/框架"类问法。将来源原则写成包含目标、约束和验收标准的通用场景，来源名称只放在 `source` metadata。
 - `explanation` 明确解释正确答案和关键误区。
