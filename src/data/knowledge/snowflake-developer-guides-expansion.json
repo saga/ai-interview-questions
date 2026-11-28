@@ -134,17 +134,22 @@
     "area": "data-platform",
     "topic": "snowflake-devops",
     "priority": "P1",
-    "summary": "让代码、配置、执行身份和环境晋级成为可重复审查的交付流程",
+    "summary": "使用 Git、Snowflake CLI 和 CI/CD 管理 Snowflake 对象变更，区分 PR 验证、环境部署与部署后验收，并采用独立服务身份、OIDC 和兼容迁移控制发布风险。",
     "required": [
-      "让代码、配置、执行身份和环境晋级成为可重复审查的交付流程",
-      "把源代码与环境参数纳入 Git，使用 CLI/CI 部署并验证数据和权限",
-      "使用受限服务身份、参数化环境配置和受保护发布门禁"
+      "区分 Workspaces/Git Workspace、Git Repository Clone、Snowflake CLI 和 CI runner 的职责。",
+      "根据项目类型选择 DCM Plan/Deploy/Test、snow sql -f 或对应 CLI 项目部署方式。",
+      "设计 PR Validate、合并后 Deploy、部署后 Verify 三阶段流水线。",
+      "为 QA/PROD 配置独立 Service User、Deploy Role 和 OIDC Workload Identity Federation，按目标 Schema 收敛权限。",
+      "使用环境变量与 CLI 配置注入 Database/Schema/Role/Warehouse，防止 Secret 进入仓库。",
+      "设计数据库对象依赖、Expand-Migrate-Contract、失败前向修复或回滚，并关联 Commit SHA/Query ID。"
     ],
     "misconceptions": [
-      "Git 自动同步全部数据库对象",
-      "语法检查可以代替数据回归",
-      "把个人长期密码写入 CI 是最佳实践",
-      "不看变更差异即可安全覆盖生产"
+      "认为 Git Commit/Merge 会自动修改 Snowflake 对象",
+      "要求 CI runner 先创建 Snowflake Git Repository Object 才能部署",
+      "将 DCM 命令套用到所有 Snowflake 项目，而不区分 SQL、Snowpark 或 Streamlit",
+      "用长期共享密码作为所有环境的默认 CI 身份",
+      "将数据库 DDL/DML 回滚等同于 Git Revert",
+      "部署命令返回成功后就不做数据、权限和应用验收"
     ],
     "angles": [
       "fundamental",
