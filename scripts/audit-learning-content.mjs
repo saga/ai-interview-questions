@@ -104,10 +104,10 @@ if (strict) {
     process.exit(2);
   }
 }
-const articleManifestPath = 'src/content/courses/snowflake/index.json';
-const integratedManifestPath = 'src/content/courses/snowflake/integrated/index.json';
-const articleManifestChanged = !strict || changed.has(articleManifestPath);
-const integratedManifestChanged = !strict || changed.has(integratedManifestPath);
+const articleManifestRepoPath = 'src/content/courses/snowflake/index.json';
+const integratedManifestRepoPath = 'src/content/courses/snowflake/integrated/index.json';
+const articleManifestChanged = !strict || changed.has(articleManifestRepoPath);
+const integratedManifestChanged = !strict || changed.has(integratedManifestRepoPath);
 const articleManifestTargetPaths = new Set();
 const integratedManifestTargetPaths = new Set();
 const articleMappingChangedPaths = new Set();
@@ -136,7 +136,7 @@ function compareManifestEntries(previousEntries, currentEntries, signature, root
   }
 }
 if (strict && articleManifestChanged) {
-  const previous = readBaseJson(articleManifestPath);
+  const previous = readBaseJson(articleManifestRepoPath);
   compareManifestEntries(
     previous.nodes ?? [],
     manifest.nodes ?? [],
@@ -158,7 +158,7 @@ if (strict && articleManifestChanged) {
   );
 }
 if (strict && integratedManifestChanged) {
-  const previous = readBaseJson(integratedManifestPath);
+  const previous = readBaseJson(integratedManifestRepoPath);
   compareManifestEntries(
     previous.tutorials ?? [],
     integratedManifest.tutorials ?? [],
@@ -188,8 +188,8 @@ const mappingChangedPaths = new Set([
 const hasLearningContentChanges = !strict || [...changed].some((path) =>
   path.startsWith(articleRoot) ||
   path.startsWith(integratedRoot) ||
-  path === articleManifestPath ||
-  path === integratedManifestPath,
+  path === articleManifestRepoPath ||
+  path === integratedManifestRepoPath,
 );
 if (strict && !hasLearningContentChanges) {
   console.log('学习内容审计：本次变更没有课程教程或教材索引文件，跳过增量门禁。');
