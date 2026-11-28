@@ -20,7 +20,6 @@ import {
 } from 'antd';
 import type { DataNode } from 'antd/es/tree';
 import {
-  BookOutlined,
   CheckCircleFilled,
   ClockCircleOutlined,
   MenuOutlined,
