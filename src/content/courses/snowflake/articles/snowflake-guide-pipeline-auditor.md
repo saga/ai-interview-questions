@@ -1,35 +1,38 @@
-# Pipeline Auditor 与结构化健康检查
+# Pipeline Auditor：用结构化证据检查 Snowflake 数据管道
 
 ## 本节要解决的问题
 
-财务数据管道包含 Snowpipe 文件摄取、Dynamic Table 转换和 Task Graph 发布。每天 08:00 前，系统要将完整数据发布到 NAV 和风险看板。某天看板延迟，团队需要回答：哪一段没有推进？源批次是否齐全？是不是只发生了数据质量异常？能否给出可复核的证据？
+财务数据管道包含 Snowpipe 文件摄取、Dynamic Table 转换和 Task Graph 发布。每天 08:00 前，数据必须进入 NAV 和风险看板。某天看板延迟，运维人员需要判断：是 Task 没执行、Dynamic Table 没追上源数据、Pipe 仍有文件待处理，还是数据已经到达但质量检查失败？
 
-Pipeline Auditor 是一个只读检查流程，不是自动修复 Agent。它按照明确的检查范围读取对象状态、刷新历史、加载历史、数据质量指标和查询执行记录，再输出带证据的调查结果。它不应通过模型猜测根因，也不应因为发现异常就自动修改 Task、重启 Pipe 或更新业务数据。
+逐个打开 Snowsight 页面检查对象，难以形成一致的排查结果。Pipeline Auditor 把数据库/Schema 发现、对象级检查、证据整理和报告生成组织成一次审计任务。它的价值不在于让 Agent “看起来懂运维”，而在于把分散的 History、对象状态和质量结果转换成可以复核的 findings。
 
-## 核心知识
+## 审计对象和证据
 
-### 每类管道对象需要不同的检查证据
+### 每类管道对象都有自己的健康信号
 
-Task、Dynamic Table、Pipe 和 Stream 的状态含义不同，不能只查一个统一的“运行成功”标志：
+Snowflake 的 Task、Dynamic Table、Pipe 和 Stream 并不共享一个统一的运行状态。检查器应根据对象类型调用对应的元数据接口：
 
-| 对象 | 主要检查 | 可用证据 | 常见异常 |
+| 对象 | 检查内容 | 主要证据 | 需要注意 |
 |---|---|---|---|
-| Task / Task Graph | 最近计划、执行状态、错误、耗时 | TASK_HISTORY、COMPLETE_TASK_GRAPHS、Query ID | FAILED、跳过计划、执行耗时异常 |
-| Dynamic Table | 刷新状态、刷新数据时间戳、刷新时长 | DYNAMIC_TABLE_REFRESH_HISTORY、DATA_TIMESTAMP | 刷新失败、数据时间落后、重复全量刷新 |
-| Snowpipe | Pipe 是否启用、待处理文件、最近加载结果 | SYSTEM$PIPE_STATUS、COPY_HISTORY、LOAD_HISTORY | 停滞、文件漏载、持续错误 |
-| Stream | 是否 stale、上次消费和积压情况 | SHOW STREAMS、DESCRIBE STREAM、STALE_AFTER | Stream stale、长时间未消费 |
-| Data Quality | 行数、空值、重复键、新鲜度、业务约束 | DMF、Expectation、Anomaly Detection | 质量阈值失败、异常波动 |
+| Task / Task Graph | 执行状态、错误、时长、计划是否跳过 | TASK_HISTORY、COMPLETE_TASK_GRAPHS、Query ID | 最近一次成功不代表之后没有失败 |
+| Dynamic Table | 刷新状态、数据时间戳、刷新耗时 | DYNAMIC_TABLE_REFRESH_HISTORY | SUCCEEDED 不等于已达到业务截止时间 |
+| Snowpipe | Pipe 是否启用、加载状态、待处理文件 | SYSTEM$PIPE_STATUS、COPY_HISTORY | RUNNING 不代表所有源文件均已加载 |
+| Stream | 是否 stale、消费位置和剩余保留时间 | SHOW STREAMS、DESCRIBE STREAM | 没有变更时为空可能是正常状态 |
+| Table / View | 元数据、行数、修改时间、对象是否存在 | INFORMATION_SCHEMA、SHOW 命令 | LAST_ALTERED 不是可靠的业务数据新鲜度 |
+| Data Quality | 行数、空值、重复键、业务约束 | DMF、Expectation、Anomaly Detection | 单个指标正常不能证明整张表正确 |
 
-一个 Task 显示 SUCCEEDED，只能证明该次执行返回成功；它不证明 Dynamic Table 已经刷新到目标业务时间，也不证明 Snowpipe 已收齐全部来源文件。Auditor 必须根据管道拓扑检查整个链路，而不是把单个对象状态当作端到端结论。
+一个 Task 显示 SUCCEEDED，只能证明那次执行正常结束；它不证明 Dynamic Table 已刷新到目标业务时间，也不证明 Snowpipe 已收齐来源文件。Pipeline Auditor 应先检查单个对象，再沿注册的上游/下游关系汇总端到端状态。
 
-### 检查范围必须先由业务清单定义
+### 审计范围应由 Registry 或显式选择决定
 
-不要让 Auditor 在账户里任意发现并扫描所有对象。维护一份经过批准的 Pipeline Registry，至少包含：
+Snowflake 的 Pipeline Auditor Developer Guide 示例允许用户选择一个 Database 或 Schema，并勾选要检查的对象类型，例如 tables、dynamic tables、tasks、views、streams、pipes 和 procedures。这个范围应当在服务端再次校验，不能直接信任浏览器提交的任意对象名。
+
+生产环境可以维护一份 Pipeline Registry：
 
 | 字段 | 示例 | 用途 |
 |---|---|---|
 | PIPELINE_ID | FINANCE_DAILY_CLOSE | 业务管道标识 |
-| OBJECT_TYPE | TASK / DYNAMIC_TABLE / PIPE / STREAM | 检查类型 |
+| OBJECT_TYPE | TASK / DYNAMIC_TABLE / PIPE | 检查类型 |
 | OBJECT_NAME | FINANCE_DB.OPS.LOAD_ORDERS | 完整对象名 |
 | UPSTREAM_ID | ORDER_INGEST | 上游依赖 |
 | EXPECTED_BY | 08:00 Asia/Tokyo | 业务截止时间 |
@@ -37,25 +40,21 @@ Task、Dynamic Table、Pipe 和 Stream 的状态含义不同，不能只查一�
 | SEVERITY_POLICY | FINANCE_CRITICAL | 严重级别规则 |
 | ENABLED | TRUE | 是否纳入检查 |
 
-Registry 由数据平台 owner 审批和维护。不要仅凭名字包含 PIPE、TASK 或 DYNAMIC 就自动把对象纳入生产审计，否则会扫描临时任务、测试对象或其他业务域。
+Registry 由数据平台 owner 维护。不要仅凭对象名称包含 TASK 或 PIPE 就把所有对象纳入生产审计，否则临时任务、测试对象和其他业务域可能被误判。权限不足也不能解释成对象不存在；应输出 UNKNOWN 或 PERMISSION_INSUFFICIENT。
 
-检查角色只授予读取 Registry、对象元数据和相关 History/DMF 结果所需的最小权限。ACCOUNTADMIN 不应作为日常 Auditor 运行身份；可见性不足时应报告 PERMISSION_INSUFFICIENT，而不是把查不到元数据理解为对象不存在。
+### 新鲜度不能只用 LAST_ALTERED 判断
 
-### 为不同检查定义可计算的状态和阈值
+Developer Guide 的示例会检查 INFORMATION_SCHEMA.TABLES 的 ROW_COUNT 和 LAST_ALTERED，用于发现空表和长时间没有变更的对象。这是便于入门的粗筛，不适合直接作为所有表的数据新鲜度 SLO：
 
-状态应来自实际证据，而不是语言模型自行分类：
+- LAST_ALTERED 反映对象最近修改时间，DDL、权限或其他对象操作可能改变它，不一定代表业务数据已到达。
+- 行数不变不一定表示数据没有更新；更新现有记录时，行数可能保持不变。
+- 新增一条测试记录也不代表上游业务批次已经完整。
 
-- **HEALTHY**：对象运行状态正常，且数据时间和质量指标满足策略。
-- **WARNING**：尚未违反业务截止时间，但新鲜度或运行时长接近阈值，或出现可恢复的非关键异常。
-- **CRITICAL**：超过业务截止时间、Task/Dynamic Table 持续失败、关键 Stream stale，或必要输入数据缺失。
-- **UNKNOWN**：没有足够证据判断，例如 History 延迟、权限不足、查询失败或对象清单不完整。
-- **NOT_APPLICABLE**：该管道没有此类对象，或本次检查不适用。
+对 Dynamic Table，应使用 DATA_TIMESTAMP 判断刷新包含的源数据时间；对 Snowpipe，应检查 Pipe 状态、COPY_HISTORY 和源文件清单；对普通表，则应使用业务事件时间、批次时间和数据质量控制数。Auditor 应明确区分“对象最近修改时间”和“业务数据覆盖到哪个时点”。
 
-建议区分技术状态和业务状态。例如 Task 成功但业务批次文件缺失时，技术状态可以是 HEALTHY，业务状态必须是 CRITICAL 或 UNKNOWN。若没有定义可验证的业务截止时间，就不能仅凭“最近一次更新时间较早”自动判定为故障。
+### Task History 能说明执行记录，但需要结合业务计划
 
-### Task 检查要看最近执行和计划是否被跳过
-
-可以使用 INFORMATION_SCHEMA.TASK_HISTORY 获取近期执行记录：
+可以查询 Information Schema 的 TASK_HISTORY：
 
 ~~~sql
 SELECT
@@ -74,99 +73,145 @@ FROM TABLE(FINANCE_DB.INFORMATION_SCHEMA.TASK_HISTORY(
 ORDER BY scheduled_time DESC;
 ~~~
 
-Auditor 应将实际开始/结束与业务计划时间比较，记录：
-- 最近一次成功执行；
-- 最近一次失败及错误信息；
-- 计划时间与实际运行时间的差异；
-- 是否因上一次运行未结束而跳过计划；
-- Task Graph 是否有仍未完成的 Child Task。
+Auditor 应将实际记录与 Task 的预期调度及业务截止时间比较，留意：
+- 最近一次失败及其错误信息；
+- 是否有计划执行被跳过；
+- 是否有 Task Graph 的子任务未完成；
+- 执行时长是否明显偏离基线；
+- Query ID 是否能进一步定位执行计划和扫描情况。
 
-只看最后一个 SUCCEEDED 记录会漏掉后续失败或跳过的计划。若使用 ACCOUNT_USAGE 历史视图，还应考虑其数据延迟；实时诊断优先使用 Information Schema Task History 和 Snowsight。
+只取最后一个 SUCCEEDED 记录会隐藏其后的 FAILED 或 SKIPPED 计划。Account Usage 历史视图还可能存在数据延迟；需要实时排查时，应优先使用相应的 Information Schema 函数和 Snowsight。
 
-### Dynamic Table 检查要同时看状态和 DATA_TIMESTAMP
+### Dynamic Table 需要检查 DATA_TIMESTAMP，而不是只检查 STATE
+
+Dynamic Table Refresh History 提供每次刷新状态、Query ID、DATA_TIMESTAMP 和开始/结束时间：
 
 ~~~sql
 SELECT
   name,
   state,
+  state_code,
   state_message,
-  refresh_trigger,
-  refresh_action,
+  query_id,
   data_timestamp,
   refresh_start_time,
   refresh_end_time,
-  DATEDIFF('second', refresh_start_time, refresh_end_time) AS duration_sec
+  completion_target
 FROM TABLE(FINANCE_DB.INFORMATION_SCHEMA.DYNAMIC_TABLE_REFRESH_HISTORY(
-  NAME_PREFIX => 'FINANCE_DB.MART'
+  NAME_PREFIX => 'FINANCE_DB.MART.',
+  RESULT_LIMIT => 1000
 ))
-ORDER BY data_timestamp DESC
-LIMIT 100;
+ORDER BY data_timestamp DESC;
 ~~~
 
-关键是 DATA_TIMESTAMP，而不是只看 STATE = SUCCEEDED。若业务要求发布前一日完整数据，Auditor 应将 DATA_TIMESTAMP 与相应业务截止时间比较，并检查上游刷新是否已完成。
+DATA_TIMESTAMP 表示本次刷新评估时包含的源数据时间。它比单独判断 STATE 更接近“这张表目前覆盖到哪个时点”。如果刷新成功但 DATA_TIMESTAMP 仍早于财务要求的截止时间，报告应指出数据落后，而不是给出健康结论。
 
-Dynamic Table 的 TARGET_LAG 是新鲜度目标，不是严格 SLA。检查器应记录目标和实际刷新时间差；超过策略阈值时标记 WARNING/CRITICAL，不能宣称系统违反了某个保证性刷新时点。
+TARGET_LAG 是刷新新鲜度目标，不是固定 Cron 或无条件 SLA。检查器可以用业务截止时间、TARGET_LAG 和实际 DATA_TIMESTAMP 计算风险，但应在报告中保留这些原始值，不把推断出来的阈值写成 Snowflake 的保证。
 
-### Pipe 和 Stream 检查必须回到文件和变更来源
+### Snowpipe 状态要与文件加载历史交叉核对
 
-Snowpipe Pipe 状态可以通过 SYSTEM$PIPE_STATUS 获取：
+可以通过 SYSTEM$PIPE_STATUS 获取 Pipe 的运行状态信息：
 
 ~~~sql
 SELECT SYSTEM$PIPE_STATUS('FINANCE_DB.INGEST.RAW_ORDERS_PIPE');
 ~~~
 
-该函数返回状态信息。Auditor 应保留原始返回值和检查时间，并结合 COPY_HISTORY、LOAD_HISTORY 与对象存储文件清单确认：
-- Pipe 是否启用；
-- 是否存在持续积压或长时间没有摄取；
-- 是否有文件失败或被跳过；
-- 来源文件数与目标加载文件数是否一致；
-- 是否存在通知漏发或重建 Pipe 后的历史文件重放风险。
+这个函数返回状态信息；审计报告应保留原始 JSON、查询时间和 Pipe 名称，不要把 JSON 文本里某一个字段单独等同于端到端成功。
 
-Stream 要检查 STALE、STALE_AFTER 和消费状态。Stream 没有被消费不一定立即代表故障：若业务源暂时没有变更，它可能正常为空。只有当预期应有变更、消费窗口将过期或已经 stale 时，才应按策略升级。
+再使用 COPY_HISTORY 查看最近文件加载：
 
-### Data Quality 指标要按业务键和数据产品组合
+~~~sql
+SELECT
+  file_name,
+  last_load_time,
+  row_count,
+  row_parsed,
+  status,
+  first_error_message,
+  error_count
+FROM TABLE(FINANCE_DB.INFORMATION_SCHEMA.COPY_HISTORY(
+  TABLE_NAME => 'FINANCE_DB.RAW.ORDERS',
+  START_TIME => DATEADD('hour', -24, CURRENT_TIMESTAMP())
+))
+ORDER BY last_load_time DESC;
+~~~
 
-一个简单的订单质量检查可以包括：
-- ROW_COUNT：当前批次数据规模；
-- NULL_COUNT：关键业务键或日期字段是否为空；
-- DUPLICATE_COUNT：订单/事件主键是否重复；
-- FRESHNESS：最新业务数据距离当前时间的陈旧程度；
-- 自定义 DMF：金额范围、状态组合、跨字段不变量和来源对账。
+COPY_HISTORY 同时覆盖 COPY INTO 与 Snowpipe 加载，Information Schema 函数可查最近 14 天记录。若要长期审计，应结合 Account Usage 历史和对象存储文件清单。Pipe 为 RUNNING 不代表某个批次的所有文件都已加载；需要对照源文件总数、COPY_HISTORY 中的状态和业务行数/金额控制数。
 
-这些指标应来自 DMF/Expectation 结果或明确的验证 SQL。Auditor 不能仅凭一个 ROW_COUNT 正常，就判断数据正确；也不能把 Anomaly Detection 的异常分数当成确定性业务违规。每个检查必须绑定对象、列、业务时间范围、阈值、检查时间和来源 Query ID。
+### Stream 的空状态、未消费和 stale 要分开
 
-### 统一输出记录要保留原始证据，不只给一句根因摘要
+Stream 为空，可能只是源表没有新变更；Stream 未消费时间较长，也不一定已经 stale。只有当业务预期应有变更、消费链路停顿，或 STALE_AFTER 已接近/超过，才应按策略升级。
 
-建议将每个发现保存为结构化记录：
+Auditor 要获取 Stream 名称、源对象、STALE/STALE_AFTER、最后消费任务和相关 Task History。若 Stream 已 stale，不能建议只重启 Task 就恢复所有变更；应检查原始事件/批次归档，并按恢复流程重新构建目标。
 
-| 字段 | 含义 |
-|---|---|
-| pipeline_id / object_name | 所属管道和具体对象 |
-| check_id / check_version | 检查项及规则版本 |
-| observed_at | 观察时间 |
-| expected_by / data_timestamp | 业务截止与数据时间 |
-| status / severity | 技术状态、业务状态和严重级别 |
-| evidence_query_id | 产生证据的 Query ID |
-| evidence_ref | History 记录、文件清单、DMF 结果等引用 |
-| summary | 事实描述，不直接写未经验证的根因 |
-| recommended_action | 建议调查动作 |
-| owner_role | 责任角色 |
-| remediation_status | 是否已人工处理 |
+### 结构化报告必须带证据，不能把推测写成根因
 
-建议将事实描述与解释分开。例如“Dynamic Table DATA_TIMESTAMP 落后 42 分钟”是事实；“上游文件未到齐”只有在文件清单或 COPY_HISTORY 证据支持时才能作为根因。LLM 可以生成调查摘要，但必须引用证据 ID，不能从缺失数据中编造根因。
+Snowflake Pipeline Auditor Guide 使用 AUDIT_REPORT_SCHEMA 约束报告 JSON。核心部分包括：
+- pipeline_inventory：发现了哪些对象；
+- findings：每条发现的 category、severity、object 和 message；
+- summary：各严重级别数量和 overall_health。
+
+生产实现还应为每条 finding 增加 observed_at、check_version、query_id、evidence_ref、expected_by、data_timestamp、owner_role 和 remediation_status。这样报告不只是一段自然语言摘要，还能回到具体的 History 或数据检查结果。
+
+严重级别可以采用 critical、warning、info，再增加 unknown：
+- critical：超过业务截止时间、关键对象持续失败、Stream 已 stale 或关键数据缺失；
+- warning：接近截止时间、执行时长偏离基线、出现可恢复错误；
+- info：对象存在但不属于当前审计范围，或仅用于提示；
+- unknown：权限不足、History 尚不可见或无法取得足够证据。
+
+没有证据时，不得让模型自动补齐根因。比如“Dynamic Table 的 DATA_TIMESTAMP 落后 42 分钟”是事实；“上游文件没到齐”只有在文件清单和 COPY_HISTORY 支持时才可作为根因。
+
+## Agent 应做什么，不应做什么
+
+### 把数据库检查和自然语言解释分成两层
+
+Developer Guide 使用 Cortex Agent SDK 创建 coding agent session，并通过 sql_execute 工具读取 Snowflake 元数据。系统提示按检查范围组合，Agent 负责调用相应查询并将结果整理为结构化 JSON。
+
+一个更容易测试的实现是：
+1. 应用服务端验证 database、schema 和 scope；
+2. 确定性查询层读取 History、对象元数据和 DMF 结果；
+3. 将有来源标识的检查结果传给 Agent；
+4. Agent 生成有证据引用的说明和调查建议；
+5. 应用校验 JSON schema、finding 必填字段和引用是否存在。
+
+这比让模型自由扫描整个数据库并自行判断什么对象重要更容易审计，也能把无权访问与对象不存在分开。
+
+### 审计权限和修复权限必须隔离
+
+Developer Guide 的示例使用 permissionPolicy: always_allow 调用 coding agent 工具，并建议将部署应用的 Snowflake Role 限制为只读，以此限制 agent 能执行的 SQL 能力。这个设计说明：工具层允许调用，不等于数据库 Role 本身拥有写权限。
+
+对生产审计，更稳妥的边界是：
+- Audit Runtime Role 只读访问被批准的对象和元数据；
+- Fix Agent 只生成 SQL 建议和原因，不自动执行；
+- 如果确有自动修复需求，必须使用单独的执行身份、限定 SQL 类型和对象范围，并要求用户确认；
+- 对 ALTER、RESUME、REFRESH、DROP、重载数据等操作记录审批人、执行 Query ID 和回滚方案。
+
+不要因为审计发现 critical 就让 Agent 自动重启 Task、刷新 Pipe 或回补数据。这些动作可能触发重复加载、资源成本和下游数据变化。报告和修复是两种不同的权限域。
+
+### 长时间审计任务需要可恢复的进度管理
+
+Developer Guide 的示例采用后台 Job + Polling：
+- POST 接收 database、schema 和 scope，创建 jobId 后立即返回；
+- 审计任务在后台运行，工具调用和报告作为事件追加；
+- 前端按 cursor 轮询进度；
+- 任务结束后清理临时 Job。
+
+教程示例用进程内 Map 保存事件，并在 30 分钟后清理。这个实现适合快速演示，但进程重启会丢失任务状态，也不适合多实例横向扩容。生产应用应使用持久化 Job Store，记录 job_id、请求人、审计范围、开始/结束时间、状态、事件游标、报告和错误；同一 job 的重试应可识别，避免重复启动扫描。
 
 ## 工程实施步骤
 
-1. 建立 Pipeline Registry，列出批准检查的 Task、Graph、Dynamic Table、Pipe、Stream、表和业务 owner。
-2. 为每条管道定义业务截止时间、数据时间字段、质量阈值和严重级别规则。
-3. 为 Auditor 建立只读 Role，授予读取 Registry、必要 History、DMF 和对象元数据的最小权限。
-4. 为 Task、Dynamic Table、Pipe、Stream 和质量检查分别实现确定性的采证 SQL。
-5. 将输出转换成统一的检查记录，保留状态、时间、Query ID、Evidence Reference 和规则版本。
-6. 根据业务依赖图汇总端到端状态，区分技术状态、数据质量状态和业务发布状态。
-7. 对 UNKNOWN、权限不足、历史视图延迟和证据缺失单独报告，不得默认标成 HEALTHY。
-8. 让 LLM 只生成带证据引用的调查摘要和建议，不授予修改 Task、Pipe、表或数据的工具权限。
-9. 由对象 owner 或值班人员确认根因和修复动作；所有修复都通过独立发布/运维流程审批。
-10. 将 Auditor 自身的运行结果、规则版本、Query ID 和人工确认结果保留，用于检查器回归。
+1. 建立数据库/Schema 发现和明确的审计范围选择；在服务端校验所有对象名和 scope。
+2. 为 Task、Dynamic Table、Pipe、Stream、Table 和质量指标实现独立的检查器。
+3. 按对象类型读取信息架构与 History；保留原始结果、Query ID 和检查时间。
+4. 将每个检查规则定义为确定性的状态判断，LLM 不负责发明阈值。
+5. 定义 AUDIT_REPORT_SCHEMA，要求每条 finding 有对象、严重级别、时间和证据引用。
+6. 为没有足够证据、权限不足或 History 延迟的情况返回 UNKNOWN。
+7. 用 Cortex Agent SDK 组合审计指令并调用受控的 SQL 工具；不把用户输入直接拼入 SQL。
+8. 为 Audit Runtime Role 授予最小只读权限，并对跨库、跨 Schema 访问做负向测试。
+9. 将修复建议放到单独会话；默认只生成 SQL 和理由，不开放自动写入权限。
+10. 如需自动执行修复，使用单独角色和显式审批，先做 dry-run/影响面检查，再执行并保存 Query ID。
+11. 对超过几十秒的审计采用 jobId + cursor polling；生产环境用持久化 Job Store，而不是只用进程内 Map。
+12. 用健康、失败、过期、缺权、对象不存在、History 延迟和混合状态构建回归数据集，检查 severity 和证据引用。
 
 ## 场景分析
 
@@ -178,16 +223,17 @@ FINANCE_DAILY_CLOSE 管道在 08:20 未发布 NAV。Auditor 收集到以下结�
 - Gold NAV Dynamic Table：DATA_TIMESTAMP 为 07:40；
 - ORDER_ID 的 NULL_COUNT 为 0，DUPLICATE_COUNT 为 0。
 
-不能因为 Task 成功和质量键检查通过就判定管道健康。业务截止时间是 08:00，而 Silver/Gold 的 DATA_TIMESTAMP 仍落后，且 Pipe 有待处理文件，应将管道状态标记为 CRITICAL。下一步检查文件清单、云通知和 COPY_HISTORY，确认两份文件为什么未加载。
+不能因为 Task 成功和关键键质量检查通过就判定管道健康。业务截止时间是 08:00，而 Silver/Gold 的 DATA_TIMESTAMP 仍落后，且 Pipe 有待处理文件，应将管道状态标记为 critical。下一步检查文件清单、云通知和 COPY_HISTORY，确认两份文件为什么未加载。
 
-Auditor 不应自行执行 ALTER PIPE REFRESH、RESUME Task 或重新加载文件。它可以给出需要调查的文件路径、Pipe 状态和证据 Query ID，由数据 owner 决定是否补载及如何避免重复数据。
+Auditor 不应自行执行 PIPE REFRESH、RESUME Task 或重载文件。它可以给出待处理文件路径、Pipe 状态、Dynamic Table 数据时间戳和证据 Query ID，由数据 owner 决定补载方式，并检查重复加载风险。
 
 ## 常见误区
 
 - **用一个统一成功标志代表整条管道健康。** Task、Dynamic Table、Pipe、Stream 和业务质量分别有不同证据。
-- **只看最后一次 Task SUCCEEDED。** 还要检查计划是否跳过、Graph Child 状态和数据截止时间。
+- **只看最后一次 Task SUCCEEDED。** 还要检查计划是否跳过、Graph Child 状态和业务截止时间。
 - **把 Dynamic Table SUCCEEDED 当成新鲜度合格。** 必须比较 DATA_TIMESTAMP 与业务期望。
-- **认为 Pipe 启用就代表文件全部加载。** 要核对 Pending Files、COPY_HISTORY 和源文件清单。
+- **把 LAST_ALTERED 当成业务数据新鲜度。** DDL 或元数据变化并不意味着源业务数据已更新。
+- **认为 Pipe 启用就代表文件全部加载。** 要核对 Pipe 状态、COPY_HISTORY 和源文件清单。
 - **把 Stream 为空当故障。** 没有新变更时为空可能正常；应结合业务预期和 STALE_AFTER 判断。
 - **只检查 ROW_COUNT。** 还要检查键唯一、空值、金额、业务状态和来源批次。
 - **让 LLM 直接认定根因或执行修复。** Auditor 输出事实、证据和建议；修复需由 owner 审核并通过受控流程执行。
@@ -202,23 +248,23 @@ Auditor 不应自行执行 ALTER PIPE REFRESH、RESUME Task 或重新加载文�
 - [ ] 能区分 Stream 空、Stream stale 和 Stream 未消费。
 - [ ] 能保留 Query ID、Evidence Reference、检查规则版本和责任角色。
 - [ ] 能将技术异常、数据质量异常和业务发布异常分开报告。
-- [ ] 能说明 Auditor 为什么应保持只读，修复应走独立审批流程。
+- [ ] 能说明 Audit Role 为什么应保持只读，修复应走独立审批流程。
 
 ## 自测
 
-1. Task 已成功，但 Dynamic Table DATA_TIMESTAMP 落后业务截止时间 40 分钟。Auditor 应给出什么状态？需要哪些上游证据？
-2. Pipe 处于 RUNNING，但仍有 Pending Files。为什么不能直接认定文件已全部加载？
+1. Task 已成功，但 Dynamic Table DATA_TIMESTAMP 落后业务截止时间 40 分钟。Auditor 应给出什么状态？还需要哪些上游证据？
+2. Pipe 处于运行状态，但仍有 Pending Files。为什么不能直接认定文件已全部加载？
 3. Stream 没有数据且 STALE_AFTER 还有 10 天。它一定是故障吗？需要什么业务预期？
-4. ROW_COUNT 正常，但订单金额总额下降 40%。Auditor 还应检查哪些 DMF 或业务控制总额？
+4. ROW_COUNT 正常，但订单金额总额下降 40%。Auditor 还应检查哪些质量指标或业务控制总额？
 5. Information Schema History 因权限不足查询失败。为什么不能将对象标记为不存在或 HEALTHY？
 6. Auditor 发现文件漏载。为什么它不应自动执行 PIPE REFRESH 或重放文件？
 
 ## 参考资料
 
+- [Building a Pipeline Auditor with the Cortex Agent SDK](https://www.snowflake.com/en/developers/guides/pipeline-auditor-with-cortex-agent-sdk/)
 - [TASK_HISTORY](https://docs.snowflake.com/en/sql-reference/functions/task_history)
 - [COMPLETE_TASK_GRAPHS](https://docs.snowflake.com/en/sql-reference/functions/complete_task_graphs)
 - [DYNAMIC_TABLE_REFRESH_HISTORY](https://docs.snowflake.com/en/sql-reference/functions/dynamic_table_refresh_history)
 - [SYSTEM$PIPE_STATUS](https://docs.snowflake.com/en/sql-reference/functions/system_pipe_status)
 - [COPY_HISTORY](https://docs.snowflake.com/en/sql-reference/functions/copy_history)
 - [System data metric functions](https://docs.snowflake.com/en/user-guide/data-quality-system-dmfs)
-- [Data Lineage](https://docs.snowflake.com/en/user-guide/ui-snowsight-lineage)
