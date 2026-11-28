@@ -103,10 +103,10 @@ export function questionSensitiveText(q: Question): string {
   return parts.join('\n');
 }
 
-export function questionDocument(q: Question): KnowledgeDocument {
+export function questionDocument(q: Question, nodeTopic?: string): KnowledgeDocument {
   const metadata: KnowledgeDocumentMetadata = {
     knowledgeId: q.knowledgeId ?? q.topic,
-    topic: q.topic,
+    ...(nodeTopic ? { topic: nodeTopic } : {}),
     questionId: q.id,
     difficulty: q.difficulty,
     tags: q.tags,
@@ -187,7 +187,11 @@ export function buildKnowledgeDocuments(
     for (const node of nodes) docs.push(...conceptAnchorDocuments(node));
   }
   if (includeQuestions) {
-    for (const q of questions) docs.push(questionDocument(q));
+    const topicByNodeId = new Map(nodes.map((node) => [node.id, node.topic]));
+    for (const q of questions) {
+      const nodeId = q.knowledgeId ?? q.topic;
+      docs.push(questionDocument(q, topicByNodeId.get(nodeId)));
+    }
   }
   return docs;
 }
