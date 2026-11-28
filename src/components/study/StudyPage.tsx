@@ -6,7 +6,9 @@ import {
   Collapse,
   Col,
   Divider,
+  Drawer,
   Empty,
+  Grid,
   Input,
   List,
   Progress,
@@ -21,6 +23,7 @@ import {
   BookOutlined,
   CheckCircleFilled,
   ClockCircleOutlined,
+  MenuOutlined,
   ReadOutlined,
   RocketOutlined,
   SearchOutlined,
@@ -95,6 +98,9 @@ export default function StudyPage({ trackId, nodes, questions, onGoTrain, onAskT
   const [progress, setProgress] = useState<StoredStudyProgress[]>([]);
   const [loadingProgress, setLoadingProgress] = useState(true);
   const [nodeSearch, setNodeSearch] = useState('');
+  const [directoryOpen, setDirectoryOpen] = useState(false);
+  const screens = Grid.useBreakpoint();
+  const isCompact = !screens.md;
 
   const isSnowflake = trackId === 'snowflake';
   const contentByNode = useMemo(
@@ -261,17 +267,125 @@ export default function StudyPage({ trackId, nodes, questions, onGoTrain, onAskT
     [selectedArticle?.content],
   );
 
+  const directoryContent = (
+    <div className="study-directory">
+      <Card
+        size="small"
+        title="课程目录"
+        extra={<Typography.Text type="secondary">{nodes.length} 项</Typography.Text>}
+        className="study-directory-card"
+        styles={{
+          body: {
+            maxHeight: isCompact ? 'calc(100dvh - 190px)' : 'calc(100dvh - 220px)',
+            overflowY: 'auto',
+          },
+        }}
+      >
+        <div style={{ marginBottom: 10 }}>
+          <Input
+            allowClear
+            size="middle"
+            prefix={<SearchOutlined />}
+            placeholder="搜索知识点、主题或关键词"
+            value={nodeSearch}
+            onChange={(event) => setNodeSearch(event.target.value)}
+          />
+          <Typography.Text type="secondary" style={{ display: 'block', marginTop: 6, fontSize: 12 }}>
+            {nodeSearch.trim()
+              ? `匹配 ${filteredNodes.length} / ${nodes.length} 个知识点`
+              : `${nodes.length} 个知识点`}
+          </Typography.Text>
+        </div>
+        {loadingProgress ? (
+          <Typography.Text type="secondary">正在加载学习进度…</Typography.Text>
+        ) : filteredNodes.length === 0 ? (
+          <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="没有匹配的知识点" />
+        ) : (
+          <Tree
+            blockNode
+            defaultExpandAll={false}
+            defaultExpandedKeys={nodes[0] ? [`topic:${nodes[0].topic}`] : []}
+            expandedKeys={nodeSearch.trim() ? expandedTopicKeys : undefined}
+            autoExpandParent={Boolean(nodeSearch.trim())}
+            selectedKeys={selectedNode ? [`node:${selectedNode.id}`] : []}
+            treeData={treeData}
+            onSelect={(keys) => {
+              const key = String(keys[0] ?? '');
+              if (key.startsWith('node:')) {
+                setSelectedNodeId(key.slice(5));
+                setDirectoryOpen(false);
+              }
+            }}
+          />
+        )}
+      </Card>
+
+      <Collapse
+        ghost
+        size="small"
+        className="study-course-outline"
+        items={[{
+          key: 'outline',
+          label: '课程目标与学习路线',
+          children: (
+            <>
+              {isSnowflake ? (
+                <>
+                  <Typography.Paragraph type="secondary">
+                    {SNOWFLAKE_LEARNING_OVERVIEW.introduction}
+                  </Typography.Paragraph>
+                  <List
+                    size="small"
+                    split={false}
+                    dataSource={courseObjectives}
+                    renderItem={(item) => <List.Item style={{ paddingBlock: 4 }}>{item}</List.Item>}
+                  />
+                  <Divider style={{ marginBlock: 8 }} />
+                  <List
+                    size="small"
+                    split={false}
+                    dataSource={courseRoadmap}
+                    renderItem={(item, index) => (
+                      <List.Item style={{ paddingBlock: 4 }}>
+                        <Typography.Text type="secondary" style={{ marginRight: 8 }}>
+                          {index + 1}.
+                        </Typography.Text>
+                        {item}
+                      </List.Item>
+                    )}
+                  />
+                </>
+              ) : (
+                <>
+                  <Typography.Paragraph>{track.description}</Typography.Paragraph>
+                  {'learningPathUrl' in track && (
+                    <Typography.Link href={track.learningPathUrl} target="_blank" rel="noreferrer">
+                      查看课程路线与资料
+                    </Typography.Link>
+                  )}
+                </>
+              )}
+            </>
+          ),
+        }]}
+      />
+    </div>
+  );
+
   return (
     <div className="study-page">
       <div className="study-toolbar">
-        <Space align="center" size={10}>
-          <BookOutlined />
-          <Typography.Text strong>{track.shortTitle}</Typography.Text>
-          <Typography.Text type="secondary">{nodes.length} 个知识点</Typography.Text>
-        </Space>
+        {isCompact && (
+          <Button
+            icon={<MenuOutlined />}
+            onClick={() => setDirectoryOpen(true)}
+          >
+            课程目录
+          </Button>
+        )}
         <Space align="center" size={12} wrap className="study-toolbar-tools">
           <Typography.Text type="secondary" className="study-progress-label">
-            阅读进度 {completedNodeCount}/{nodes.length}
+            已读完成 {completedNodeCount}/{nodes.length}
           </Typography.Text>
           <Progress
             percent={completionPercent}
@@ -286,102 +400,23 @@ export default function StudyPage({ trackId, nodes, questions, onGoTrain, onAskT
       </div>
 
       <Row gutter={[16, 16]} align="top" className="study-layout">
-        <Col xs={24} md={8} xl={5}>
-          <div className="study-directory">
-            <Card
-              size="small"
-              title="课程目录"
-              extra={<Typography.Text type="secondary">{nodes.length} 项</Typography.Text>}
-              className="study-directory-card"
-              styles={{ body: { maxHeight: 'calc(100dvh - 220px)', overflowY: 'auto' } }}
-            >
-              <div style={{ marginBottom: 10 }}>
-                <Input
-                  allowClear
-                  size="middle"
-                  prefix={<SearchOutlined />}
-                  placeholder="搜索知识点、主题或关键词"
-                  value={nodeSearch}
-                  onChange={(event) => setNodeSearch(event.target.value)}
-                />
-                <Typography.Text type="secondary" style={{ display: 'block', marginTop: 6, fontSize: 12 }}>
-                  {nodeSearch.trim()
-                    ? `匹配 ${filteredNodes.length} / ${nodes.length} 个知识点`
-                    : `${nodes.length} 个知识点`}
-                </Typography.Text>
-              </div>
-              {loadingProgress ? (
-                <Typography.Text type="secondary">正在加载学习进度…</Typography.Text>
-              ) : filteredNodes.length === 0 ? (
-                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="没有匹配的知识点" />
-              ) : (
-                <Tree
-                  blockNode
-                  defaultExpandAll={false}
-                  defaultExpandedKeys={nodes[0] ? [`topic:${nodes[0].topic}`] : []}
-                  expandedKeys={nodeSearch.trim() ? expandedTopicKeys : undefined}
-                  autoExpandParent={Boolean(nodeSearch.trim())}
-                  selectedKeys={selectedNode ? [`node:${selectedNode.id}`] : []}
-                  treeData={treeData}
-                  onSelect={(keys) => {
-                    const key = String(keys[0] ?? '');
-                    if (key.startsWith('node:')) setSelectedNodeId(key.slice(5));
-                  }}
-                />
-              )}
-            </Card>
-
-            <Collapse
-              ghost
-              size="small"
-              className="study-course-outline"
-              items={[{
-                key: 'outline',
-                label: '课程目标与学习路线',
-                children: (
-                  <>
-                    {isSnowflake ? (
-                      <>
-                        <Typography.Paragraph type="secondary">
-                          {SNOWFLAKE_LEARNING_OVERVIEW.introduction}
-                        </Typography.Paragraph>
-                        <List
-                          size="small"
-                          split={false}
-                          dataSource={courseObjectives}
-                          renderItem={(item) => <List.Item style={{ paddingBlock: 4 }}>{item}</List.Item>}
-                        />
-                        <Divider style={{ marginBlock: 8 }} />
-                        <List
-                          size="small"
-                          split={false}
-                          dataSource={courseRoadmap}
-                          renderItem={(item, index) => (
-                            <List.Item style={{ paddingBlock: 4 }}>
-                              <Typography.Text type="secondary" style={{ marginRight: 8 }}>
-                                {index + 1}.
-                              </Typography.Text>
-                              {item}
-                            </List.Item>
-                          )}
-                        />
-                      </>
-                    ) : (
-                      <>
-                        <Typography.Paragraph>{track.description}</Typography.Paragraph>
-                        {'learningPathUrl' in track && (
-                          <Typography.Link href={track.learningPathUrl} target="_blank" rel="noreferrer">
-                            查看课程路线与资料
-                          </Typography.Link>
-                        )}
-                      </>
-                    )}
-                  </>
-                ),
-              }]}
-            />
-          </div>
-        </Col>
+        {!isCompact && (
+          <Col md={8} xl={5}>
+            {directoryContent}
+          </Col>
+        )}
+        {isCompact && (
+          <Drawer
+            title="课程目录"
+            placement="left"
+            width={340}
+            open={directoryOpen}
+            onClose={() => setDirectoryOpen(false)}
+            styles={{ body: { padding: 12 } }}
+          >
+            {directoryContent}
+          </Drawer>
+        )}
 
         <Col xs={24} md={16} xl={19}>
           {!selectedNode ? (
