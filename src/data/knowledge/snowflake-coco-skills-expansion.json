@@ -35,19 +35,22 @@
     "area": "data-platform",
     "topic": "snowflake-genai",
     "priority": "P1",
-    "summary": "面向 Snowflake 新建的多步骤自然语言数据应用，应优先评估 Cortex Agents 作为编排层：它可调用 Cortex Analyst 处理结构化指标与 Text-to-SQL，并调用 Cortex Search 处理文档检索。Semantic Views 和已验证查询可继续复用；独立 Cortex Analyst API 仍可用，适合已有集成或聚焦的结构化分析路径。",
+    "summary": "用 Semantic View 和 Verified Query 约束结构化 Text-to-SQL；根据应用是否需要文档检索、多工具和多步骤上下文，选择独立 Cortex Analyst API 或 Cortex Agents，并以 SQL Correctness、权限和业务控制数验证结果。",
     "required": [
-      "新建需要多步编排、结构化指标和非结构化检索的应用，优先评估 Cortex Agents；它可使用 Cortex Analyst 与 Cortex Search 等工具",
-      "结构化表格与指标问答依赖语义视图、正确粒度、关系基数、具名指标、业务同义词和代表性验证查询",
-      "现有独立 Cortex Analyst REST API 仍可用；从 Analyst API 迁移到 Cortex Agents 通常是调用/编排层的变化，语义视图与其中的已验证查询可继续复用",
-      "展示生成 SQL、实际结果、引用来源和失败状态；分别测试 SQL 结果、检索证据与跨工具编排"
+      "为结构化问答定义 Facts、Dimensions、Metrics、Relationships、数据粒度、同义词和可回答范围，避免仅凭物理列名推断业务口径。",
+      "使用 Verified Query Repository 为高频问法提供已验证问题和 SQL；VQR 必须使用 Semantic View 逻辑表/列，并由业务 owner 核对。",
+      "说明 2026-08-28 Snowflake 对新建多步骤自然语言数据应用推荐转向 Cortex Agents；现有 Analyst REST API 仍可用，Semantic Views 和 VQR 可继续复用。",
+      "按任务选择独立 Cortex Analyst API 或 Agents：单一结构化问数可走 Analyst；需要 Search、Custom Tools、Thread 和多步骤编排时评估 Agents。",
+      "使用 Cortex Analyst Evaluations 的 SQL Correctness 指标和固定日期/数据快照回归验证生成结果，识别 VQR 被选作 Ground Truth 时的临时移除行为。",
+      "在真实 Role 下验证 SQL、Query ID、警告、结果集、Search 引用和业务控制数，并明确无指标/无证据/无权限时的失败状态。"
     ],
     "misconceptions": [
-      "把所有自然语言数据问答都当成同一种检索任务处理",
-      "把 Cortex Analyst 或 Cortex Search 单独当作覆盖结构化和非结构化任务的通用编排层",
-      "未检查一对多 JOIN 就相信 SQL 聚合与生成结果",
-      "认为模型只要看到列名就能稳定推断业务指标和同义词",
-      "认为独立 Cortex Analyst API 已经不可用，或迁移必须重建语义视图"
+      "认为 Cortex Analyst REST API 已停用或迁移需要重建 Semantic View",
+      "把 Semantic View 当成只存字段说明的表目录，不定义粒度、关系和聚合语义",
+      "把 Verified Query 当成任意物理 SQL 收藏夹或未经人工验证自动加入",
+      "认为 SQL 可执行就代表结果符合业务口径",
+      "将结构化指标查询和非结构化文档检索混为一个任务",
+      "把政策文本与销售趋势同时出现当成因果证明"
     ],
     "angles": [
       "comparison",
