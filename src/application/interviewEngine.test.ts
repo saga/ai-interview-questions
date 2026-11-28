@@ -163,14 +163,21 @@ describe('buildSession 组卷与变体处理', () => {
     expect(session.questions.every((sq) => sq.format === 'choice')).toBe(true);
   });
 
-  it('按 questionIds 精确组卷，用于到期复习', async () => {
+  it('按 questionIds 精确组卷，不混入同 topic 的其他 KnowledgeNode', async () => {
+    const scopedBank = {
+      categories: ['agentic-ai'],
+      questions: [
+        { ...choiceQ, id: 'node-a-q1', topic: 'snowflake', knowledgeId: 'node-a' },
+        { ...choiceQ, id: 'node-b-q1', topic: 'snowflake', knowledgeId: 'node-b' },
+      ],
+    };
     const session = await buildSession(
-      bank,
-      { ...def(false, ['choice', 'open']), questionIds: ['d2'], count: 1 },
-      cfg,
+      scopedBank,
+      { ...def(false, ['choice']), questionIds: ['node-a-q1'], count: 1 },
     );
     expect(session.questions).toHaveLength(1);
-    expect(session.questions[0].question.id).toBe('d2');
+    expect(session.questions[0].question.id).toBe('node-a-q1');
+    expect(session.questions.some((item) => item.question.id === 'node-b-q1')).toBe(false);
   });
 
   it('按 KnowledgeNode topic 严格限制专项训练题池', async () => {
