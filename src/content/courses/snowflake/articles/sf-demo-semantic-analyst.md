@@ -1,206 +1,172 @@
-# Semantic Views 与 Cortex Analyst
+# Cortex Analyst 与 Semantic View 语义建模
 
 ## 本节要解决的问题
 
-业务人员问：“上季度各地区的净销售额是多少？平均每笔订单金额呢？”两个指标看起来只需要 SUM 和 AVG，但财务口径里“净销售额”要扣折扣和退款，平均订单金额又不能把订单头表的金额按明细行重复累计。
+销售负责人问：“过去 30 天，各地区已付款订单的净销售额是多少？和前 30 天相比变化了多少？”
 
-如果只给 Cortex Analyst 一组表和列名，模型必须猜测字段含义、Join 关系和指标口径。即使生成 SQL 能执行，也可能在一对多 Join 后把订单金额重复相加。Semantic View 的作用是把已经确认的业务模型发布成 Snowflake 对象，让 Cortex Analyst 使用业务实体、维度、事实和指标生成 SQL。它不能替代数据建模和质量检查。
+仓库中有订单头、订单行、折扣、退款和地区维度。直接让 LLM 根据表名生成 SQL，可能重复计算订单头金额、把退款发生日当订单日，或将取消订单计入销售额。Cortex Analyst 能根据语义模型理解业务名称并生成 SQL，但答案准确性依赖 Semantic View 对粒度、关系、指标和过滤条件的定义。
+
+Semantic View 不是一张替代事实表的物理表，也不是自动修复错误 Join 的工具。它向自然语言查询提供经过治理的业务语义。
 
 ## 核心知识
 
-### Semantic View 是业务语义定义，不是另一份数据副本
+### 先确定每张逻辑表的一行代表什么
 
-Semantic View 是 Schema 级对象，定义逻辑表、表关系、Facts、Dimensions 和 Metrics。底层数据仍在原表或视图中；Semantic View 提供名称、业务描述、关系和可复用指标。
+以销售分析为例，至少需要区分：
 
-新项目应优先使用 Semantic Views。历史 Cortex Analyst Semantic Model YAML（通常保存在 Stage）仍为兼容性而支持，但 Snowflake 推荐新实现使用 Semantic View：对象有原生 RBAC、Sharing 和 Catalog 集成，也支持派生指标与 Public/Private access modifier。
+| Logical Table | 一行代表什么 | 主键/实体 |
+|---|---|---|
+| ORDER_HEADER | 一笔订单 | ORDER_ID |
+| ORDER_LINE | 订单中的一个商品行 | ORDER_ID + LINE_ID |
+| REFUND | 一笔退款事件 | REFUND_ID |
+| CUSTOMER | 一个客户当前维度记录 | CUSTOMER_ID |
+| REGION | 一个地区 | REGION_ID |
 
-要先定义真实数据粒度。例如订单分析可以拆成：
-- ORDERS：一行一张订单；
-- ORDER_LINES：一行一个订单明细；
-- CUSTOMERS：一行一个客户。
+如果 ORDER_HEADER 的 ORDER_AMOUNT 被连接到 ORDER_LINE，订单有 3 个商品行时，订单金额会被重复 3 次。净销售额必须先明确计算粒度，再决定是按订单头、订单行还是退款事件组合计算。
 
-这三个逻辑表并不是因为都包含 CUSTOMER_ID 就能随意 Join。ORDERS 到 ORDER_LINES 是一对多；ORDERS 到 CUSTOMERS 通常是多对一。模型中的 Primary Key 和 Relationship 必须反映真实唯一性。
+对 SCD Type 2 客户维度，不能只按 CUSTOMER_ID 做 Join。需要按订单发生日匹配有效版本，或者将当前维度和历史维度拆成不同的逻辑对象，避免一条事实连到多个客户版本。
 
-### Logical Tables 和 Relationships 决定可用的 Join 路径
+### Semantic View 由 Logical Tables、Relationships、Dimensions、Facts 和 Metrics 组成
 
-示例数据：
+建模时要把物理表的结构映射成业务语义：
 
-| ORDER_ID | CUSTOMER_ID | ORDER_TOTAL |
-|---|---|---:|
-| O-101 | C-01 | 300 |
-| O-102 | C-02 | 200 |
+- **Logical Table**：代表一个可分析的数据集合，声明主键/实体和列。
+- **Relationship**：说明逻辑表之间如何连接，以及关系基数。
+- **Dimension**：用于分组、过滤和细分的属性，例如地区、渠道、订单日期。
+- **Fact**：具有业务含义的数值或属性，例如订单金额、折扣金额、退款金额。
+- **Metric**：定义业务指标，例如净销售额、订单数、退款率。
 
-订单明细：
+一个指标不能只叫 NET_SALES。它还应解释：
+- 是否只包括已付款订单；
+- 取消、退款和冲正如何处理；
+- 订单日期还是收入确认日期作为时间口径；
+- 金额使用哪个币种；
+- 多币种是否需要汇率换算；
+- 一个订单多行时如何避免重复计算。
 
-| ORDER_ID | LINE_NO | NET_LINE_AMOUNT |
-|---|---:|---:|
-| O-101 | 1 | 100 |
-| O-101 | 2 | 200 |
-| O-102 | 1 | 200 |
+这些定义应与财务/业务负责人确认，并在 Semantic View 描述、Metric 说明和相关测试中保持一致。名称和注释要使用分析师真实会说的词和常见同义词，不要将物理列名直接暴露给自然语言查询。
 
-如果先把 ORDERS 和 ORDER_LINES Join，再计算 SUM(ORDER_TOTAL)，O-101 的 300 会出现两次，结果变成 800，而实际订单头总额是 500。问题不是 SQL 语法，而是聚合粒度：订单头事实经过一对多 Join 后被复制。
+### Relationship 的 Join 键和基数决定数字是否会被放大
 
-Semantic View 的 TABLES 和 RELATIONSHIPS 声明逻辑表及外键关系：
+关系定义要说明一对一、一对多或多对多。对于订单头到订单行，一笔订单可以有多行；对于订单到退款，一笔订单可能有多笔退款。若同时连接订单行和退款事件，可能发生乘法扩行。
 
-~~~sql
-CREATE OR REPLACE SEMANTIC VIEW SALES.SEMANTICS.ORDER_ANALYSIS
-  TABLES (
-    orders AS SALES.MART.ORDERS
-      PRIMARY KEY (order_id),
-    order_lines AS SALES.MART.ORDER_LINES
-      PRIMARY KEY (order_id, line_no),
-    customers AS SALES.MART.CUSTOMERS
-      PRIMARY KEY (customer_id)
-  )
-  RELATIONSHIPS (
-    orders_to_customers AS
-      orders (customer_id) REFERENCES customers (customer_id),
-    lines_to_orders AS
-      order_lines (order_id) REFERENCES orders (order_id)
-  )
-  FACTS (
-    order_lines.net_line_amount AS net_line_amount,
-    orders.order_total AS order_total
-  )
-  DIMENSIONS (
-    orders.order_date AS order_date,
-    orders.order_status AS order_status,
-    customers.customer_name AS customer_name,
-    customers.region AS customer_region
-  )
-  METRICS (
-    order_lines.net_sales AS SUM(order_lines.net_line_amount),
-    orders.order_count AS COUNT(DISTINCT orders.order_id)
-  )
-  COMMENT = 'Order and order-line analysis';
-~~~
+例如一笔订单有 3 行商品、2 笔退款，直接把三张表连接后可能得到 6 行。SUM(order_header.order_amount) 会被重复 6 次。解决方法不是简单在最终 SQL 加 DISTINCT，而是先将订单行与退款按订单粒度分别汇总，再按订单键关联；或者在语义模型中明确可用的关系路径与指标计算粒度。
 
-示例假设 order_id 在 ORDERS 唯一、(order_id, line_no) 在 ORDER_LINES 唯一、customer_id 在 CUSTOMERS 唯一。Relationship 的方向由包含外键的逻辑表指向被引用的逻辑表；Snowflake 根据数据和 Primary Key 定义推断一对一或多对一关系。模型声明的唯一键必须真实成立，不能只为让创建通过而填写。
+对多对多关系要明确桥接表、分摊规则和过滤方向。若基数无法确认，不应把 Relationship 发布给 Analyst 使用。
 
-对于复合外键，Relationship 要列出每一组列。例如一个业务关系由 tenant_id + customer_id 唯一定位，不能只用 customer_id Join。若同两张逻辑表之间有多条关系路径，还要确认指标使用哪条关系，避免模型在出发机场、到达机场等相似关系中选错路径。
+### 使用 Semantic View 时，Metric 要明确事实粒度和过滤口径
 
-### Facts、Dimensions 和 Metrics 不是同义词
+以净销售额为例，假设 ORDER_LINE 已经保存每行商品净额，REFUND_SUMMARY 已经按订单和业务日期聚合。Semantic View 中可以将 NET_SALES 定义为订单行净额减去在同一口径下分配的退款金额。具体实现取决于退款应按订单日还是退款日计量。
 
-- **Fact** 是可用于计算的值或表达式，例如净明细金额、折扣后金额。
-- **Dimension** 是分析切分条件，例如日期、地区、产品类别、客户等级。
-- **Metric** 是带聚合定义的业务度量，例如净销售额、订单数、平均订单金额。
+用户问题“过去 30 天”也存在口径歧义：
+- 最近 30 个完整自然日；
+- 包含今天的滚动 30×24 小时；
+- 最近 30 个已结算业务日。
 
-同一个物理列可以作为事实来源，但指标必须明确聚合方法。SUM 适用于可加金额；余额、库存等快照型指标通常不能跨时间直接求和。若用户问“月末余额”，应该选择最新月份对应的快照，不能把每日余额相加。
+在 Metric 和维度说明中应写清默认时间语义；不能让 LLM 自行猜测。对财务报表，应要求用户明确业务日期或使用已批准的日期维度。
 
-对于上述示例：
-- 净销售额：SUM(order_lines.net_line_amount)；
-- 订单数：COUNT(DISTINCT orders.order_id)；
-- 平均订单金额：应明确是否按订单头总额计算，或用订单明细净额除订单数；两个定义必须与业务财务口径一致。
+### Verified Queries 为常见问题提供可信 SQL 参考
 
-如果把订单头总额和订单明细金额放在同一个 Join 结果中，需要检查指标计算是否会因 Join 扩行而重复。Semantic View 提供的 FIXED/INCLUDE/EXCLUDE 等粒度表达能力可以处理特定层级的聚合，但它们不是替代数据模型清理的补丁。优先修复错误主键、重复行和多对多桥表，再定义指标。
+Verified Query 是经过人工确认的自然语言问题与 SQL 示例，可以帮助 Cortex Analyst 理解某类业务问题在当前 Semantic View 下应如何查询。它们适合覆盖高频和高风险问题，例如：
+- 已付款净销售额；
+- 按地区/渠道分组的订单数；
+- 退款率；
+- 月度环比；
+- Top N 产品。
 
-### ASOF 和 Range Relationship 适合按生效时间查维度
+Verified Query 不是给所有可能问题提供答案，也不能代替 Semantic View 的基础建模。若模型关系、Metric 定义或数据粒度错误，保存一条正确 SQL 不会自动修复其他问题。
 
-普通 Relationship 默认按相等条件 Join。若订单发生时需要取得当时生效的客户地址、证券分类或政策版本，不能把订单日与维表开始日期做普通等值 Join。
+应优先为经过业务确认的 Golden Queries 建立 Verified Query，并固定使用的数据日期、过滤条件和预期结果。每次调整 Semantic View 的关系、字段或指标时，要重新运行这些查询，确保之前的语义没有被破坏。
 
-ASOF Relationship 用于按时间找到最近的有效记录；Range Relationship 用于匹配起止日期范围。示例：订单在 2026-11-15，客户地址表记录了 11 月 1 日至 11 月 30 日的最新地址，查询应取该订单日期有效的地址，而不是客户当前地址。
+### Cortex Analyst 返回的是 SQL 及执行结果，必须检查查询证据
 
-这类时间关系要求维度表的生效区间无重叠或有明确优先规则。若同一客户在同一日期存在两条有效地址，ASOF 或 Range Join 仍需要数据质量规则确定正确记录；Semantic View 不会自动猜测业务优先级。
+Cortex Analyst 根据自然语言问题、Semantic View 和已验证示例生成查询。应用可以展示解释、SQL 和执行结果，也应保存查询 ID 与使用的语义模型版本。
 
-### Verified Query Repository 为常见问题提供经人工验证的 SQL
+对于上面的 30 天净销售额问题，检查生成 SQL 时至少确认：
+1. 是否过滤了正确的订单状态；
+2. 是否使用明确的业务日期窗口；
+3. 是否按地区分组；
+4. 订单头金额是否因 Join 到订单行而重复；
+5. 退款是按订单日期还是退款日期计入；
+6. 多币种是否使用正确汇率；
+7. 返回的总额是否与独立 SQL/财务控制总额一致。
 
-Verified Query 是一对经过验证的自然语言问题和 SQL。Cortex Analyst 可以在遇到相似问题时复用这些已验证查询，减少对常见业务表达的误解。
+不能只因为 SQL 能执行就显示答案。若生成的 SQL 使用了不被允许的 Join 路径、日期或 Metric，应停止展示为正式业务结论，并记录问题用于修正语义模型。
 
-~~~yaml
-verified_queries:
-  - name: quarterly_net_sales_by_region
-    question: What was net sales by region last quarter?
-    verified_at: 1795737600
-    verified_by: finance_data_steward
-    use_as_onboarding_question: true
-    sql: |
-      SELECT
-        customers.customer_region,
-        SUM(order_lines.net_line_amount) AS net_sales
-      FROM order_lines
-      JOIN orders
-        ON order_lines.order_id = orders.order_id
-      JOIN customers
-        ON orders.customer_id = customers.customer_id
-      WHERE orders.order_date >= '2026-07-01'
-        AND orders.order_date < '2026-10-01'
-      GROUP BY customers.customer_region
-~~~
+### 评估要分别检查 SQL 正确性、回答正确性和语义覆盖
 
-这里的 YAML 示例用于说明 VQR 字段；使用时要将 verified_at 设置为真实验证时间，并把 SQL 改为 Semantic View 的逻辑表和逻辑列名称，不能在 Verified Query 中写底层物理表字段名。提交前必须由业务 owner 对 SQL 的结果和业务口径签字确认。
+Semantic Analyst 的评测集应该包含真实用户问题、Golden SQL、预期结果和边界说明。测试不仅覆盖“简单按维度分组”，还要包含：
+- 订单头/订单行粒度冲突；
+- 一对多和多对多 Join；
+- 多币种和汇率日期；
+- 退款与冲正时间口径；
+- NULL、未知类别和未分类客户；
+- 时间表达式和 Top N；
+- 同义词、缩写与口语问题。
 
-Verified Query 也可以进入 Cortex Analyst Evaluation。要注意一个 Verified Query 在一次评测中不能同时充当运行时提示和测试答案：被选作 Ground Truth 的查询会从临时评测模型副本中移除，避免评测时直接命中它而高估 SQL 生成能力。
-
-### Cortex Analyst 生成的是 SQL 候选结果，不是自动批准的业务指标
-
-Analyst 根据自然语言问题、Semantic View、关系、Metric/Dimension 描述和 Verified Query 生成 SQL。生成的 SQL 仍要在实际调用 Role 下执行，并对照 Golden Query 检查：
-- 选择了正确的 Metric 和 Dimension；
-- 日期范围、时区和季度定义正确；
-- Join 路径与基数正确；
-- 过滤条件和状态口径符合业务规则；
-- 聚合结果与人工核对的控制数一致。
-
-Verified Query Repository 不是业务规则引擎，也不能覆盖所有自然语言变化。高风险指标要维护覆盖不同表达、过滤条件、日期边界和用户权限的测试集。生成 SQL 可执行只是必要条件，不是业务答案正确的充分条件。
+SQL 执行成功不等于结果正确。应将生成 SQL 与 Golden SQL 的业务语义对照，并对关键数字使用固定样本快照做数值对账。对自然语言回答还要检查是否说明了估值/统计日期、币种和过滤条件。
 
 ## 工程实施步骤
 
-1. 先确认订单、明细、客户等实体的事实粒度、主键、唯一键和外键质量。
-2. 识别一对多、多对一、复合键、多对多桥表以及生效日期关系。
-3. 为每个逻辑表定义 Primary Key/Unique Key 和业务注释；不要用逻辑假设代替实际唯一性检查。
-4. 将业务列映射为 Facts 与 Dimensions；为金额、计数、比率、余额等指标写清分子、分母、聚合和非可加维度。
-5. 用 CREATE SEMANTIC VIEW 或 YAML 规范建立 Schema 级对象；在部署时检查 CREATE SEMANTIC VIEW、USAGE 和底层表 SELECT 权限。
-6. 使用 SEMANTIC_VIEW() 函数或 Cortex Analyst 测试样例验证生成 SQL 的 Join 路径、结果粒度和指标值。
-7. 将高频、复杂或容易歧义的问题加入 Verified Query Repository；每条 VQ 都要有具体提问、逻辑 SQL 和业务 owner。
-8. 为每项核心 Metric 建立 Golden Query 和控制数，对比直接 SQL 与 Analyst 生成 SQL 的结果。
-9. 在不同 Role 下测试 Semantic View 的对象权限、底层数据策略和访问边界。
-10. 修改表粒度、Relationship、Primary Key 或 Metric 表达式时，重新运行受影响的 Verified Query 和 Evaluation。
-11. 通过 DESCRIBE SEMANTIC VIEW、SHOW SEMANTIC DIMENSIONS、SHOW SEMANTIC FACTS 和 SHOW SEMANTIC METRICS 检查已部署定义。
-12. 将语义定义、Verified Query、评测结果和业务口径版本一并纳入变更审查。
+1. 选定一个具体分析域，先画出事实与维度的一行粒度、业务键和历史有效时间。
+2. 验证源表主键、重复记录、SCD2 有效期和多对多桥接关系。
+3. 创建 Semantic View Logical Tables，明确每张表的 Entity/主键与可暴露字段。
+4. 定义 Relationship 的 Join 键和基数，禁止不清楚或会产生不可控 Fanout 的路径。
+5. 定义 Dimension、Fact 和 Metric；在描述中写明过滤、时间、币种、NULL 和聚合语义。
+6. 使用业务术语、同义词和示例值改善自然语言映射，但不要堆砌与业务无关的关键词。
+7. 与业务 owner 确认常见问题，为其建立 Verified Queries 和固定结果样本。
+8. 使用真实 Cortex Analyst Role 验证 Semantic View USAGE、数据库角色和 Warehouse 权限。
+9. 用 Golden Queries 检查生成 SQL、Query ID、Join 基数和业务控制总额。
+10. Semantic View 变更后运行回归集，比较 SQL、结果值和查询计划；不通过时回退语义变更。
+11. 将 Semantic View 版本、Verified Query、评测集、Query ID 和结果快照纳入发布记录。
 
 ## 场景分析
 
-业务部门问：“2026 年第三季度，各地区的净销售额和平均订单金额是多少？”语义层把订单头和订单明细关联后，如果直接 SUM(order_total)，O-101 因为有两条明细被重复计算。模型还可能把“订单金额”理解成订单头总额，而财务的“净销售额”其实需要扣除明细折扣和退款。
+销售负责人问：“过去 30 天，日本地区的已付款净销售额是多少？”
 
-修正时先确定两个指标不是一回事：净销售额按明细净额汇总，订单数按唯一订单 ID 计数；平均订单金额则明确采用净销售额除以订单数，或财务已批准的订单头口径。随后定义唯一键、Relationship、Metric，并创建一条 Verified Query 由财务 owner 校验结果。
+Semantic View 定义：
+- ORDER_LINE 的粒度为订单行；
+- ORDER_HEADER 的粒度为订单；
+- REFUND_SUMMARY 已按订单和退款业务日期聚合；
+- REGION 是客户在订单发生日的有效地区；
+- NET_SALES 采用收入确认日期，并按 USD 汇率换算。
 
-新员工以自然语言问相同问题时，Analyst 可以基于该语义定义和 Verified Query 生成查询，但输出仍要经过 Golden Query 回归。若更改订单明细的粒度或退款处理方式，所有相关指标和 Verified Query 都要重新验证。
+Cortex Analyst 生成 SQL 后，审核发现它将 ORDER_HEADER 直接 Join 到 ORDER_LINE，再按地区 SUM(ORDER_AMOUNT)。一笔有 4 行商品的订单会重复 4 次订单头金额。正确处理是使用订单行净额指标，或先将订单行汇总到订单粒度后再与订单头和退款汇总关联。
+
+如果用户没有说明“过去 30 天”是否包含今天，且该指标用于正式财务报告，应用应要求选择业务日期范围或使用已批准的报告周期，不应默默选择一个口径。最终回答应显示业务日期、币种、订单状态和语义模型版本。
 
 ## 常见误区
 
-- **把 Semantic View 当作另一张业务数据表。** 它定义业务语义和查询关系，不复制底层数据。
-- **只写列名和注释，不定义主键与关系。** Analyst 无法凭名字准确还原一对多、复合键和时间关系。
-- **将订单头金额和订单明细金额在一对多 Join 后直接 SUM。** 头表金额会按明细行重复，必须调整指标粒度。
-- **把 Fact、Dimension 和 Metric 混成同一种字段。** Metric 必须有聚合与业务口径，不是任意数值列。
-- **用当前维度值回答历史问题。** 需要按事件日期关联 ASOF/Range 维度或有效期版本。
-- **Verified Query 直接引用物理表字段。** SQL 应使用 Semantic View 的逻辑表和逻辑列名称。
-- **把 Verified Query 当成全面测试集。** 高频问题只是代表性样例，仍需覆盖日期、边界、Join 和权限变化。
-- **只验证 Analyst 生成 SQL 能执行。** 还要核对结果和业务控制数。
-- **把多对多关系当作普通一对多。** 桥表、非唯一键和多路径 Join 可能改变聚合结果，需要单独建模和验证。
+- **把 Semantic View 当成表结构的别名。** 它要定义业务粒度、关系和可解释指标。
+- **只定义 Metric 名称，不说明计算口径。** Analyst 可能把相同名字映射到错误的事实列或聚合。
+- **将多对多关系直接暴露给 Analyst。** 连接可能放大金额或计数，需建桥接或预先聚合。
+- **认为 Verified Query 能修复所有语义错误。** 它只为部分问题提供参考，基础模型仍然决定 SQL 正确性。
+- **SQL 能执行就当答案正确。** 还需对照 Golden SQL、固定日期样本和业务控制总额。
+- **把过去 30 天当成无歧义时间条件。** 应明确自然日、滚动时段和业务日口径。
+- **让自然语言问题决定高影响筛选或权限。** 访问权限应由 Snowflake Role/Policy 保证，而不是依赖用户提示。
+- **只更新 Semantic View，不跑回归问题集。** 关系、字段和 Metric 变化可能改变已有问题的生成 SQL。
 
 ## 完成标准
 
-- [ ] 能解释 Semantic View、逻辑表、Relationship、Fact、Dimension 和 Metric 的职责。
-- [ ] 能根据真实主键和外键设计逻辑关系，并判断 Join 基数。
-- [ ] 能解释一对多 Join 为什么可能重复累计订单头事实。
-- [ ] 能为金额、计数、余额和比率定义正确聚合与可加性。
-- [ ] 能判断历史维度应使用普通 Join、ASOF 或 Range Relationship。
-- [ ] 能使用 Verified Query Repository，并说明 SQL 必须使用逻辑表/列。
-- [ ] 能通过 Golden Query、权限测试与 Evaluation 验证 Cortex Analyst 输出。
+- [ ] 能说明 Logical Table、Relationship、Dimension、Fact 和 Metric 的职责。
+- [ ] 能为每张逻辑表定义粒度、主键和有效时间。
+- [ ] 能识别 Join Fanout 并设计适当的预聚合/桥接。
+- [ ] 能定义含时间、状态、币种和 NULL 规则的 Metric。
+- [ ] 能解释 Verified Query 的价值和覆盖边界。
+- [ ] 能用 Golden Query、SQL、Query ID 和数值对账验证 Cortex Analyst 输出。
+- [ ] 能区分语义正确性、查询执行成功和用户最终回答正确。
 
 ## 自测
 
-1. 一张订单有三条明细。订单头的 300 元金额在 Join 后会出现几次？为什么 SUM(order_total) 会被放大？
-2. order_id 在订单头唯一，(order_id, line_no) 在明细唯一。Semantic View 的 Primary Key 和 Relationship 应怎样定义？
-3. 余额每天有一条记录。为什么不能把每日余额跨月求和？应该如何定义月末余额指标？
-4. 订单发生在 11 月 15 日，客户地址在 11 月 1 日生效、12 月 1 日失效。普通等值 Join 能否找到它？应考虑哪种 Relationship？
-5. 一个 Verified Query 已经用于生产指导 Analyst。将它选作 Evaluation Ground Truth 时，Snowflake 如何避免评测直接命中这条查询？
-6. Analyst 生成 SQL 可执行，但销售额比财务控制数高 40%。应先检查哪些 Join 粒度、指标定义和过滤条件？
+1. 一张订单头表和订单行表 Join 后，订单头金额重复 4 次。Semantic View 中应先检查什么？为什么不能用最终 DISTINCT 掩盖问题？
+2. 一个退款订单有两笔退款记录，订单行有三行商品。直接连接后可能产生多少行？需要怎样设计退款汇总粒度？
+3. Verified Query 已经包含一个正确 SQL，但 Analyst 仍为其他问题生成重复金额的 SQL。应该先修正哪一层？
+4. “过去 30 天”有哪几种可能口径？正式财务报告应怎样确定？
+5. Semantic View 更改 Relationship 后，为什么需要重新运行此前的 Golden Queries？
 
 ## 参考资料
 
-- [Semantic Views overview](https://docs.snowflake.com/en/user-guide/views-semantic/overview)
-- [Using SQL commands to create and manage semantic views](https://docs.snowflake.com/en/user-guide/views-semantic/sql)
-- [YAML specification for semantic views](https://docs.snowflake.com/en/user-guide/views-semantic/semantic-view-yaml-spec)
-- [Cortex Analyst Verified Query Repository](https://docs.snowflake.com/en/user-guide/views-semantic/verified-query-repository)
-- [Suggestions for semantic models and views](https://docs.snowflake.com/en/user-guide/views-semantic/verified-query-suggestions)
-- [Cortex Analyst evaluations](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-analyst-evaluations)
+- [Cortex Analyst overview](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-analyst)
+- [Create and use Semantic Views](https://docs.snowflake.com/en/user-guide/views-semantic)
+- [Verified queries](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-analyst/verified-queries)
+- [Cortex Analyst REST API](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-analyst/rest-api)
