@@ -116,8 +116,16 @@ function inScope(
         (q.questionId && doc.metadata.questionId === q.questionId) ||
           (q.knowledgeId && doc.metadata.knowledgeId === q.knowledgeId),
       );
-    case 'topic':
+    case 'topic': {
+      // 精确 knowledgeId 优先走节点及其图邻域；仅给共享 topic 分组时，返回该分组内的节点与题目。
+      if (q.knowledgeId && neighborhood.has(q.knowledgeId)) {
+        return Boolean(doc.metadata.knowledgeId && neighborhood.has(doc.metadata.knowledgeId));
+      }
+      if (q.topic && !neighborhood.has(q.topic)) {
+        return doc.metadata.topic === q.topic;
+      }
       return Boolean(doc.metadata.knowledgeId && neighborhood.has(doc.metadata.knowledgeId));
+    }
     case 'knowledge':
       // 只要概念层：不把 10 道题塞给模型，避免"从题库答案总结答案"（ADR-063 §11）。
       return doc.kind !== 'question';
@@ -148,7 +156,10 @@ export function inferSeeds(
   lexical: Map<number, number>,
   nodes: KnowledgeNode[] = knowledgeNodes,
 ): string[] {
-  const explicit = [q.knowledgeId, q.topic].filter((v): v is string => Boolean(v));
+  const nodeIds = new Set(nodes.map((node) => node.id));
+  const explicit = [q.knowledgeId, q.topic].filter(
+    (value): value is string => Boolean(value && nodeIds.has(value)),
+  );
   if (explicit.length > 0) return [...new Set(explicit)];
 
   const lower = q.query.toLowerCase();
