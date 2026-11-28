@@ -38,10 +38,11 @@
 - 目标 KnowledgeNode / `knowledgeId` 和主题；
 - 核心 Concept、考察角度、难度和 `cognitiveTask`；
 - 题目要测量的判断或操作，以及可接受答案的依据；
-- 来源材料 ID（`source.materialId`）和适用章节；
+- 课程归属（`courseId: "snowflake"`）、唯一知识点 ID（`knowledgeId`）、共享主题键（`topic`）；
+- 主来源 `source.materialId`、适用章节 `source.section`，有页码时记录 `source.page`，并提供至少一条登记在课程路线中的官方文档 ID（`source.relatedMaterials`）；
 - 应覆盖的关键误区，以及题目能否区分这些误区。
 
-随后生成题目草稿，映射到现有 Question Schema，再进入新增题流程。候选 Concept 应先按工程价值筛选，不能因为材料中出现某个术语就机械出题。题目应能脱离原文独立作答；版本敏感事实需要明确范围。
+随后按 Part 1 / Part 2 Prompt 生成题目草稿。转换器必须保留 `courseId`、`knowledgeId` 和完整来源字段；`blueprintKnowledgeId` 只用于核对 Blueprint 与最终 `knowledgeId` 一致，不与共享 `topic` 比较。`question:add --check` 和 CI 会检查课程节点及来源字段。候选 Concept 应先按工程价值筛选，不能因为材料中出现某个术语就机械出题。题目应能脱离原文独立作答；版本敏感事实需要明确范围。
 
 现有入口：
 
@@ -56,7 +57,7 @@
 1. **结构验证**：Schema、字段、答案索引、题型约束和 ID 唯一性。
 2. **内容质量**：自包含性、考察边界、干扰项、难度、表达和知识点覆盖；使用 Question Challenger 与现有审计脚本。
 3. **事实核验**：先不看存储答案独立作答，再逐项检查题干、每个选项、解析和开放题参考答案；核验必须提供真实来源摘录，系统逐字检查引用是否存在于登记材料中。
-4. **发布门禁**：CI 对本次新增或修改题目检查 `cognitiveTask` 和 `source.materialId`，并运行题库结构/质量审计、题目身份检查和变体校验。**这只证明来源元数据已填写，不等于题目事实已经自动核验。**
+4. **发布门禁**：CI 对新增或修改题目检查 `cognitiveTask`、`source.materialId`；所有课程题检查 `courseId` 和精确 `knowledgeId`；Snowflake 题还检查 `source.section` 与 `source.relatedMaterials`。同时运行题库结构/质量审计、题目身份检查和变体校验。**这只证明来源元数据符合要求，不等于题目事实已经自动核验。**
 5. **人工裁决**：独立作答与题库答案冲突、来源不足、事实有条件或多个选项可能成立时，保留 REVIEW / NEEDS_EVIDENCE，不强行标成 VERIFIED。
 
 事实核验的执行入口：
