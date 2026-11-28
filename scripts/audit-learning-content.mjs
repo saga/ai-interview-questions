@@ -175,6 +175,48 @@ for (const doc of docs) {
       if (pattern.test(doc.markdown)) qualityProblems.push({ id: doc.id, path: doc.path, problem: `模板残留：${name}` });
     }
   }
+
+  if (isTarget && doc.kind === 'integrated') {
+    const visibleText = (text) => text
+      .replace(/~~~[\s\S]*?~~~/g, ' ')
+      .replace(/```[\s\S]*?```/g, ' ')
+      .trim();
+    const scene = visibleText(doc.sections.get('场景与目标') ?? '');
+    const steps = visibleText(doc.sections.get('实施步骤') ?? '');
+    const tradeoffs = visibleText(doc.sections.get('关键取舍') ?? '');
+    const acceptance = visibleText(doc.sections.get('验收清单') ?? '');
+    const linked = doc.sections.get('关联知识点') ?? '';
+    const references = doc.sections.get('参考资料') ?? '';
+    const mermaidBlocks = [...doc.markdown.matchAll(/~~~mermaid\s*([\s\S]*?)~~~/gi)]
+      .map((match) => match[1]);
+    const diagramSource = mermaidBlocks.join('\n');
+    const hasArchitectureDiagram =
+      /\b(?:flowchart|graph)\s+(?:TB|TD|BT|RL|LR)\b/i.test(diagramSource)
+      && countMatches(diagramSource, /-->|-.->|==>|---/g) >= 6;
+    const stepCount = countMatches(steps, /^\s*\d+[.)]\s+/gm);
+    const tradeoffCount = countMatches(tradeoffs, /^\s*[-*+]\s+/gm);
+    const acceptanceCount = countMatches(acceptance, /^\s*(?:[-*+]\s+|\[[ xX]\]\s+)/gm);
+    const linkedArticleCount = countMatches(linked, /\]\([^)]*articles\/[^)]+\.md\)/g);
+    const referenceLinkCount = countMatches(references, /\]\(https?:\/\//g);
+    const matchedReferenceCount = doc.refs.filter((reference) =>
+      reference.url && doc.markdown.includes(reference.url),
+    ).length;
+    const checks = [
+      [scene.length >= 70, '场景目标描述不足（' + scene.length + ' 字符）'],
+      [hasArchitectureDiagram, '缺少可读的架构流程图（' + mermaidBlocks.length + ' 个 Mermaid 图，边数不足或类型不符）'],
+      [steps.length >= 400 && stepCount >= 5, '实施步骤不足（' + steps.length + ' 字符，' + stepCount + ' 项）'],
+      [tradeoffs.length >= 120 && tradeoffCount >= 3, '关键取舍不足（' + tradeoffs.length + ' 字符，' + tradeoffCount + ' 项）'],
+      [acceptance.length >= 100 && acceptanceCount >= 4, '验收条件不足（' + acceptance.length + ' 字符，' + acceptanceCount + ' 项）'],
+      [linkedArticleCount >= 3, '关联节点教程链接不足（' + linkedArticleCount + ' 个）'],
+      [
+        doc.refs.length >= 2 && referenceLinkCount >= 2 && matchedReferenceCount >= 2,
+        '参考资料不足或未与来源清单对应（正文 ' + referenceLinkCount + ' 个链接，元数据 ' + doc.refs.length + ' 条，匹配 ' + matchedReferenceCount + ' 条）',
+      ],
+    ];
+    for (const [passed, message] of checks) {
+      if (!passed) qualityProblems.push({ id: doc.id, path: doc.path, problem: message });
+    }
+  }
 }
 const duplicates = [...paragraphIndex.values()]
   .filter((group) => new Set(group.ids).size > 1)
