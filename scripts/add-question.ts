@@ -89,6 +89,7 @@ const raw = JSON.parse(readFileSync(resolve(process.cwd(), inputFile), 'utf8')) 
 const incoming = parseQuestionArray(normalizeIncoming(raw));
 const existing = readJsonArrays<Question>(questionsDir);
 const nodes = readJsonArrays<KnowledgeNode>(knowledgeDir);
+const nodeIds = new Set(nodes.map((node) => node.id));
 const existingIds = new Set(existing.map((question) => question.id));
 const existingTexts = new Map(existing.map((question) => [normalizedText(question.question), question.id]));
 const errors: string[] = [];
@@ -106,18 +107,21 @@ let openOnlyCount = 0;
 
 for (const question of incoming) {
   if (existingIds.has(question.id)) errors.push(`${question.id}: id 已存在`);
-  const topicCandidates = nodes.filter((node) =>
-    (node.topic === question.topic || node.id === question.topic)
+  const topicNode = nodes.find((node) =>
+    node.id === question.topic
     && (!question.courseId || node.courseId === question.courseId),
   );
-  if (question.angle && !existingCells.has(`${question.topic}\u0000${question.angle}`)) {
+  if (question.angle && nodeIds.has(question.topic) && !existingCells.has(`${question.topic}\\u0000${question.angle}`)) {
     newlyCovered.add(`${question.topic} × ${question.angle}`);
   }
-  if (topicCandidates.length === 0) {
-    errors.push(`${question.id}: topic "${question.topic}" 在指定课程范围内没有匹配的知识节点`);
+  if (!topicNode) {
+    errors.push(`${question.id}: topic "${question.topic}" 必须是指定课程中的 KnowledgeNode.id，不能使用 KnowledgeNode.topic 分组值`);
   }
   if (question.courseId && !question.knowledgeId) {
     errors.push(`${question.id}: 课程题必须填写精确的 knowledgeId`);
+  }
+  if (question.courseId && question.knowledgeId !== question.topic) {
+    errors.push(`${question.id}: 课程题的 topic 与 knowledgeId 必须指向同一个 KnowledgeNode.id`);
   }
   if (question.courseId === 'snowflake') {
     if (!question.source?.section?.trim()) errors.push(`${question.id}: Snowflake 课程题缺 source.section`);
@@ -125,11 +129,7 @@ for (const question of incoming) {
       errors.push(`${question.id}: Snowflake 课程题缺 source.relatedMaterials`);
     }
   }
-  if (topicCandidates.length > 1 && !hasKnowledgeTarget(question, nodes)) {
-    errors.push(
-      `${question.id}: topic "${question.topic}" 对应多个 KnowledgeNode，必须通过 knowledgeId、concepts 或 subtopic 明确关联；候选：${topicCandidates.map((node) => node.id).join(', ')}`,
-    );
-  } else if (question.knowledgeId && !hasKnowledgeTarget(question, nodes)) {
+  if (question.knowledgeId && !hasKnowledgeTarget(question, nodes)) {
     errors.push(`${question.id}: knowledgeId "${question.knowledgeId}" 不属于该 topic / course 的有效 KnowledgeNode`);
   }
   if (!validAngles.has(question.angle)) errors.push(`${question.id}: angle 不合法`);
