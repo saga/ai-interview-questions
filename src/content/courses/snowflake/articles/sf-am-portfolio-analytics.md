@@ -76,38 +76,57 @@ ActiveWeight_i = PortfolioWeight_i - BenchmarkWeight_i
 下面的 SQL 将已经审核的组合权重和基准权重对齐：
 
 ~~~sql
-WITH portfolio_weight AS (
+WITH portfolio_benchmark AS (
   SELECT
     portfolio_id,
-    valuation_date,
-    instrument_id,
-    SUM(market_value_base) / NULLIF(MAX(net_asset_value_base), 0) AS weight
-  FROM valued_portfolio_positions
-  WHERE valuation_date = '2026-11-27'
-  GROUP BY portfolio_id, valuation_date, instrument_id
+    benchmark_id
+  FROM portfolio_benchmark_assignment
+  WHERE approval_status = 'APPROVED'
+    AND effective_from <= '2026-11-27'
+    AND (effective_to IS NULL OR effective_to > '2026-11-27')
+),
+portfolio_weight AS (
+  SELECT
+    p.portfolio_id,
+    m.benchmark_id,
+    p.valuation_date,
+    p.instrument_id,
+    SUM(p.market_value_base)
+      / NULLIF(MAX(p.net_asset_value_base), 0) AS weight
+  FROM valued_portfolio_positions p
+  JOIN portfolio_benchmark m
+    ON m.portfolio_id = p.portfolio_id
+  WHERE p.valuation_date = '2026-11-27'
+  GROUP BY p.portfolio_id, m.benchmark_id, p.valuation_date, p.instrument_id
 ),
 benchmark_weight AS (
   SELECT
-    benchmark_id,
-    effective_date,
-    instrument_id,
-    weight
-  FROM approved_benchmark_weights
-  WHERE effective_date = '2026-11-27'
+    m.portfolio_id,
+    b.benchmark_id,
+    b.effective_date AS valuation_date,
+    b.instrument_id,
+    b.weight
+  FROM portfolio_benchmark m
+  JOIN approved_benchmark_weights b
+    ON b.benchmark_id = m.benchmark_id
+   AND b.effective_date = '2026-11-27'
 )
 SELECT
-  p.portfolio_id,
-  b.benchmark_id,
+  COALESCE(p.portfolio_id, b.portfolio_id) AS portfolio_id,
+  COALESCE(p.benchmark_id, b.benchmark_id) AS benchmark_id,
   COALESCE(p.instrument_id, b.instrument_id) AS instrument_id,
   p.weight AS portfolio_weight,
   b.weight AS benchmark_weight,
   COALESCE(p.weight, 0) - COALESCE(b.weight, 0) AS active_weight
 FROM portfolio_weight p
 FULL OUTER JOIN benchmark_weight b
-  ON b.instrument_id = p.instrument_id;
+  ON b.portfolio_id = p.portfolio_id
+ AND b.benchmark_id = p.benchmark_id
+ AND b.valuation_date = p.valuation_date
+ AND b.instrument_id = p.instrument_id;
 ~~~
 
-示例省略了组合与基准映射表的关联条件，实际查询必须先确定每个 Portfolio 适用哪个 Benchmark。若有不同币种、成分调整日或证券类别，也要在 Join 键中体现。FULL OUTER JOIN 可以保留组合独有和基准独有的证券，避免只看交集后误以为权重总和完整。
+示例假设 portfolio_benchmark_assignment 在给定日期、组合和 APPROVED 状态下恰好只有一条有效基准映射；这个唯一性必须作为数据质量检查，不能用 QUALIFY 随意挑一条。net_asset_value_base 在每个组合/估值日内应保持一致，MAX 只是取该快照重复携带的同一 NAV。若基准权重有多个版本，应先按生效日和发布版本选出唯一版本。FULL OUTER JOIN 同时保留组合独有和基准独有的证券；如果只做 INNER JOIN，主动权重总和和未覆盖资产都会被隐藏。
 
 ### 价格收益、总回报和组合净值是不同指标
 
