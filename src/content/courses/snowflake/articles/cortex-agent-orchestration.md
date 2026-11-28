@@ -2,60 +2,109 @@
 
 ## 本节要解决的问题
 
-组合 Analyst/Search 工具并约束工具选择、规划、执行上下文、权限和综合回答。
-
-Cortex Agents、ML 与 CoCo。明确目标、工具/模型边界、身份授权、输入输出、执行证据、评测和停止条件。
-
-本教程只对应知识点 `cortex-agent-orchestration`。目标是理解其机制、适用边界和验证方法，不把相邻知识点合并成一个大章。
+将结构化数据分析、非结构化检索、计算和外部系统操作组合成一个可治理的 Agent 工作流。Cortex Agents 提供托管编排，但开发者仍需设计工具边界、执行身份、权限、失败处理和验收标准；不能把“Agent 能调用工具”理解为“Agent 获得任意系统权限”。
 
 ## 核心知识
 
-### 按结构化指标、文档检索和计算需要选择工具
+### Agent 将模型、工具和指令组合成可复用对象
 
-调度成功只说明执行器完成触发，不代表业务数据已正确交付。还要检查依赖、执行身份、重叠运行、失败重试、下游可见性和数据质量。
+Cortex Agent 是 Schema 级对象，包含编排模型、工具列表、Orchestration Instructions 和 Response Instructions。运行时遵循 Plan、Use tools、Reflect and respond 的循环：先拆分任务并选工具，再执行工具，最后评估中间结果并继续调用或返回答案。
 
-### 定义 orchestration instructions、工具参数契约和失败处理
+指令用于引导工具选择和回答行为，不是安全策略引擎。真正的访问边界由 Snowflake Role、对象 Grants、工具自身授权和外部服务认证决定。模型可能错误选择工具，也可能在工具执行失败后继续推理，所以关键操作必须有确定性校验与授权。
 
-调度成功只说明执行器完成触发，不代表业务数据已正确交付。还要检查依赖、执行身份、重叠运行、失败重试、下游可见性和数据质量。
+### 选择工具要匹配输入和输出契约
 
-### 以最小权限验证每种工具可执行的动作
+- **Cortex Analyst**：结构化指标与 SQL 生成，依赖 Semantic View。
+- **Cortex Search**：非结构化文本检索，适合政策、文档和知识库。
+- **Code Execution**：在隔离 Python Sandbox 中处理检索或分析结果。
+- **Data to Chart**：基于工具返回的数据生成可视化。
+- **Custom Tools**：Stored Procedure/UDF 实现业务操作或后端调用。
+- **Agent Skills**：将稳定指令和脚本封装为可复用能力。
+- **MCP Connectors**：接入远端 MCP Server 提供的工具。
+- **Agent Toolsets**：引用另一个 Agent 并在运行时继承其工具集。
+- **Web Search**：账户启用后访问公共网络实时信息。
 
-权限判断沿用户、当前激活角色、角色继承、对象权限和所有权追踪，并检查 Database、Schema 与目标对象的使用权限。
+每个工具都应定义输入 Schema、输出格式、最大执行时间、错误类型、副作用、幂等键和可访问的数据范围。对同一目标不应同时挂载功能重复但权限边界不同的工具，避免路由歧义和成本增长。
+
+### 工具不可访问时的处理不是统一失败
+
+orchestration.tool_not_accessible 控制运行开始时某些工具缺少权限的处理方式。默认 accept 会让 Agent 使用其余可访问工具并返回 warning；reject 在发现不可访问工具时拒绝运行；legacy 保留旧式首个权限失败行为。
+
+预检并不覆盖所有工具类型。Snowflake 在开始运行时检查 Cortex Search、Cortex Analyst、MCP 和 Skill 工具；Custom Tools、SQL Execution、Code Execution 等工具的权限问题可能在实际调用时才暴露。不能因为 Agent Run 已启动就推断所有工具均可用。
+
+### Thread、Run 与最终答案是不同对象
+
+Thread 用于跨请求保留对话上下文；Run 代表一次请求，执行期间会发出事件，包含工具调用和反思信息。应用需要持久保存 thread_id、run_id、请求身份和业务关联 ID，以便恢复会话、审计调用和处理用户反馈。
+
+Agent 的最终文本和引用不保证正确。对于需要外部副作用、财务审批、账户变更或其它业务决策的操作，应将 Agent 输出视为建议或候选计划，再通过独立的权限、业务规则和人工确认环节执行。
 
 ## 工程实施步骤
 
-1. 将用户目标拆成可验证步骤，定义工具输入输出、身份、权限和停止条件。
-2. 记录模型/工具版本、执行轨迹、失败状态、重试次数和业务幂等键。
-3. 分别评估任务结果、工具选择、证据质量、越权拒绝、恢复能力和成本。
+1. **明确任务类型。** 将用户请求拆分为结构化分析、文档检索、计算、外部读取和副作用操作，判断哪些步骤需要 Agent，哪些适合确定性代码。
+2. **设计最小工具集。** 每个工具只暴露所需功能，并定义参数 Schema、返回结构、超时、错误和幂等键。
+3. **划分身份权限。** 明确调用者 Role、Agent 对象权限、Semantic View/ Search Service USAGE、底层表权限、MCP Server USAGE 和外部凭证边界。
+4. **撰写 Orchestration Instructions。** 描述任务分类、工具优先级、何时澄清、何时并行、何时停止，以及工具失败后允许使用的替代路径。
+5. **配置不可访问工具行为。** 对权限缺失必须阻止执行的工作流使用 reject；只有允许降级且剩余工具可完成任务时才考虑 accept。
+6. **处理 Thread 和 Run 事件。** 持久化 thread_id、run_id、请求 ID 和工具轨迹；对长时间运行和断线场景设计续接与结果查询。
+7. **验证工具路由。** 使用正常、歧义、缺权限、工具超时、无结果、互相冲突证据和用户越权等测试集，确认 Agent 不会错误选择或绕过授权。
+8. **限制副作用工具。** 将读操作与写操作分开，写工具要求幂等请求 ID、参数验证和明确授权；关键动作在业务侧增加审批或确认。
+9. **监控运行质量。** 统计工具调用成功率、重复调用、无效参数、fallback、总延迟、token 消耗、输出引用质量和人工纠正率。
+10. **持续评测和版本化。** 对工具规格、编排模型和指令变更保留版本，重跑固定任务集，检查任务成功率、越权拒绝、成本和回归。
+
+工具设计示例（仅描述路由策略，不代表安全授权）：
+
+~~~yaml
+instructions:
+  orchestration: |
+    - 结构化指标问题使用 Cortex Analyst。
+    - 企业文档和政策问题使用 Cortex Search。
+    - 只有在工具返回的数据需要确定性计算时才使用 Code Execution。
+    - 若关键工具不可用或证据冲突，明确说明限制并停止推断。
+  response: |
+    区分检索证据、计算结果和推断。
+    对有副作用的操作只给出待确认计划，不直接视为已批准。
+orchestration:
+  tool_not_accessible: reject
+~~~
 
 ## 场景分析
 
-用户要求 Agent 完成包含检索、分析和工具执行的任务。请定义工具选择、权限、执行轨迹、错误恢复和完成条件。
+业务用户询问“比较本季度退款原因，并找出受影响最大的产品；如果符合政策，自动创建补偿工单”。问题包含文档检索、结构化分析和外部写入，不能让一个宽权限工具包同时负责所有步骤。
 
-将场景转换为明确输入、状态变化和预期输出。逐项检查本节核心要求，区分配置事实、运行证据和待验证假设。缺少权限、版本、数据样本或官方行为证据时，明确记录未知项，不用猜测补齐。
+Agent 可以先用 Cortex Search 检索退款政策，再用 Cortex Analyst 查询退款原因和产品指标，最后用 Code Execution 对已返回的数据进行统计。创建补偿工单应使用独立 MCP/Custom Tool，并通过确定性规则核实订单状态、政策适用性和用户权限；如需人工审批，则把待执行参数和证据交给审批系统，只有获得明确批准后才执行。
+
+验收要覆盖政策检索无结果、Analyst 无法生成 SQL、调用者缺少某一工具权限、MCP 断线、重复 Run、工单创建超时以及人工拒绝等情况。确保失败不产生重复工单，权限不足时不会通过另一工具绕过授权。
 
 ## 常见误区
 
-- **误区：** 给 Agent 工具无限制管理员权限
-  **纠正：** 权限判断沿用户、当前激活角色、角色继承、对象权限和所有权追踪，并检查 Database、Schema 与目标对象的使用权限。
-- **误区：** 认为多个工具自动形成可靠规划
-  **纠正：** 调度成功只说明执行器完成触发，不代表业务数据已正确交付。还要检查依赖、执行身份、重叠运行、失败重试、下游可见性和数据质量。
-- **误区：** 把自然语言结论当已验证事实
-  **纠正：** 调度成功只说明执行器完成触发，不代表业务数据已正确交付。还要检查依赖、执行身份、重叠运行、失败重试、下游可见性和数据质量。
+- **把自然语言指令当安全边界。** Prompt 只引导编排；权限必须由 Role、Grants 和工具认证控制。
+- **将所有工具交给 Agent。** 工具过多会增加路由歧义、权限面和审计成本。
+- **认为 Run 启动成功代表所有工具可访问。** 有些权限在预检，有些只在实际调用时检查。
+- **让读取工具和写入工具使用同一宽权限身份。** 应拆分权限和职责，并为副作用增加幂等与审查。
+- **把 Thread 当作单次执行记录。** Thread 持久化跨轮上下文，Run 才是单次请求执行。
+- **认为 Agent 答案及引用一定正确。** 必须通过独立任务评测、来源核对和业务校验。
+- **把 Agent 的工具选择视为确定性 DAG。** 编排由模型参与，必须测试分支、停止条件和失败处理。
 
 ## 完成标准
 
-- [ ] 能说明：按结构化指标、文档检索和计算需要选择工具
-- [ ] 能说明：定义 orchestration instructions、工具参数契约和失败处理
-- [ ] 能说明：以最小权限验证每种工具可执行的动作
-- [ ] 能指出本知识点的适用前提和不适用场景。
-- [ ] 能提供至少一项运行、数据或配置证据支持判断。
-- [ ] 能描述失败后的恢复、回滚或人工升级路径。
+- [ ] 能说明 Agent Object、Tool、Orchestration、Thread 和 Run 的关系。
+- [ ] 能根据任务需要选择 Analyst、Search、Code Execution、Custom Tool 和 MCP。
+- [ ] 能区分编排指令与实际授权边界。
+- [ ] 能解释 tool_not_accessible 的 accept/reject/legacy 行为与预检范围。
+- [ ] 能为副作用工具设计幂等、授权、确认与审计。
+- [ ] 能用固定任务集评估路由、权限拒绝、恢复、结果质量和成本。
 
 ## 自测
 
-1. 如何在实际系统中验证“按结构化指标、文档检索和计算需要选择工具”？
-2. 当“定义 orchestration instructions、工具参数契约和失败处理”不成立时，最可能需要检查哪些边界和证据？
-3. 为什么不能采用“给 Agent 工具无限制管理员权限”这一做法？
+1. Cortex Agent 可以访问 Cortex Search，但没有 Cortex Analyst 权限；tool_not_accessible 默认 accept 时可能发生什么？如果必须依赖 Analyst，应采用哪种处理策略？
+2. 为什么 tool_not_accessible 预检不能保证 Custom Tool、SQL Execution 和 Code Execution 在实际运行时一定成功？
+3. Thread 与 Run 分别代表什么？应用为何需要同时保存两类 ID？
+4. Agent 生成了符合退款政策的补偿建议，为什么仍不能直接把它当作已审批的写操作？
+5. 当 Cortex Search 与 Analyst 返回互相矛盾的证据时，编排指令和业务层应如何处理？
 
-回答时需要给出判断依据和验证方法，而不只是复述定义。
+## 参考资料
+
+- [Cortex Agents overview](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-agents)
+- [Create and manage agents](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-agents-manage)
+- [Inaccessible tool handling](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-agents-inaccessible-tool-handling)
+- [Cortex Agents REST API](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-agents-rest-api)
