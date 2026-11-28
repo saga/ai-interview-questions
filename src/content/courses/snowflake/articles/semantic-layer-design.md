@@ -1,98 +1,98 @@
-# Snowflake 语义层与统一业务指标
+# Snowflake 语义层：把业务口径变成可测试的模型
 
-## 本节要解决的问题
+## 先处理三份都叫“收入”的报表
 
-把业务实体、指标、维度和关系从重复散落的 SQL 中提取成可管理、可复用、可授权的语义定义。语义层应表达已经确认的业务口径，而不是代替事实表建模，也不是仅为字段增加自然语言描述。
+财务、销售和客服各自维护一条收入 SQL。财务按已付款订单统计，销售按已下单订单统计，客服排除了退款订单。三份报表都叫“收入”，数字却不同。
 
-## 核心知识
+这不一定是 SQL 写错了。它们可能代表三个合法但不同的业务概念。真正的问题是：每个消费者都在自己的查询里重新解释了业务规则。语义层应该把已经确认的实体、关系、指标和筛选口径放到可复用的位置，而不是再建一张字段描述表，或替代底层事实表建模。
 
-### Semantic View 是 Snowflake 的 Schema 级语义对象
+## Semantic View 存的不是一组别名
 
-Semantic View 将业务概念存储在数据库中。一个 Semantic View 包含逻辑表、逻辑表之间的关系，以及 Facts、Dimensions 和 Metrics 等概念。它可通过 SQL DDL、YAML 或 Snowsight Semantic Studio 创建，也可以供 Cortex Agents 和 BI 使用。
+Snowflake Semantic View 是 Schema 级对象。它将物理表映射为逻辑表，再用关系、Facts、Dimensions 和 Metrics 描述业务语义。
 
-逻辑表通常对应客户、订单、产品等业务实体；关系定义这些逻辑表如何通过共享键连接。Fact 描述行级业务属性，Metric 将事实或列聚合成 KPI，Dimension 提供筛选、分组和分析上下文。
+逻辑表通常对应订单、客户或产品等实体。关系说明它们怎样连接；Fact 表示行级业务属性或计算值；Dimension 提供分组、筛选和分析上下文；Metric 则用聚合表达业务度量。它们各自有职责，不能把列的 COMMENT、行级金额和 SUM 指标当成同一类元数据。
 
-### 语义关系和指标必须符合物理数据粒度
+这些定义可以通过 SQL DDL 或 YAML 管理。DDL 更直接地表达对象结构和部署变更；YAML 适合声明完整语义模型及相关 AI 配置。无论选哪一种，关键都不是格式，而是定义能否进入版本控制、测试和发布流程。
 
-Semantic View 可以集中定义指标，减少报表和 AI 生成 SQL 时的口径漂移，但不能修复底层事实表重复键、关系多对多或粒度不一致。建立语义模型之前，先验证逻辑表唯一键和连接基数，再把关系写进语义定义。
+## 粒度不对，语义模型会把错误解释得更清楚
 
-指标还需要说明可加性。例如营收可按订单、客户和日期进行聚合；账户余额或期末库存通常不能直接跨时间累加。非可加维度与多条关系路径需要在定义中明确，否则生成的 SQL 可能语法正确而业务含义错误。
+假设 FACT_ORDER 每行一笔订单，FACT_ORDER_LINE 每行一笔商品明细。一个订单有五条明细。将两张表连接后，订单金额会在结果集中重复五次。此时对订单金额执行 SUM，得到的不是订单收入，而是被明细行数放大的数值。
 
-### 语义定义需要版本、测试和权限治理
+Semantic View 可以声明逻辑表主键和关系路径，帮助生成正确的 Join；它不会替物理数据去重，也不会证明你声明的主键真的唯一。建模前应先验证业务键、行粒度、关系基数和空值情况。否则，语义定义只是把错误假设固定下来。
 
-Semantic View 是数据库对象，可以按常规对象权限管理，并可在 Listing 等数据共享产品中使用。定义应纳入 Git，包含对象依赖、指标表达式、关系和同义词。语义模型发布前应通过 Golden Queries 检查指标结果、关系路径和过滤逻辑。
+另一个常见问题是指标可加性。订单金额通常可以跨订单、客户和日期汇总；期末库存或账户余额是某个时点的状态，不能把每天的余额直接相加。对于快照指标，模型需要明确时间口径和允许的聚合方式，而不是只给字段起一个好懂的名字。
 
-Snowflake 的 Semantic View 支持派生指标和逻辑表关系；如果两个逻辑表之间存在多条关系路径，需要显式指定要使用的关系路径。不要完全依赖自动推断来解释业务中有歧义的关系。
+## 用一份小模型看清关系怎样声明
 
-## 工程实施步骤
-
-1. 从业务术语中整理实体、指标、维度、粒度、关系、同义词和指标 owner，先解决定义分歧。
-2. 将每个逻辑表映射到物理表或视图，验证其唯一键、行粒度和可用字段。
-3. 定义逻辑表间关系，明确 Join Key、基数和可能存在的多条关系路径。
-4. 将 Facts、Dimensions 和 Metrics 分开建模；指标公式要说明聚合函数、过滤条件、时间口径和非可加维度。
-5. 用 SQL DDL 或 YAML 将 Semantic View 定义纳入版本控制；对于复杂模型，可在 Semantic Studio 迭代，再把稳定定义纳入发布流程。
-6. 为每个关键指标建立 Golden Queries，覆盖常见筛选、维度组合、时间窗口、空值和多关系路径。
-7. 使用实际查询结果与经业务确认的报表/数据集市对账，特别检查 Join fanout、重复计数和非可加指标。
-8. 为 BI、分析师和 Cortex Agent 配置最小权限；验证不同角色只能查询授权对象。
-9. 发布后监控语义模型变更、消费 SQL、查询失败和业务指标差异，并在模型升级时保留兼容策略。
-
-示例结构：
+下面的例子将订单和客户映射为逻辑表。这里假设 FACT_ORDER.ORDER_ID 与 DIM_CUSTOMER.CUSTOMER_ID 已经通过数据质量检查；CUSTOMER_ID 在订单表中是引用键，在客户表中唯一。
 
 ~~~sql
 CREATE OR REPLACE SEMANTIC VIEW ANALYTICS.SALES_MODEL
   TABLES (
     orders AS MART.FACT_ORDER
       PRIMARY KEY (ORDER_ID)
+      COMMENT = 'One row per order',
+    customers AS MART.DIM_CUSTOMER
+      PRIMARY KEY (CUSTOMER_ID)
+      COMMENT = 'One row per customer'
+  )
+  RELATIONSHIPS (
+    orders_to_customers AS
+      orders (CUSTOMER_ID) REFERENCES customers
   )
   FACTS (
-    orders.order_amount AS ORDER_TOTAL
+    orders.order_amount AS AMOUNT
   )
   DIMENSIONS (
     orders.order_date AS ORDER_DATE,
-    orders.customer_id AS CUSTOMER_ID
+    customers.customer_name AS CUSTOMER_NAME
   )
   METRICS (
     orders.total_revenue AS SUM(orders.order_amount)
   );
 ~~~
 
-完整 DDL 还需要按实际关系、主键、维度表达式和对象权限补齐；发布前应在目标 Snowflake 版本中运行语法和业务结果测试。
+这个模型只定义了订单金额的聚合，并没有回答收入到底按下单、付款还是退款后统计。若三个部门的口径不同，应定义不同 Metric，或在指标定义中明确过滤条件，再由业务 owner 确认。不要创建一个名称含糊的 total_revenue，期待模型自己推断业务含义。
 
-## 场景分析
+模型之间还可能存在多条合法关系路径。例如航班既有出发机场，也有到达机场。若都连接同一张机场维表，查询“按城市统计航班数”就必须说明使用哪条关系；否则系统无法猜出业务要的是出发还是到达。此时可以为指标显式绑定关系路径，而不是把路径选择留给自然语言问题。
 
-财务、销售和客服各自维护一条“收入” SQL。财务按已付款订单统计，销售按已下单订单统计，客服则排除了退款订单。三份报表都叫“收入”，但过滤条件并不相同。
+## 用 Verified Queries 验证模型，而不是只验证 DDL
 
-不能仅创建一个 total_revenue 指标就认定问题解决。先与业务 owner 确认指标是否应拆成 Booked Revenue、Paid Revenue 和 Net Revenue，再定义过滤条件、退款口径和时间维度。接着把订单逻辑表与客户、日期维度建立关系，用 Golden Queries 检查常见组合，最后将语义模型发布给 BI 和 Cortex Agent 使用。
+DDL 执行成功，只能说明语义对象创建成功。它不证明指标口径、关系路径和自然语言查询都正确。
 
-验收时让三个角色分别查询并对账，确认访问权限、指标差异和名称描述符合预期。AI 生成的 SQL 也必须通过这些指标定义和结果校验，不能只凭自然语言答案看起来合理就上线。
+为日常高频问题建立一组 Verified Queries：每条记录包含业务问题和已经人工核验的 SQL。注意 SQL 应使用语义模型中的逻辑表和逻辑列名称，而不是直接引用底层物理表。它们一方面为相似问题提供已确认的查询范例，另一方面可以作为评测的 Ground Truth。
 
-## 常见误区
+评测时不要只挑最简单的“总金额”查询。应覆盖不同维度组合、日期范围、空值、退款、重复键、多个关系路径，以及容易发生 Join fanout 的场景。对于生成的 SQL，需要比较实际结果和预期结果；SQL 能运行、字段名称正确，都不足以证明业务答案正确。
 
-- 把 Semantic View 当成普通视图的别名。它包含逻辑表、关系、Facts、Dimensions 和 Metrics 等语义模型。
-- 只为字段增加描述就叫语义层。没有明确关系和指标公式，无法解决口径不一致。
-- 把语义模型当作物理数据建模替代品。错误粒度、重复键和 Join fanout 仍需在物理模型修正。
-- 将多个口径相近的指标强行合并。应保留业务定义差异并明确名称、过滤条件和 owner。
-- 依赖模型自动选择所有关系路径。多关系路径和非可加指标必须经业务验证。
-- 认为 Cortex Agent 使用 Semantic View 就能保证所有答案正确。仍需通过 Golden Queries、权限和结果对账验证。
+Verified Query 也不是一次录入后永久不变。业务口径、物理表和关系发生变化时，应重新验证对应查询。Snowflake 的建议机制可以从真实使用中发现可能有用的指标、过滤条件或 Verified Query，但这些建议仍需人工审核，不能直接自动加入生产模型。
 
-## 完成标准
+## 谁来维护，什么时候值得做
 
-- [ ] 能解释 Semantic View、逻辑表、Facts、Dimensions 和 Metrics。
-- [ ] 能将物理表和业务实体映射到逻辑表与关系。
-- [ ] 能识别 Join fanout 与非可加指标风险。
-- [ ] 能用 Golden Queries 验证指标口径和关系路径。
-- [ ] 能设计语义定义的版本控制、授权和发布流程。
+语义层有持续维护成本。每个关键指标至少要有业务 owner、明确的公式、过滤条件、时间口径和验收查询；每条关系都要有数据模型 owner 确认主外键和基数。模型升级还应记录兼容性影响，避免 BI 和 Agent 在同一天得到不同定义。
+
+如果只有一张报表、指标口径尚未谈拢，或者底层事实表的粒度仍在变化，先解决数据模型与业务定义更划算。只有当多个消费者反复复制同一套实体关系和指标，而且有人负责维护定义与测试时，Semantic View 才会持续减少重复劳动。
+
+## 常见误判
+
+- 把 Semantic View 当作字段注释集合。它还需要逻辑表、关系和指标定义。
+- 声明 Primary Key 就认为底层数据自动唯一。物理数据仍需独立检查。
+- 用订单明细连接订单后直接 SUM 订单金额，忽略 Join fanout。
+- 把下单收入、已付款收入和扣退款后收入强行合并成一个指标。
+- 把期末库存或账户余额当作可跨时间求和的普通金额。
+- 认为 Cortex Agent 使用 Semantic View 就能保证答案正确；生成结果仍需 Verified Query 评测和权限检查。
 
 ## 自测
 
-1. Semantic View 中的 Metric 与 Fact 有什么区别？为什么不能把一个 SUM 指标简单当作行级事实？
-2. 两个逻辑表之间存在两条 Join 路径，应该如何避免生成 SQL 选错关系？
-3. 指标定义正确但物理表存在重复业务键，语义层是否能自动修复结果？
-4. 同名“收入”在三个部门口径不同，应该如何在语义层表达而不是强行统一？
+1. 一笔订单连接五条商品明细后，为什么 SUM(订单金额) 可能放大？语义层能否替代底层去重？
+2. “已下单收入”“已付款收入”和“扣退款后收入”应该强行合并成一个 Metric 吗？需要先确认哪些业务规则？
+3. 期末库存为什么不能简单按月份求和？模型应说明什么聚合边界？
+4. 两张逻辑表之间存在出发机场和到达机场两条关系，怎样避免查询选择错误的路径？
+5. Verified Query 中的 SQL 为什么应使用逻辑表和逻辑列，而不是底层物理字段？
 
 ## 参考资料
 
-- [Overview of semantic views](https://docs.snowflake.com/en/user-guide/views-semantic/overview)
-- [Creating semantic views](https://docs.snowflake.com/en/user-guide/views-semantic/creating)
-- [Using SQL commands to create and manage semantic views](https://docs.snowflake.com/en/user-guide/views-semantic/sql)
-- [YAML specification for semantic views](https://docs.snowflake.com/en/user-guide/views-semantic/semantic-view-yaml-spec)
+- [Semantic Views overview](https://docs.snowflake.com/en/user-guide/views-semantic/overview)
+- [Creating and managing semantic views with SQL](https://docs.snowflake.com/en/user-guide/views-semantic/sql)
+- [Semantic View YAML specification](https://docs.snowflake.com/en/user-guide/views-semantic/semantic-view-yaml-spec)
+- [Cortex Analyst Verified Query Repository](https://docs.snowflake.com/en/user-guide/views-semantic/verified-query-repository)
+- [Best practices for modeling semantic views](https://docs.snowflake.com/en/user-guide/views-semantic/best-practices-modeling)
