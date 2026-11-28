@@ -57,7 +57,9 @@ describe('Snowflake one-to-one course tutorials', () => {
       const hasPracticeSection = headings.some((heading) =>
         /自测|练习|思考|回顾|演练|检查理解|实践任务|挑战|复习题|习题/.test(heading),
       );
-      const numberedQuestions = article.content.match(/^\\s*\\d+[.、．]\\s+[^\\n]{8,}[？?]/gm) ?? [];
+      const numberedQuestions = article.content
+        .split('\n')
+        .filter((line) => /^\s*\d+[.、．]\s+/.test(line) && /[？?]/.test(line));
       expect(hasPracticeSection || numberedQuestions.length >= 2, article.id).toBe(true);
       const genericHeadings = new Set([
         '本节要解决的问题', '核心知识', '工程实施步骤', '场景分析',

@@ -70,6 +70,13 @@ BASE_LOCATION 是 External Volume 内的相对路径。实际命令还应根据�
 
 迁移完成的标志不是 ALTER 命令返回成功，而是 Catalog 所有权唯一、读取路径一致、关键指标对账通过、旧写入者退出、文件保留责任明确，并且回退窗口经过实际演练。若仍有跨引擎写入或文件生命周期不清楚，应继续保持只读影子验证，不要提前开放生产写入。
 
+## 自测
+
+1. 转换前和转换后各自读取到不同 Snapshot 时，为什么不能直接把行数差异判为数据丢失？
+2. Snowflake 成为 Iceberg Catalog 后，为什么旧的 Glue/Flink 写入者必须退出或切换？
+3. 转换后 Snowflake 已提交新 Snapshot，为什么不能简单恢复旧 Catalog 指针就完成回滚？
+4. 如果还需要让其他引擎读取旧文件，转换前必须明确哪项文件生命周期责任？
+
 ## 参考资料
 
 - [Convert an Iceberg table to use Snowflake as the catalog](https://docs.snowflake.com/en/user-guide/tables-iceberg-conversion)
