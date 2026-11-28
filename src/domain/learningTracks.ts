@@ -74,8 +74,8 @@ function sessionBelongsToTrack(
 
 /**
  * Project the global local-first learner profile onto one course.
- * Learner evidence is keyed by KnowledgeNode.topic, not KnowledgeNode.id:
- * several concept nodes may belong to one topic and must share one mastery record.
+ * Learner evidence can exist under Question.topic (the exact node ID) and under the
+ * shared KnowledgeNode.topic key. Preserve both when projecting a course profile.
  * Session totals, recents and cross-topic evidence are projected separately.
  */
 export function profileForTrack(
@@ -84,15 +84,17 @@ export function profileForTrack(
   allNodes: KnowledgeNode[] = knowledgeNodes,
 ): LearnerProfile {
   const nodes = knowledgeForTrack(allNodes, trackId);
-  const topicIds = new Set(nodes.map((node) => node.topic));
-  const sessions = profile.sessions.filter((session) => sessionBelongsToTrack(session, trackId, topicIds));
+  // 当前题库 Question.topic / topicStats 可能按节点 ID 分桶；KnowledgeNode.topic
+  // 则是共享上级分类。两种历史/当前键都需要保留，不能只投影 parent topic。
+  const topicKeys = new Set(nodes.flatMap((node) => [node.id, node.topic]));
+  const sessions = profile.sessions.filter((session) => sessionBelongsToTrack(session, trackId, topicKeys));
   const latestRated = sessions.filter((session) => session.questionResults.length > 0).slice(0, 10);
   const overallScore = latestRated.length
     ? Math.round(latestRated.reduce((sum, session) => sum + session.overall, 0) / latestRated.length)
     : 0;
   const filterTopicKeys = <T,>(source: Record<string, T> | undefined): Record<string, T> =>
     Object.fromEntries(Object.entries(source ?? {}).filter(([key]) =>
-      [...topicIds].some((topic) => key === topic || key.startsWith(`${topic}|`)),
+      [...topicKeys].some((topic) => key === topic || key.startsWith(`${topic}|`)),
     ));
 
   return {
@@ -100,7 +102,7 @@ export function profileForTrack(
     totalSessions: sessions.filter((session) => session.questionResults.length > 0).length,
     totalQuestions: sessions.reduce((sum, session) => sum + session.questionResults.length, 0),
     overallScore,
-    topicStats: Object.fromEntries(Object.entries(profile.topicStats).filter(([topic]) => topicIds.has(topic))),
+    topicStats: Object.fromEntries(Object.entries(profile.topicStats).filter(([topic]) => topicKeys.has(topic))),
     knowledgeStats: Object.fromEntries(Object.entries(profile.knowledgeStats ?? {}).filter(([knowledgeId]) => nodes.some((node) => node.id === knowledgeId))),
     angleCoverage: filterTopicKeys(profile.angleCoverage),
     assessmentCoverage: filterTopicKeys(profile.assessmentCoverage),
@@ -111,7 +113,7 @@ export function profileForTrack(
 }
 
 export function courseTopicIds(trackId: LearningTrackId): Set<string> {
-  return new Set(knowledgeForTrack(knowledgeNodes, trackId).map((node) => node.topic));
+  return new Set(knowledgeForTrack(knowledgeNodes, trackId).flatMap((node) => [node.id, node.topic]));
 }
 
 export function inferTrackForLegacySession(session: SessionRecord): LearningTrackId | null {
