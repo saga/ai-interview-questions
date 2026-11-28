@@ -39,10 +39,15 @@ description: "把一篇技术文章转成题库题目。用户提供文章链接
    - **纯案例细节**：结论无法迁移到别的系统
 
    淘汰的 Concept 要在最终报告里列出并写明淘汰原因，便于回溯。
-4. 判断文章内容归属哪个已有 topic（`src/data/questions/<topic>.json` 与对应 `src/data/knowledge/` 节点），不要为一篇文章随意新建 topic；如果确实是新主题，先确认是否需要在 `src/data/taxonomy.ts` 登记骨架。
+4. 确认题目映射，区分主题键与具体知识点：
+   - `topic` 沿用目标题库已有的稳定主题键，不要为一篇文章随意新建 taxonomy；它可能被多个 KnowledgeNode 共用。
+   - 对 LearningTrack 课程题，填写 `courseId` 和精确的 `knowledgeId`（KnowledgeNode.id）；不能只靠 `topic` 推断具体节点。
+   - `knowledgeId` 必须真实存在，并属于该 `courseId` 与 `topic` 对应的候选节点；不能确认时先补齐节点映射，不得猜 ID。
+   - 旧 AI 面试题库中若沿用 `topic=KnowledgeNode.id` 且没有 `courseId` / `knowledgeId`，保持历史约定，不要为统一字段批量改写存量题。
 4. 把生成结果转成题库 schema 结构：
    - `id`：全局唯一、可读、体现主题（参考同 topic 现有 id 风格）
-   - `category`/`topic`：与目标知识节点一致
+   - `category`：与题库文件和课程分类约定一致；`topic`：使用已登记的主题键，不把主题组当成唯一节点 ID
+   - `courseId` / `knowledgeId`：课程题必填，分别指向课程和唯一 KnowledgeNode；必须与节点清单一致
    - `angle`：来自枚举，不得自造
    - `difficulty`：easy/medium/hard，依题目认知要求判断；
    - `cognitiveTask`：从 schema 合法枚举中选择真实的作答认知行为；
