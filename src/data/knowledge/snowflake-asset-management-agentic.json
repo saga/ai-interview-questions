@@ -6,18 +6,18 @@
     "area": "data-platform",
     "topic": "snowflake-agent-ml",
     "priority": "P1",
-    "summary": "围绕 Snowflake 的资产管理 Agent 示例，掌握资产管理多 Agent 架构与工具选型在真实数据源、结构化分析、非结构化证据和生产治理方面的应用。",
+    "summary": "为资产管理问题选择 Cortex Analyst、Cortex Search、专用工具和多 Agent 编排方式；理解单 Agent 多工具、Agent Router 与 Agent toolset 的不同职责、权限和失败边界。",
     "required": [
-      "区分该场景中的权威结构化数据、文档证据和政策依据，并明确适用日期与业务口径",
-      "新建需要跨结构化分析、非结构化检索与多步工具编排的 Snowflake 应用时，评估 Cortex Agents；其 Analyst/Search 工具可覆盖结构化查询与文档检索",
-      "按业务职责选择合适的语义视图、搜索服务、专用工具或工作流",
-      "对关键数字、数据血缘、权限边界与 Agent 输出进行验证并保留审计证据"
+      "区分持仓、估值、风险指标等结构化事实，与研究报告、公告和政策文件等文档证据；每项结果都带业务日期和来源版本。",
+      "按请求是否需要组合多个工具，选择单 Agent 多工具、Router 单路由、Toolset 工具复用或应用层多次编排。",
+      "为 Portfolio、Research、Operations、Risk 等职责定义输入输出、工具权限、数据 owner 和不可回答条件。",
+      "验证调用者 Role、Agent/子 Agent USAGE、工具对象权限、路由结果和工具缺失状态；不允许借 Agent 层级放大数据权限。"
     ],
     "misconceptions": [
-      "把所有业务问题都交给同一个无边界 Agent",
-      "混淆结构化分析工具与文档检索工具",
-      "认为 Agent 可以绕过后端授权和业务规则",
-      "认为应为 Cortex Agents 重建现有 Semantic Views 与 Verified Queries"
+      "把所有请求都交给一个不受限制的通用 Agent",
+      "把 Agent Router 当作并行调用所有子 Agent 并合并结果",
+      "把 Agent toolset 当作运行被引用 Agent 的完整推理流程",
+      "认为 Agent 层级能够绕过 Analyst、Search 或源对象授权"
     ],
     "angles": [
       "definition",
@@ -37,16 +37,18 @@
     "area": "data-platform",
     "topic": "data-architecture",
     "priority": "P1",
-    "summary": "围绕 Snowflake 的资产管理 Agent 示例，掌握资产管理语义视图、数据模型与血缘在真实数据源、结构化分析、非结构化证据和生产治理方面的应用。",
+    "summary": "建立投资组合估值的结构化语义模型：统一持仓、证券、价格、汇率和资产类别粒度，定义 Semantic View 的逻辑表、关系与指标，并追踪上游对象和查询访问证据。",
     "required": [
-      "区分该场景中的权威结构化数据、文档证据和政策依据，并明确适用日期与业务口径。",
-      "按业务职责选择合适的语义视图、搜索服务、专用工具或工作流。",
-      "对关键数字、数据血缘、权限边界与 Agent 输出进行验证并保留审计证据。"
+      "明确 Position Snapshot、Instrument、Market Price 和 FX Rate 的一行粒度、业务键与有效时间，避免多价格/多汇率 Join 扩行。",
+      "将持仓、证券、价格和汇率映射为 Semantic View 的 Logical Tables、Relationships、Facts、Dimensions 与 Metrics。",
+      "为 Market Value、NAV 和风险指标定义估值日、价格类型、汇率方向、缺失值与应计收入口径。",
+      "区分对象级 Data Lineage、列级血缘、Access History 和研究文档引用；不能把语义指标定义当成底层数据质量保证。"
     ],
     "misconceptions": [
-      "把自然语言语义层当作原始数据存储",
-      "忽略事实表粒度和维表关系",
-      "凭经验补充工具没有返回的血缘事实"
+      "把 Semantic View 当成原始持仓或估值数据的存储位置",
+      "忽略事实表粒度与 Join 基数，导致市值被重复计算",
+      "把研究员目标价或政策文档当成当前市场估值数据",
+      "把对象血缘、列级血缘与访问记录当成同一种审计证据"
     ],
     "angles": [
       "definition",
@@ -66,16 +68,18 @@
     "area": "data-platform",
     "topic": "snowflake",
     "priority": "P1",
-    "summary": "围绕 Snowflake 的资产管理 Agent 示例，掌握持仓、估值、基准与组合表现在真实数据源、结构化分析、非结构化证据和生产治理方面的应用。",
+    "summary": "对齐内部持仓、托管持仓、外部披露和基准成分，按一致的估值日、价格、币种与总回报口径计算市值、组合权重、主动权重和绩效指标。",
     "required": [
-      "区分该场景中的权威结构化数据、文档证据和政策依据，并明确适用日期与业务口径。",
-      "按业务职责选择合适的语义视图、搜索服务、专用工具或工作流。",
-      "对关键数字、数据血缘、权限边界与 Agent 输出进行验证并保留审计证据。"
+      "区分内部组合持仓、托管记录、外部基金定期披露和指数成分；保留报告日、发布日期和生效日期。",
+      "按批准的价格类型、外汇汇率、币种、合约乘数和估值时间计算持仓市值，并检查价格/汇率 Join 的唯一性。",
+      "使用同一 NAV 分母和基准版本计算组合权重、基准权重与主动权重，保留组合独有和基准独有资产。",
+      "区分 Price Return、Total Return、TWR、MWR，以及 Return Contribution 与 Return Attribution 的用途。"
     ],
     "misconceptions": [
-      "把外部机构持仓当成本公司组合持仓",
-      "忽略持仓日期与价格日期差异",
-      "把绝对收益、主动收益和权重混为一谈"
+      "把外部机构披露持仓当成本组合实时持仓",
+      "忽略持仓估值日、价格日期和基准权重生效日的差异",
+      "把价格收益当成包含股息/票息的总回报",
+      "把绝对收益贡献、主动收益归因和组合权重混为一谈"
     ],
     "angles": [
       "definition",
@@ -95,16 +99,18 @@
     "area": "data-platform",
     "topic": "data-architecture",
     "priority": "P1",
-    "summary": "围绕 Snowflake 的资产管理 Agent 示例，掌握绩效归因、因子暴露与市场状态在真实数据源、结构化分析、非结构化证据和生产治理方面的应用。",
+    "summary": "用 Brinson–Fachler 分解单期主动收益，解释 Allocation、Selection 和 Interaction；再结合因子回归、风险暴露与市场状态分析组合表现，并正确链接多期归因。",
     "required": [
-      "区分该场景中的权威结构化数据、文档证据和政策依据，并明确适用日期与业务口径。",
-      "按业务职责选择合适的语义视图、搜索服务、专用工具或工作流。",
-      "对关键数字、数据血缘、权限边界与 Agent 输出进行验证并保留审计证据。"
+      "区分 Return Contribution、Return Attribution、Factor Attribution 和 Risk Attribution 的输入与问题。",
+      "使用 Brinson–Fachler 公式计算配置、选择和交互效应，并核对分项与组合/基准超额收益。",
+      "解释因子收益、Beta、Alpha 与残差的含义，按 Point-in-time 数据估计和比较滚动暴露。",
+      "为多期归因采用一致的几何链接方法；识别直接相加月度效应造成的误差与残差来源。"
     ],
     "misconceptions": [
-      "把单月归因结果直接相加得到多月归因",
-      "从差额反推未返回的归因效应",
-      "忽略效果核对和期间匹配"
+      "把 Brinson–Fachler 与其他 Brinson 变体的配置公式混用",
+      "把行业超配直接解释为正的配置贡献",
+      "把因子 Beta 当成因子收益预测或资产权重",
+      "直接相加单期 Allocation/Selection/Interaction 得到多期归因"
     ],
     "angles": [
       "definition",
@@ -124,16 +130,18 @@
     "area": "data-platform",
     "topic": "snowflake-genai",
     "priority": "P1",
-    "summary": "围绕 Snowflake 的资产管理 Agent 示例，掌握研究 Copilot、Cortex Search 与投资备忘录在真实数据源、结构化分析、非结构化证据和生产治理方面的应用。",
+    "summary": "为资产管理研究问答建立可引用的 Cortex Search 知识库，按文档版本、发布日期、生效范围和 Chunk 元数据检索研究报告与政策，并与 Analyst 返回的持仓事实交叉核验。",
     "required": [
-      "区分该场景中的权威结构化数据、文档证据和政策依据，并明确适用日期与业务口径。",
-      "按业务职责选择合适的语义视图、搜索服务、专用工具或工作流。",
-      "对关键数字、数据血缘、权限边界与 Agent 输出进行验证并保留审计证据。"
+      "为研究报告和政策文件保留稳定 Chunk ID、文档版本、页码、发布日期、生效期、发行人标识与授权域。",
+      "设计 Cortex Search source query、PRIMARY KEY 和 ATTRIBUTES；按问题对应的业务日期和适用范围过滤，不把元数据过滤当成访问授权。",
+      "区分 Owner's Rights 默认索引行为与 Data Governance Policy Inheritance Preview 的条件、权限和 SQL API 限制。",
+      "分别评估 Recall@K、过期版本误召回、引用完整性和最终回答忠实度，并与结构化持仓/风险数据按标识和日期关联。"
     ],
     "misconceptions": [
-      "混淆 SEC/财务事实与分析师观点",
-      "忽略发布日和财年/季度标签",
-      "把检索片段直接当作完整结论"
+      "只切分正文，不保存文档版本、生效日期和页码",
+      "把 Cortex Search 相似度排名当成法律或投资政策适用性的证明",
+      "把 ACCESS_DOMAIN 等客户端可控过滤器当成用户级授权",
+      "假定底表 Row Access Policy 默认作用于 Owner's Rights Search Service"
     ],
     "angles": [
       "definition",
@@ -153,16 +161,18 @@
     "area": "data-platform",
     "topic": "data-architecture",
     "priority": "P1",
-    "summary": "围绕 Snowflake 的资产管理 Agent 示例，掌握风险、合规、ESG 与政策驱动检查在真实数据源、结构化分析、非结构化证据和生产治理方面的应用。",
+    "summary": "将组合集中度、信用风险、制裁筛查和 ESG 信息与有生效日期的政策规则关联，计算可追溯的预警/超限结果，并区分数据异常、调查线索和正式合规结论。",
     "required": [
-      "区分该场景中的权威结构化数据、文档证据和政策依据，并明确适用日期与业务口径。",
-      "按业务职责选择合适的语义视图、搜索服务、专用工具或工作流。",
-      "对关键数字、数据血缘、权限边界与 Agent 输出进行验证并保留审计证据。"
+      "按基金、发行人/行业、估值日和币种口径计算风险敞口及分子/分母，并避免持仓或 NAV 重复计数。",
+      "将风险限额、辖区、基金类型、指标类型和有效期建模，按估值日期匹配唯一、已批准的政策版本。",
+      "区分 PD、LGD、EAD 和制裁名单匹配分数、ESG 评级、底层披露与正式合规判断。",
+      "对缺失数据、政策冲突、模糊匹配和超限结果建立复核案件，保留来源、版本、人工决定和审批证据。"
     ],
     "misconceptions": [
-      "不查询政策就套用固定风险阈值",
-      "把 ESG 标签或评级下降直接等同于违规",
-      "忽略法规辖区和生效日期"
+      "把风险比例当作不需要明确分子、分母和估值日期的简单除法",
+      "在 SQL 中写死限额或忽略法规生效期",
+      "将制裁名单模糊匹配或 ESG 供应商评分直接当成最终违规结论",
+      "把缺失数据当成未超限，或让 Agent 自动执行高影响处置"
     ],
     "angles": [
       "definition",
@@ -182,16 +192,18 @@
     "area": "data-platform",
     "topic": "data-engineering",
     "priority": "P1",
-    "summary": "围绕 Snowflake 的资产管理 Agent 示例，掌握中后台运营：NAV、结算与对账在真实数据源、结构化分析、非结构化证据和生产治理方面的应用。",
+    "summary": "围绕基金日终运营，计算 NAV、跟踪交易与结算状态，并对内部头寸、托管记录、现金和估值差异进行可追溯对账。",
     "required": [
-      "区分该场景中的权威结构化数据、文档证据和政策依据，并明确适用日期与业务口径。",
-      "按业务职责选择合适的语义视图、搜索服务、专用工具或工作流。",
-      "对关键数字、数据血缘、权限边界与 Agent 输出进行验证并保留审计证据。"
+      "按基金估值日计算资产、负债和 NAV，统一价格类型、汇率日期、应计利息、费用和份额口径。",
+      "区分 Trade Date、Settlement Date、结算指令状态与现金/证券实际交付状态，保留状态变化历史。",
+      "将内部与托管持仓汇总到相同粒度后对账，分类缺失记录、数量差异、价格差异和现金差异。",
+      "为差异分配责任人、严重级别、调整凭证和关闭证据；区分初步 NAV、例外处理和最终双人复核发布。"
     ],
     "misconceptions": [
-      "把一个全局结算周期套用于所有市场",
-      "只看差异金额而不看日期和业务上下文",
-      "自动修复账务差异而不留审计记录"
+      "把 NAV 当成持仓市值简单求和，忽略负债、利息和费用",
+      "只按证券代码连接价格或汇率，未确定市场/价格类型/时间",
+      "把交易成交当作证券和现金已完成结算",
+      "覆盖原始记录来消除差异，或让 Agent 自动批准账务调整"
     ],
     "angles": [
       "definition",
@@ -211,16 +223,18 @@
     "area": "data-platform",
     "topic": "snowflake-agent-ml",
     "priority": "P1",
-    "summary": "围绕 Snowflake 的资产管理 Agent 示例，掌握组合构建、优化、回测与压力测试在真实数据源、结构化分析、非结构化证据和生产治理方面的应用。",
+    "summary": "以 Point-in-time 可投资证券范围、收益和风险估计为输入，设计受约束的组合优化；通过交易成本、滚动回测和压力情景判断优化结果是否可执行。",
     "required": [
-      "区分该场景中的权威结构化数据、文档证据和政策依据，并明确适用日期与业务口径。",
-      "按业务职责选择合适的语义视图、搜索服务、专用工具或工作流。",
-      "对关键数字、数据血缘、权限边界与 Agent 输出进行验证并保留审计证据。"
+      "按再平衡时点建立可投资证券 Universe Snapshot，使用当时已可获得的基本面、价格和风险数据。",
+      "定义目标函数、权重/行业/国家/流动性约束和交易成本，检查求解状态及约束余量。",
+      "执行滚动或 Walk-forward 回测，处理成交时间、公司行动、退市证券和换手成本。",
+      "区分历史回测、情景压力和预测；识别 Look-ahead Bias、Survivorship Bias 与估计不确定性。"
     ],
     "misconceptions": [
-      "未检查可投资证券范围就构建组合",
-      "把优化输出当作保证收益的承诺",
-      "忽略权重约束和历史测试的假设"
+      "未检查当时可投资证券范围就构建历史组合",
+      "把 Solver 的 optimal 状态当作可交易或保证收益",
+      "忽略成交时点、换手成本、交易限制和流动性",
+      "用未来已知数据回填历史特征，或只用当前仍上市证券回测"
     ],
     "angles": [
       "definition",
@@ -240,16 +254,18 @@
     "area": "data-platform",
     "topic": "snowflake-agent-ml",
     "priority": "P1",
-    "summary": "围绕 Snowflake 的资产管理 Agent 示例，掌握私募信贷、私募股权与信用风险分析在真实数据源、结构化分析、非结构化证据和生产治理方面的应用。",
+    "summary": "对私募信贷的借款人、Facility、Tranche、财务契约、担保品和违约风险建模，并区分私募股权 Fund-Level 与 Portfolio-Level 现金流绩效。",
     "required": [
-      "区分该场景中的权威结构化数据、文档证据和政策依据，并明确适用日期与业务口径。",
-      "按业务职责选择合适的语义视图、搜索服务、专用工具或工作流。",
-      "对关键数字、数据血缘、权限边界与 Agent 输出进行验证并保留审计证据。"
+      "区分 Borrower、Legal Entity、Facility、Tranche、Fund Position 和 Collateral 的数据粒度及键关系。",
+      "按贷款协议计算 Covenant EBITDA、Net Leverage、Interest Coverage、Headroom，并区分现金利息、PIK、未提款额度和到期风险。",
+      "定义 PD、LGD、EAD 的时间窗口和口径，计算 Expected Loss，并解释担保顺位、估值折价和处置成本。",
+      "将私募股权 DPI、RVPI、TVPI、IRR、MOIC 按 Fund-Level/Portfolio-Level、Gross/Net、Realized/Unrealized 分开报告。"
     ],
     "misconceptions": [
-      "把风险模型输出当作确定事件",
-      "不说明 PD 的定义和时间窗口",
-      "把交易筛选信号当成尽调结论"
+      "把 Borrower、Facility 和 Tranche 当成同一对象或粒度",
+      "直接用财报 EBITDA 替代协议定义的 Covenant EBITDA",
+      "把 PD×LGD×EAD 的风险估计当作公允价值或会计减值",
+      "将 Gross Portfolio IRR 与 Net LP IRR 直接比较，忽略现金流和 Subscription Facility"
     ],
     "angles": [
       "definition",
@@ -269,16 +285,18 @@
     "area": "data-platform",
     "topic": "snowflake-agent-ml",
     "priority": "P1",
-    "summary": "围绕 Snowflake 的资产管理 Agent 示例，掌握Agent 评测、审计、权限与生产治理在真实数据源、结构化分析、非结构化证据和生产治理方面的应用。",
+    "summary": "为资产管理 Cortex Agent 建立最小权限运行身份、可复现评测集和生产可观测性，按 Agent Turn 记录版本、工具调用、SQL、用户反馈和成本。",
     "required": [
-      "区分该场景中的权威结构化数据、文档证据和政策依据，并明确适用日期与业务口径。",
-      "按业务职责选择合适的语义视图、搜索服务、专用工具或工作流。",
-      "对关键数字、数据血缘、权限边界与 Agent 输出进行验证并保留审计证据。"
+      "分离 Agent Builder 与 Runtime Role，按 Analyst、Search、Custom Tool 和 Warehouse 授予最小权限。",
+      "用 Input Query、Ground Truth Output 和 Ground Truth Invocations 建立固定评测数据集，覆盖答案、工具选择和工具执行。",
+      "说明 Evaluation 对 Session Attributes/Row Access Policy、MCP Connector 和 Code Execution 副作用的覆盖限制，并设置独立测试。",
+      "按 Thread、Turn、Trace 和 Span 保存调用版本、Role、工具输入输出、反馈和 Usage History，形成发布与回滚证据。"
     ],
     "misconceptions": [
       "把 Agent 回答流畅度当作准确性指标",
-      "将构建权限直接用于日常运行",
-      "把一次成功演示当作生产就绪"
+      "将 Agent Builder 的创建/修改权限直接用于日常运行",
+      "把一次 Evaluation 得分当成真实用户权限测试",
+      "认为同一 Thread 永远只由同一个 Agent Version 执行"
     ],
     "angles": [
       "definition",
