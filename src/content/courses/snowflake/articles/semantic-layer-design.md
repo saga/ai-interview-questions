@@ -38,7 +38,7 @@ CREATE OR REPLACE SEMANTIC VIEW ANALYTICS.SALES_MODEL
   )
   RELATIONSHIPS (
     orders_to_customers AS
-      orders (CUSTOMER_ID) REFERENCES customers
+      orders (CUSTOMER_ID) REFERENCES customers (CUSTOMER_ID)
   )
   FACTS (
     orders.order_amount AS AMOUNT
