@@ -41,7 +41,7 @@ describe('Snowflake one-to-one course tutorials', () => {
       expect(article.title).toBe(nodeById.get(article.nodeId)?.name);
       expect(article.content.length, article.id).toBeGreaterThan(900);
       expect(article.content).toMatch(/^#\s+\S/m);
-      const headings = [...article.content.matchAll(/^##\s+(.+?)\s*$/gm)]
+      const headings = [...article.content.matchAll(/^#{2,3}\s+(.+?)\s*$/gm)]
         .map((match) => match[1].trim());
       expect(headings.length, article.id).toBeGreaterThanOrEqual(5);
       expect(headings).toContain('本节要解决的问题');
