@@ -51,6 +51,9 @@ for (const path of changedFiles) {
     if (question.courseId && !question.knowledgeId) {
       errors.push(`${path} / ${question.id}: 课程题缺精确 knowledgeId`);
     }
+    if (question.courseId && question.knowledgeId !== question.topic) {
+      errors.push(`${path} / ${question.id}: 课程题的 topic 必须等于 knowledgeId（KnowledgeNode.id）`);
+    }
     if (question.courseId === 'snowflake') {
       if (!question.source?.section?.trim()) errors.push(`${path} / ${question.id}: Snowflake 课程题缺 source.section`);
       if (!question.source?.relatedMaterials?.length) {
