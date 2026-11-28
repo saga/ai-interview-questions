@@ -104,24 +104,99 @@ if (strict) {
     process.exit(2);
   }
 }
-const articleManifestChanged = !strict || changed.has('src/content/courses/snowflake/index.json');
-const integratedManifestChanged = !strict || changed.has('src/content/courses/snowflake/integrated/index.json');
+const articleManifestPath = 'src/content/courses/snowflake/index.json';
+const integratedManifestPath = 'src/content/courses/snowflake/integrated/index.json';
+const articleManifestChanged = !strict || changed.has(articleManifestPath);
+const integratedManifestChanged = !strict || changed.has(integratedManifestPath);
+const articleManifestTargetPaths = new Set();
+const integratedManifestTargetPaths = new Set();
+const articleMappingChangedPaths = new Set();
+const integratedMappingChangedPaths = new Set();
+
+function readBaseJson(path) {
+  try {
+    return JSON.parse(execFileSync('git', ['show', `${base}:${path}`], { encoding: 'utf8' }));
+  } catch (error) {
+    throw new Error(`无法读取基线索引 ${path}（base=${base}）：${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+function compareManifestEntries(previousEntries, currentEntries, signature, rootPath, targets, mappingChanges) {
+  const previousById = new Map(previousEntries.map((entry) => [entry.id, entry]));
+  const currentById = new Map(currentEntries.map((entry) => [entry.id, entry]));
+  for (const entry of currentEntries) {
+    const previous = previousById.get(entry.id);
+    if (!previous || signature(previous) !== signature(entry)) targets.add(rootPath + entry.file);
+    if (!previous || previous.file !== entry.file) {
+      if (previous?.file) mappingChanges.add(rootPath + previous.file);
+      mappingChanges.add(rootPath + entry.file);
+    }
+  }
+  for (const entry of previousEntries) {
+    if (!currentById.has(entry.id)) mappingChanges.add(rootPath + entry.file);
+  }
+}
+if (strict && articleManifestChanged) {
+  const previous = readBaseJson(articleManifestPath);
+  compareManifestEntries(
+    previous.nodes ?? [],
+    manifest.nodes ?? [],
+    (entry) => JSON.stringify({
+      id: entry.id,
+      file: entry.file,
+      title: entry.title,
+      topic: entry.topic,
+      level: entry.level,
+      priority: entry.priority,
+      summary: entry.summary,
+      required: entry.required,
+      misconceptions: entry.misconceptions,
+      references: entry.references,
+    }),
+    articleRoot,
+    articleManifestTargetPaths,
+    articleMappingChangedPaths,
+  );
+}
+if (strict && integratedManifestChanged) {
+  const previous = readBaseJson(integratedManifestPath);
+  compareManifestEntries(
+    previous.tutorials ?? [],
+    integratedManifest.tutorials ?? [],
+    (entry) => JSON.stringify({
+      id: entry.id,
+      file: entry.file,
+      title: entry.title,
+      description: entry.description,
+      level: entry.level,
+      estimatedMinutes: entry.estimatedMinutes,
+      linkedKnowledgeNodeIds: entry.linkedKnowledgeNodeIds,
+      references: entry.references,
+    }),
+    integratedRoot,
+    integratedManifestTargetPaths,
+    integratedMappingChangedPaths,
+  );
+}
+const manifestTargetPaths = new Set([
+  ...articleManifestTargetPaths,
+  ...integratedManifestTargetPaths,
+]);
+const mappingChangedPaths = new Set([
+  ...articleMappingChangedPaths,
+  ...integratedMappingChangedPaths,
+]);
 const hasLearningContentChanges = !strict || [...changed].some((path) =>
   path.startsWith(articleRoot) ||
   path.startsWith(integratedRoot) ||
-  path === 'src/content/courses/snowflake/index.json' ||
-  path === 'src/content/courses/snowflake/integrated/index.json',
+  path === articleManifestPath ||
+  path === integratedManifestPath,
 );
 if (strict && !hasLearningContentChanges) {
   console.log('学习内容审计：本次变更没有课程教程或教材索引文件，跳过增量门禁。');
   process.exit(0);
 }
 const targets = changed
-  ? docs.filter((doc) =>
-    changed.has(doc.path) ||
-    (doc.kind === 'article' && articleManifestChanged) ||
-    (doc.kind === 'integrated' && integratedManifestChanged),
-  )
+  ? docs.filter((doc) => changed.has(doc.path) || manifestTargetPaths.has(doc.path))
   : docs;
 
 const structureProblems = [];
@@ -137,13 +212,13 @@ const mappedFiles = new Set(manifest.nodes.map((entry) => entry.file));
 const mappedIntegratedFiles = new Set(integratedManifest.tutorials.map((entry) => entry.file));
 for (const file of readdirSync(resolve(root, articleRoot)).filter((name) => name.endsWith('.md'))) {
   const filePath = articleRoot + file;
-  if (!mappedFiles.has(file) && (!strict || changed.has(filePath))) {
+  if (!mappedFiles.has(file) && (!strict || changed.has(filePath) || mappingChangedPaths.has(filePath))) {
     structureProblems.push({ id: file, path: filePath, problem: '文章文件未映射到任何 KnowledgeNode' });
   }
 }
 for (const file of readdirSync(resolve(root, integratedRoot)).filter((name) => name.endsWith('.md'))) {
   const filePath = integratedRoot + file;
-  if (!mappedIntegratedFiles.has(file) && (!strict || changed.has(filePath))) {
+  if (!mappedIntegratedFiles.has(file) && (!strict || changed.has(filePath) || mappingChangedPaths.has(filePath))) {
     structureProblems.push({ id: file, path: filePath, problem: '综合教程文件未映射到 integrated manifest' });
   }
 }
