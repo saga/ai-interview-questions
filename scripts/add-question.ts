@@ -14,12 +14,8 @@ const questionsDir = resolve(root, 'src/data/questions');
 const knowledgeDir = resolve(root, 'src/data/knowledge');
 // 合法角度以 schema 为单源（新增 angle 只改 common.ts，此处自动跟随）。
 const validAngles = new Set<string>(questionAngleSchema.options);
-// ADR-077：`cognitiveTask` 进入 assessment contract（topic × angle × difficulty × cognitiveTask）。
-// 存量 1311 题无该字段且**不回填**（无可靠信息源，LLM 反推即污染）⇒ schema 层保持 optional。
-// 新题目前只 **warn**：三个出题 skill（`add-question-to-bank` / `article-to-questions` /
-// `fill-coverage-gap`）尚未产出该字段（plan0903_3 §二.7 未做），此刻改硬门禁会把出题管线锁死。
-// 待 skill 同步产出后，把循环里的 `warnings.push` 换成 `errors.push` 即可升为必填。
-// 合法值不在此处白名单化——`parseQuestionArray`（Zod）在更早的阶段就已拦截非法枚举值。
+// ADR-077：schema 为历史题保留 cognitiveTask 可选；新增题由下方导入门禁强制要求。
+// 合法值由 questionSchema 校验；此处只检查新题是否声明了认知任务。
 
 /** 题型归一化：新 prompt 用 single-choice/multiple-choice，库内用 single/multiple。 */
 function normalizeChoiceType(value: unknown): unknown {
@@ -114,11 +110,16 @@ for (const question of incoming) {
   if (nodeIds.has(question.topic) && question.angle && !existingCells.has(`${question.topic}\u0000${question.angle}`)) {
     newlyCovered.add(`${question.topic} × ${question.angle}`);
   }
-  if (!nodeIds.has(question.topic)) errors.push(`${question.id}: topic "${question.topic}" 没有知识节点`);
   const topicCandidates = nodes.filter((node) =>
     (node.topic === question.topic || node.id === question.topic)
     && (!question.courseId || node.courseId === question.courseId),
   );
+  if (topicCandidates.length === 0) {
+    errors.push(`${question.id}: topic "${question.topic}" 在指定课程范围内没有匹配的知识节点`);
+  }
+  if (question.courseId && !question.knowledgeId) {
+    errors.push(`${question.id}: 课程题必须填写精确的 knowledgeId`);
+  }
   if (topicCandidates.length > 1 && !hasKnowledgeTarget(question, nodes)) {
     errors.push(
       `${question.id}: topic "${question.topic}" 对应多个 KnowledgeNode，必须通过 knowledgeId、concepts 或 subtopic 明确关联；候选：${topicCandidates.map((node) => node.id).join(', ')}`,
