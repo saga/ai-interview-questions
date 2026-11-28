@@ -40,15 +40,15 @@ Part 2 将把你的输出转换为最终题目。
 1. Topic / Knowledge Node
    ==================================================
 
-`topic` 是题库沿用的主题/检索键；`knowledgeId` 是课程题唯一对应的 KnowledgeNode.id。两者不能混为一谈。
+`topic` 是题库覆盖矩阵和蓝图使用的知识点 ID。对可映射到 KnowledgeNode 的题目，`topic` 必须使用具体的 `KnowledgeNode.id`，不能使用 `KnowledgeNode.topic` 这种共享分组值。
 
 重要：
 
-* `topic` 沿用目标题库已有的稳定键。旧 AI 题库中它可能就是 KnowledgeNode ID；课程题中它也可能是多个节点共用的主题键；
-* `knowledgeId` 必须指向具体 KnowledgeNode，课程题必须输出这个字段；
+* 旧 AI 题库沿用已有 `topic`，不要批量改写；
+* 课程题必须同时输出 `courseId`、`knowledgeId`，且 `topic === knowledgeId === KnowledgeNode.id`；
+* `KnowledgeNode.topic` 是多个节点可共享的上级分类，只用于课程导航、知识检索分组等场景，不能填入 Question.topic；
 * 不要使用 Domain / Area 代替 `topic`；
 * 不要把自然语言 Knowledge 名称机械当成正式 ID；
-* 不要把共享 `topic` 当成唯一 KnowledgeNode；
 * 不要为了看起来具体而创造长而复杂的新 ID。
 
 本 Prompt 不接收完整的 Knowledge Node 清单。
@@ -57,7 +57,7 @@ Part 2 将把你的输出转换为最终题目。
 
 不要声称已经验证某个 ID 存在。课程题只有在拿到真实课程节点清单后才能确定 `knowledgeId`；缺少清单时标记待确认，不得编造。
 
-如果任务明确属于某个 LearningTrack，且提供了课程 ID，则 Blueprint 顶层必须输出 `courseId` 和精确 `knowledgeId`。非课程题省略 `courseId`。`canonical.topic` 与 `variants[].topic` 仍沿用题库的正式主题键；它们不能替代 `knowledgeId`。
+如果任务明确属于某个 LearningTrack，且提供了课程 ID，则 Blueprint 顶层必须输出 `courseId` 和精确 `knowledgeId`，并让 `canonical.topic`、`variants[].topic` 都等于该 `knowledgeId`。非课程题省略 `courseId` 与 `knowledgeId`，沿用题库现有 `topic` 约定。
 
 如果 SOURCE 明显对应一个已有、成熟、常见的 Knowledge：
 
