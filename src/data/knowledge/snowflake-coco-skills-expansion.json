@@ -208,18 +208,21 @@
     "area": "data-platform",
     "topic": "data-engineering",
     "priority": "P1",
-    "summary": "通过 AWS NLB、VPC Endpoint Service、Snowflake 出站 PrivateLink、Network Rule 与 External Access Integration 连接私有数据源。",
+    "summary": "通过 AWS 内部 NLB 和 VPC Endpoint Service，将 OpenFlow on SPCS 的 Snowflake 出站 PrivateLink 连接到私有 RDS 或本地数据源；配置并验证 endpoint、PRIVATE_HOST_PORT Network Rule 和 EAI。",
     "required": [
-      "连接路径应由 OpenFlow on SPCS 经 Snowflake 出站 PrivateLink 访问 AWS Endpoint Service、内部 NLB 和私有源。",
-      "多个同端口数据库可以通过不同的 NLB 监听端口映射到各自目标组。",
-      "配置 Network Rule 与 External Access Integration 前必须确认 PrivateLink endpoint 状态已为 available。",
-      "通过目标组健康、NLB active、endpoint available 和真实连接测试逐层验证网络路径。"
+      "区分 SPCS outbound PrivateLink、OpenFlow Snowflake Deployment 的 Data Connectivity Proxy 与 Runtime UI PrivateLink，按运行环境选择正确路径。",
+      "为每个数据库创建 IP Target Group，并通过唯一 NLB Listener Port 映射到相同或不同的后端数据库端口。",
+      "将 Snowflake privatelink-account-principal 加入 AWS Endpoint Service Allowed Principals，使用 SYSTEM$PROVISION_PRIVATELINK_ENDPOINT 创建端点并在 AWS 接受连接。",
+      "确认 SYSTEM$GET_PRIVATELINK_ENDPOINTS_INFO 的 endpoint_state=CREATED 且 AWS status=Available 后，再创建 PRIVATE_HOST_PORT Network Rule 和 EAI。",
+      "将 EAI 关联到 OpenFlow Runtime，并从 Connector 验证 NLB DNS、Listener Port、Target Group 健康和真实数据库访问。"
     ],
     "misconceptions": [
-      "把私有数据源直接开放到公网，以避免配置私网端点。",
-      "多个数据源共享相同监听端口，导致连接路由无法区分。",
-      "在 PrivateLink endpoint 尚未可用时就创建网络规则和 EAI。",
-      "只检查 Snowflake 对象创建成功，不验证 AWS 目标组与实际连接。"
+      "把 OpenFlow DCP 或 Runtime UI PrivateLink 当成 SPCS Connector 的出站 PrivateLink",
+      "多个同后端端口数据库复用相同 NLB Listener Port",
+      "遗漏 Snowflake Account Principal 的 Endpoint Service 授权或 AWS 手动接受连接",
+      "仅检查 AWS 接受请求而不检查 Snowflake endpoint_state 和 AWS status",
+      "把 RDS 原始地址而不是 NLB DNS:ListenerPort 放入 Network Rule",
+      "认为创建 Network Rule/EAI 就会自动关联到 OpenFlow Runtime"
     ],
     "angles": [
       "architecture",
