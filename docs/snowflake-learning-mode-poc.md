@@ -85,7 +85,7 @@ DeepTutor 的 [Learning 工作区](https://github.com/HKUDS/DeepTutor)把 Book�
 
 - 194 个节点与 194 篇独立教程严格一对一；
 - 8 篇综合教程独立于节点教材；
-- 专项检测只选择当前 KnowledgeNode 的题目，不混入同一 topic 下的其他节点；
+- 专项检测只选择当前 `knowledgeId` 对应的题目，不混入其他 KnowledgeNode 的题目；
 - 阅读进度与考试掌握度相互隔离；
 - 新增题目来源元数据、结构质量和事实核验流程。
 
