@@ -5481,25 +5481,97 @@
       "file": "snowflake-guide-disaster-recovery.md",
       "topic": "data-architecture",
       "priority": "P1",
-      "summary": "将恢复设计与业务可接受数据丢失窗口和恢复时间对齐",
+      "summary": "基于业务 RPO/RTO 设计跨区域复制与故障切换，选择 Replication/Failover Group、Optimized Refresh 或 RPO Assurance，并验证身份、任务、网络、数据和 Failback 的端到端恢复。",
       "references": [
         {
           "id": "snowflake-guide-disaster-recovery-ref-1",
           "type": "official",
-          "title": "Overview of access control",
-          "url": "https://docs.snowflake.com/en/user-guide/security-access-control-overview",
           "publisher": "Snowflake Documentation",
-          "relevance": "核对“跨区域恢复与业务连续性”涉及的产品行为、配置边界或工程机制。",
-          "verifiedAt": "待核验"
+          "verifiedAt": "2026-11-28",
+          "title": "Introduction to replication and failover across multiple accounts",
+          "url": "https://docs.snowflake.com/en/user-guide/account-replication-intro",
+          "relevance": "核对 Replication Group/Failover Group 语义、Edition、可复制对象、RPO/RTO 和刷新调度约束。"
         },
         {
           "id": "snowflake-guide-disaster-recovery-ref-2",
           "type": "official",
-          "title": "Semantic views overview",
-          "url": "https://docs.snowflake.com/en/user-guide/views-semantic/overview",
           "publisher": "Snowflake Documentation",
-          "relevance": "核对“跨区域恢复与业务连续性”涉及的产品行为、配置边界或工程机制。",
-          "verifiedAt": "待核验"
+          "verifiedAt": "2026-11-28",
+          "title": "CREATE FAILOVER GROUP",
+          "url": "https://docs.snowflake.com/en/sql-reference/sql/create-failover-group",
+          "relevance": "核对 Business Critical Edition 前提、OBJECT_TYPES、ALLOWED_DATABASES、ALLOWED_ACCOUNTS 和 Secondary Group 创建语法。"
+        },
+        {
+          "id": "snowflake-guide-disaster-recovery-ref-3",
+          "type": "official",
+          "publisher": "Snowflake Documentation",
+          "verifiedAt": "2026-11-28",
+          "title": "Failing over account objects",
+          "url": "https://docs.snowflake.com/en/user-guide/account-replication-failover-failback",
+          "relevance": "核对 Secondary Failover Group 提升、刷新中断处理、暂停/恢复自动复制和 Failback 操作。"
+        },
+        {
+          "id": "snowflake-guide-disaster-recovery-ref-4",
+          "type": "official",
+          "publisher": "Snowflake Documentation",
+          "verifiedAt": "2026-11-28",
+          "title": "Optimized Refresh and RPO Assurance",
+          "url": "https://docs.snowflake.com/en/user-guide/account-replication-optimized-refresh",
+          "relevance": "区分基于增量元数据的 Optimized Refresh 与 Business Critical RPO Assurance、SLA region pair 资格和监控滞后。"
+        },
+        {
+          "id": "snowflake-guide-disaster-recovery-ref-5",
+          "type": "official",
+          "publisher": "Snowflake Documentation",
+          "verifiedAt": "2026-11-28",
+          "title": "Replication Group support in BCDR",
+          "url": "https://docs.snowflake.com/en/user-guide/account-replication-replication-groups",
+          "relevance": "核对 2026 年将符合条件的 Replication Groups 纳入 Failover Group 的 BCDR 支持与依赖/对象类型限制。"
+        },
+        {
+          "id": "snowflake-guide-disaster-recovery-ref-6",
+          "type": "official",
+          "publisher": "Snowflake Documentation",
+          "verifiedAt": "2026-11-28",
+          "title": "Monitoring replication and failover",
+          "url": "https://docs.snowflake.com/en/user-guide/account-replication-monitor",
+          "relevance": "核对 Snowsight 复制状态、Replica Lag、REPLICATION_GROUP_REFRESH_HISTORY、PROGRESS、LAG_HISTORY 和复制成本监控。"
+        },
+        {
+          "id": "snowflake-guide-disaster-recovery-ref-7",
+          "type": "official",
+          "publisher": "Snowflake Documentation",
+          "verifiedAt": "2026-11-28",
+          "title": "Replication considerations, including Tasks",
+          "url": "https://docs.snowflake.com/en/user-guide/account-replication-considerations",
+          "relevance": "核对 Secondary 中 Task 的暂停/调度行为、Owner Role 和 Failover 后恢复任务计划的限制。"
+        },
+        {
+          "id": "snowflake-guide-disaster-recovery-ref-8",
+          "type": "official",
+          "publisher": "Snowflake Documentation",
+          "verifiedAt": "2026-11-28",
+          "title": "Dynamic Table replication and failover behavior",
+          "url": "https://docs.snowflake.com/en/user-guide/dynamic-tables/replication",
+          "relevance": "核对 Dynamic Table 在 failover 后首次刷新可能是 full refresh、reinitialization 或 incremental refresh 的行为。"
+        },
+        {
+          "id": "snowflake-guide-disaster-recovery-ref-9",
+          "type": "official",
+          "publisher": "Snowflake Documentation",
+          "verifiedAt": "2026-11-28",
+          "title": "Redirecting client connections",
+          "url": "https://docs.snowflake.com/en/user-guide/client-redirect",
+          "relevance": "核对 Connection failover/failback、客户端固定连接 URL、DNS CNAME 和 OAuth 重新认证边界。"
+        },
+        {
+          "id": "snowflake-guide-disaster-recovery-ref-10",
+          "type": "official",
+          "publisher": "Snowflake Documentation",
+          "verifiedAt": "2026-11-28",
+          "title": "Nov 20, 2026: Failover group refreshes continue when a stream has an unsupported source object",
+          "url": "https://docs.snowflake.com/en/release-notes/2026/other/2026-11-20-stream-replication-unsupported-source-objects",
+          "relevance": "核对不支持复制源对象的 Stream 现在会变成 unreadable stream 而不阻断整个 Failover Group 刷新，以及 failover/failback 后需重建的风险。"
         }
       ]
     },
