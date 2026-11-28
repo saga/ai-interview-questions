@@ -1,61 +1,69 @@
-# CoCo SQL 排障、Query Profile 与性能假设验证
+# Cortex Code SQL 排障：把性能建议变成可复现实验
 
-## 本节要解决的问题
+## Agent 说“加大 Warehouse”之前，先拿到 Query ID
 
-将 AI 提出的 SQL 性能假设与 Query Profile、扫描量、连接基数和实测对照。
+一条日报查询从 15 秒变成 4 分钟。Cortex Code 读了 SQL 后建议把 Warehouse 从 Medium 调到 Large。这个建议可能正确，也可能完全无关：查询可能在排队、扫描更多微分区、Join 放大，或被另一个事务阻塞。
 
-Cortex Agents、ML 与 CoCo。明确目标、工具/模型边界、身份授权、输入输出、执行证据、评测和停止条件。
+SQL 排障应该从 Query ID 和运行证据开始。Cortex Code 在 Standard mode 下可使用 Snowflake 数据工具；Code mode 则关闭这些数据工具。若当前会话不能访问账户查询历史，就应明确要求用户提供 Query ID 或由有权限的角色执行查询，而不是声称已经检查过运行时数据。
 
-本教程只对应知识点 `coco-sql-debug-optimization`。目标是理解其机制、适用边界和验证方法，不把相邻知识点合并成一个大章。
+## 将总耗时拆开看
 
-## 核心知识
+先查看 Query History 的排队时间、执行时间、扫描字节、扫描分区、Spill 和 Warehouse。不同阶段对应不同假设：
 
-### 先收集查询计划、运行统计与基准条件
+- 排队时间高：查 Warehouse 并发、集群负载和启动恢复。
+- 执行时间高：进入 Query Profile，看 Scan、Join、Aggregate、Sort 和交换节点。
+- Join 输出行数远超输入：检查关联键重复、多对多关系和 Join 谓词。
+- 扫描微分区比例高：检查过滤条件、数据布局和聚簇情况。
+- 远程 Spill 高：结合算子中间结果、Warehouse 规格和查询形状分析。
 
-诊断不能只看总耗时。应拆分编译、排队、执行和结果传输，再检查扫描量、过滤效率、Join 基数、排序/聚合、溢写和估算行数偏差。
+总耗时本身不能证明资源不足。若主要耗时来自事务等待，增加 Warehouse 也不会解除另一个事务的锁。
 
-### 一次修改一个关键变量并进行重复对照
+## 先固定基线，再验证一个假设
 
-诊断不能只看总耗时。应拆分编译、排队、执行和结果传输，再检查扫描量、过滤效率、Join 基数、排序/聚合、溢写和估算行数偏差。
+比较前固定 Query ID、SQL 文本和参数、数据窗口、Warehouse、Role、并发窗口以及缓存条件。保留原始 Query Profile 或可复查的查询历史。否则，一次热缓存结果与一次冷缓存结果的差异可能被误认为优化收益。
 
-### 区分语义正确性、查询耗时、扫描量和 credits
+示例查询可以从 Query History 中找出扫描较多的报表：
 
-诊断不能只看总耗时。应拆分编译、排队、执行和结果传输，再检查扫描量、过滤效率、Join 基数、排序/聚合、溢写和估算行数偏差。
+~~~sql
+SELECT
+  QUERY_ID,
+  START_TIME,
+  WAREHOUSE_NAME,
+  QUEUED_OVERLOAD_TIME,
+  EXECUTION_TIME,
+  BYTES_SCANNED,
+  PARTITIONS_SCANNED,
+  PARTITIONS_TOTAL,
+  BYTES_SPILLED_TO_LOCAL_STORAGE,
+  BYTES_SPILLED_TO_REMOTE_STORAGE
+FROM SNOWFLAKE.ACCOUNT_USAGE.QUERY_HISTORY
+WHERE START_TIME >= DATEADD('hour', -6, CURRENT_TIMESTAMP())
+  AND QUERY_TYPE = 'SELECT'
+ORDER BY START_TIME DESC
+LIMIT 50;
+~~~
 
-## 工程实施步骤
+ACCOUNT_USAGE 视图会延迟，适合趋势和事后分析；刚发生的故障应使用 Snowsight Query History 或 Information Schema 的查询历史函数。Agent 不能把“视图还没有记录”解释为“查询没有执行”。
 
-1. 将用户目标拆成可验证步骤，定义工具输入输出、身份、权限和停止条件。
-2. 记录模型/工具版本、执行轨迹、失败状态、重试次数和业务幂等键。
-3. 分别评估任务结果、工具选择、证据质量、越权拒绝、恢复能力和成本。
+## Query Profile 中最值得看的不是颜色
 
-## 场景分析
+Table Scan 要看读了多少分区、多少字节，以及过滤掉多少行。Join 要比较两侧输入行数和输出行数；输出突然增加时先检查关联键和数据重复。Aggregate/Sort 要看分组基数、中间结果和数据交换。Spill 需要结合输入量和仓库资源判断，不能看到 Spill 就直接升仓。
 
-用户要求 Agent 完成包含检索、分析和工具执行的任务。请定义工具选择、权限、执行轨迹、错误恢复和完成条件。
+需要把算子指标自动化分析时，可用 GET_QUERY_OPERATOR_STATS 获取指定 Query ID 的算子统计。任何自动建议都必须对应具体计划节点，说明观察到的指标、假设以及如何复现。
 
-将场景转换为明确输入、状态变化和预期输出。逐项检查本节核心要求，区分配置事实、运行证据和待验证假设。缺少权限、版本、数据样本或官方行为证据时，明确记录未知项，不用猜测补齐。
+## 用一次修复说明验证要求
 
-## 常见误区
+假设 Query Profile 显示客户维表 Join 后，行数从 2,000 万放大到 8,000 万。Cortex Code 可以建议检查 CUSTOMER_ID 是否唯一，但不能只改成 SELECT DISTINCT 就宣告修复。应先验证主键重复，再确认业务上每个订单是否只对应一个客户；若维表有历史版本，还要明确有效期 Join 条件。
 
-- **误区：** 根据 SQL 外观直接断定瓶颈
-  **纠正：** 诊断不能只看总耗时。应拆分编译、排队、执行和结果传输，再检查扫描量、过滤效率、Join 基数、排序/聚合、溢写和估算行数偏差。
-- **误区：** 只用一次运行时间判断优化有效
-  **纠正：** 诊断不能只看总耗时。应拆分编译、排队、执行和结果传输，再检查扫描量、过滤效率、Join 基数、排序/聚合、溢写和估算行数偏差。
-- **误区：** 为提升性能而改变业务结果口径
-  **纠正：** 诊断不能只看总耗时。应拆分编译、排队、执行和结果传输，再检查扫描量、过滤效率、Join 基数、排序/聚合、溢写和估算行数偏差。
+修复后比较行数、金额、客户数和业务口径，再比较耗时、扫描和 Credit。语义正确性和性能改善是两个验收条件。少算了数据的查询即使快十倍，也不是优化成功。
 
-## 完成标准
+## 把性能建议限制在可执行的范围
 
-- [ ] 能说明：先收集查询计划、运行统计与基准条件
-- [ ] 能说明：一次修改一个关键变量并进行重复对照
-- [ ] 能说明：区分语义正确性、查询耗时、扫描量和 credits
-- [ ] 能指出本知识点的适用前提和不适用场景。
-- [ ] 能提供至少一项运行、数据或配置证据支持判断。
-- [ ] 能描述失败后的恢复、回滚或人工升级路径。
+让 Agent 每次只提出一个主要假设，并明确建议属于 SQL 重写、数据布局、Warehouse 资源还是任务调度。任何可能改变成本、权限或生产对象的操作先生成 Diff 或命令草案，不要直接执行。对照实验应使用隔离 Warehouse 和受控数据范围。
 
-## 自测
+## 参考资料
 
-1. 如何在实际系统中验证“先收集查询计划、运行统计与基准条件”？
-2. 当“一次修改一个关键变量并进行重复对照”不成立时，最可能需要检查哪些边界和证据？
-3. 为什么不能采用“根据 SQL 外观直接断定瓶颈”这一做法？
-
-回答时需要给出判断依据和验证方法，而不只是复述定义。
+- [Exploring query execution times](https://docs.snowflake.com/en/user-guide/performance-query-exploring)
+- [Query History](https://docs.snowflake.com/en/user-guide/ui-query-history)
+- [GET_QUERY_OPERATOR_STATS](https://docs.snowflake.com/en/sql-reference/functions/get_query_operator_stats)
+- [Cortex Code CLI code mode](https://docs.snowflake.com/en/user-guide/cortex-code/code-mode)
