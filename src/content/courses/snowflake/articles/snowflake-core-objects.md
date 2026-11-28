@@ -2,60 +2,74 @@
 
 ## 本节要解决的问题
 
-掌握数据库、Schema、表/视图、Stage、Warehouse 等对象职责及命名、授权与执行关系。
-
-Snowflake 平台基础。区分持久化对象、计算资源、元数据服务、会话上下文和授权主体，再沿数据实际流动路径验证行为。
-
-本教程只对应知识点 `snowflake-core-objects`。目标是理解其机制、适用边界和验证方法，不把相邻知识点合并成一个大章。
+理解 Database、Schema、Table、View、Stage、File Format、Warehouse 和 Role 的职责，并掌握会话上下文如何影响对象名称解析与操作权限。日常 SQL 出错时，首先要区分对象不存在、当前上下文错误、仓库未选择和角色授权不足。
 
 ## 核心知识
 
-### 区分命名组织、持久化对象、文件入口和计算资源
+### Database 与 Schema 组织对象，Table/View 承载数据访问
 
-文件入口、文件解析和目标表写入必须分别验证。检查路径与文件清单、格式选项、列匹配、拒绝行、加载历史和目标行数；失败重跑前先确认之前是否已部分提交。
+Database 是逻辑命名空间，Schema 位于 Database 之下，表、视图、Stage、File Format、Sequence、Procedure 等对象通常属于某个 Schema。常见对象名可以写成 \`DATABASE.SCHEMA.OBJECT\`。
 
-### 解释角色、当前 Database/Schema、Warehouse 与对象授权的关系
+未写全限定名时，Snowflake 会使用当前会话的 Database 和 Schema 补全名称。切换 Database 也会影响当前 Schema，因此脚本不能假定连接时的默认上下文永远不变。
 
-Snowflake 的存储、计算与 Cloud Services 属于不同责任边界。分别检查数据持久化、Warehouse 资源以及平台级元数据、认证与协调，不能把一个层次的设置当作另一个层次的修复手段。
+### Stage 与 File Format 是文件摄取/导出的入口配置
 
-### 分析对象所有权与 CREATE/ALTER/DROP 生命周期影响
+Stage 指向文件存放位置，可以是 Internal Stage 或 External Stage。File Format 描述 CSV、JSON、Parquet 等文件的解析选项。它们不是目标业务表，也不会自动完成数据质量校验。
 
-落实时将这项要求放到实际输入、输出和运行上下文里验证。Snowflake 平台基础。区分持久化对象、计算资源、元数据服务、会话上下文和授权主体，再沿数据实际流动路径验证行为。
+加载链路应分开检查文件是否存在、格式是否解析正确、COPY INTO 是否成功、拒绝行是否处理，以及目标表是否达到预期行数。
+
+### Warehouse 是计算资源，不属于表的命名层级
+
+Warehouse 执行 SQL 和相关计算。它不是 Database、Schema 或 Table 的子对象，也不代表数据存储位置。没有选择合适的 Warehouse 时，查询可能因会话未设置计算资源而无法执行；但 Warehouse 可用不代表当前角色拥有表访问权限。
+
+### Role 决定可执行的操作，会话上下文决定当前使用哪些对象和资源
+
+Role 是权限主体，用户通过活动角色及已激活的辅助角色取得对象权限。对象所有权通常包含更广泛的管理能力；Managed Access Schema 会将对象授权决策集中到 Schema Owner 或拥有 MANAGE GRANTS 的角色。
+
+Warehouse 的 USAGE、Database/Schema 的 USAGE 和目标表的 SELECT/INSERT 等权限是不同的授权边界。仅能看到对象名不代表有权查询对象。
 
 ## 工程实施步骤
 
-1. 确认对象类型、当前 Role、Warehouse、Database 和 Schema，避免把 Session Context 当成对象本身。
-2. 沿操作路径收集 Query ID、对象定义、授权与运行状态，区分控制面、计算和数据层。
-3. 用相同输入与代表性工作负载验证结果，并记录权限、成本和失败恢复影响。
+1. **确认上下文。** 运行 \`SELECT CURRENT_ROLE(), CURRENT_SECONDARY_ROLES(), CURRENT_WAREHOUSE(), CURRENT_DATABASE(), CURRENT_SCHEMA();\` 记录当前会话设置。
+2. **检查命名。** 对关键表使用全限定名，执行 SHOW TABLES/SHOW VIEWS/SHOW STAGES，并用 DESCRIBE 确认对象结构。
+3. **检查文件入口。** 对 Stage 使用 LIST 检查文件，对 File Format 检查类型和解析选项；加载前明确文件匹配规则和失败处理。
+4. **检查执行资源。** 确认当前 Warehouse 存在、已启动且有 USAGE 权限。不要通过变更 Database 或 Schema 来代替仓库授权。
+5. **检查授权链。** 从用户拥有的 Role、当前活动 Role、角色继承和辅助角色出发，检查 Database、Schema、目标对象及 Warehouse 的所需权限。
+6. **检查所有权和管理边界。** 对 CREATE/ALTER/DROP 操作确认执行角色拥有相应权限；在 Managed Access Schema 中，检查授权是否由 Schema Owner 或 MANAGE GRANTS 角色管理。
+7. **固化部署上下文。** 在 ETL、应用连接和 CI 脚本中显式设置 Role、Warehouse、Database 和 Schema，减少连接配置差异造成的问题。
 
 ## 场景分析
 
-分析团队发现同一张表在不同 Warehouse 上表现不同，同时有人把对象不存在、权限不足和查询排队都归因于“仓库没开好”。请拆分对象、执行和访问边界，列出证明根因所需证据。
+部署脚本在开发环境能执行 \`SELECT * FROM ORDERS\`，在生产环境却提示对象不存在。团队怀疑生产表没有部署，准备重新创建。
 
-将场景转换为明确输入、状态变化和预期输出。逐项检查本节核心要求，区分配置事实、运行证据和待验证假设。缺少权限、版本、数据样本或官方行为证据时，明确记录未知项，不用猜测补齐。
+不要先创建对象。先运行 CURRENT_DATABASE 和 CURRENT_SCHEMA，检查连接是否落在预期 Database/Schema；再用全限定名测试对象是否存在。如果全限定名可见但查询失败，检查当前 Role 的 USAGE 与 SELECT 权限。如果表能查询但 DDL 失败，继续检查 OWNERSHIP 或相应 CREATE/ALTER 权限。若错误发生在加载文件时，再检查 Stage、File Format 和 Warehouse。
+
+该排查顺序可以避免因上下文或权限错误而创建重名对象，导致后续数据写入到错误的 Schema。
 
 ## 常见误区
 
-- **误区：** 把 Warehouse 当数据库或数据副本容器
-  **纠正：** Snowflake 的存储、计算与 Cloud Services 属于不同责任边界。分别检查数据持久化、Warehouse 资源以及平台级元数据、认证与协调，不能把一个层次的设置当作另一个层次的修复手段。
-- **误区：** 认为知道对象名称就一定有查询权限
-  **纠正：** 权限判断沿用户、当前激活角色、角色继承、对象权限和所有权追踪，并检查 Database、Schema 与目标对象的使用权限。
-- **误区：** 把 Stage 与已入仓业务表混为一谈
-  **纠正：** 文件入口、文件解析和目标表写入必须分别验证。检查路径与文件清单、格式选项、列匹配、拒绝行、加载历史和目标行数；失败重跑前先确认之前是否已部分提交。
+- **把 Warehouse 当作 Database 的一部分。** Warehouse 是独立计算资源，不属于 Database.Schema.Object 命名路径。
+- **认为切换 Database 不会影响 Schema。** 当前 Schema 属于当前 Database；切换 Database 可能同时改变当前 Schema 上下文。
+- **将 Stage 当成目标表。** Stage 提供文件访问入口，File Format 负责解析规则，COPY INTO 才执行加载。
+- **认为拥有对象名称就有 SELECT 权限。** 权限由活动角色及对象授权决定，不能仅从名称可见性推断。
+- **忽略 Managed Access Schema。** 该模式下普通对象 Owner 的授权能力受到限制，授权由 Schema Owner 或 MANAGE GRANTS 角色集中管理。
 
 ## 完成标准
 
-- [ ] 能说明：区分命名组织、持久化对象、文件入口和计算资源
-- [ ] 能说明：解释角色、当前 Database/Schema、Warehouse 与对象授权的关系
-- [ ] 能说明：分析对象所有权与 CREATE/ALTER/DROP 生命周期影响
-- [ ] 能指出本知识点的适用前提和不适用场景。
-- [ ] 能提供至少一项运行、数据或配置证据支持判断。
-- [ ] 能描述失败后的恢复、回滚或人工升级路径。
+- [ ] 能说明 Database、Schema、Table、View、Stage 和 File Format 的关系。
+- [ ] 能区分 Warehouse 计算资源与数据库对象命名空间。
+- [ ] 能用 CURRENT_* 函数还原会话上下文。
+- [ ] 能按 Role、USAGE 和对象权限定位授权错误。
+- [ ] 能说明普通 Schema 与 Managed Access Schema 的授权管理差异。
 
 ## 自测
 
-1. 如何在实际系统中验证“区分命名组织、持久化对象、文件入口和计算资源”？
-2. 当“解释角色、当前 Database/Schema、Warehouse 与对象授权的关系”不成立时，最可能需要检查哪些边界和证据？
-3. 为什么不能采用“把 Warehouse 当数据库或数据副本容器”这一做法？
+1. 当前 Database 正确，但查询未限定名称的表时提示找不到对象，应该先检查哪些会话上下文？
+2. 一个角色可以使用 Warehouse，却无法查询某张表。为什么这两项权限互不替代？
+3. CSV 文件已存在于 Stage，但 COPY INTO 后目标表没有预期行数。应分哪几个环节排查？
 
-回答时需要给出判断依据和验证方法，而不只是复述定义。
+## 参考资料
+
+- [USE 命令与当前会话上下文](https://docs.snowflake.com/en/sql-reference/sql/use)
+- [Object name resolution](https://docs.snowflake.com/en/sql-reference/name-resolution)
+- [Overview of access control](https://docs.snowflake.com/en/user-guide/security-access-control-overview)
