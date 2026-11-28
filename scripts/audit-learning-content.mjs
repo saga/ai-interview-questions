@@ -18,22 +18,21 @@ const base = baseIndex >= 0 ? args[baseIndex + 1] : undefined;
 const boilerplatePatterns = [
   ['generic-platform-boundary', /Snowflake 的存储、计算与 Cloud Services 属于不同责任边界/],
   ['generic-snowflake-introduction', /Snowflake 平台基础。区分持久化对象、计算资源、元数据服务、会话上下文和授权主体/],
-  ['generic-scenario-wrapper', /将场景转换为明确输入、状态变化和预期输出/],
+  ['generic-data-engineering-intro', /数据工程。将输入、摄取、转换、状态推进、目标写入和下游可见性分开观察/],
+  ['generic-ai-governance-intro', /Cortex Agents、ML 与 CoCo。明确目标、工具\/模型边界、身份授权、输入输出、执行证据、评测和停止条件/],
+  ['generic-scene-wrapper', /将场景转换为明确输入、状态变化和预期输出/],
   ['generic-context-wrapper', /落实时将这项要求放到实际输入、输出和运行上下文里验证/],
-  ['generic-object-checklist', /确认对象类型、当前 Role、Warehouse、Database 和 Schema/],
+  ['generic-checklist-wrapper', /确认对象类型、当前 Role、Warehouse、Database 和 Schema/],
   ['generic-workload-wrapper', /用相同输入与代表性工作负载验证结果，并记录权限、成本和失败恢复影响/],
   ['generic-warehouse-scenario', /分析团队发现同一张表在不同 Warehouse 上表现不同/],
-  ['generic-test-placeholder', /回答时需要给出判断依据和验证方法，而不只是复述定义/],
-  ['generic-data-engineering-intro', /数据工程。将输入、摄取、转换、状态推进、目标写入和下游可见性分开观察/],
-  ['generic-observability-wrapper', /日志解释发生了什么，指标观察趋势，Trace 关联跨步骤执行/],
-  ['generic-topic-meta', /本教程只对应知识点[^。]{0,100}不把相邻知识点合并成一个大章/],
-  ['generic-scene-meta', /将场景转换为明确输入、状态变化和预期输出/],
   ['generic-answer-meta', /回答时需要给出判断依据和验证方法，而不只是复述定义/],
-  ['generic-object-context-checklist', /确认对象类型、当前 Role、Warehouse、Database 和 Schema/],
-  ['generic-snowflake-platform-intro', /Snowflake 平台基础。区分持久化对象、计算资源、元数据服务、会话上下文和授权主体/],
+  ['generic-topic-meta', /本教程只对应知识点[^。]{0,100}不把相邻知识点合并成一个大章/],
   ['generic-business-metric-copy', /业务指标必须定义分子、分母、过滤条件、时间口径、事实粒度和可加性。语义层能表达已确认的业务定义，却不能修复底层错误键、粒度或多对多关系/],
   ['generic-generic-test-question', /如何在实际系统中验证[“「][^”」]+[”」]/],
   ['generic-generic-failure-question', /当[“「][^”」]+[”」]不成立时，最可能需要检查哪些边界和证据/],
+  ['generic-generic-correction', /回到本知识点的输入条件、执行边界和验证证据，确认判断成立的前提/],
+  ['generic-generic-misconception', /认为.+完全相同[\s\S]{0,120}业务指标必须定义分子、分母/],
+  ['generic-observability-wrapper', /日志解释发生了什么，指标观察趋势，Trace 关联跨步骤执行/],
 ];
 
 function normalize(text) {
@@ -110,6 +109,7 @@ if (changed && targets.length === 0) {
 
 const structureProblems = [];
 const qualityProblems = [];
+const reviewNotes = [];
 const articleManifestChanged = !strict || changed.has('src/content/courses/snowflake/index.json');
 const integratedManifestChanged = !strict || changed.has('src/content/courses/snowflake/integrated/index.json');
 if (articleManifestChanged && manifest.nodes.length !== 194) {
@@ -163,28 +163,36 @@ for (const doc of docs) {
     const scenario = doc.sections.get('场景分析') ?? '';
     const misconceptions = doc.sections.get('常见误区') ?? '';
     const tests = doc.sections.get('自测') ?? '';
-    const h3Count = countMatches(core, /^###\s+/gm);
-    const stepCount = countMatches(steps, /^\s*\d+[.)]\s+/gm);
-    const misconceptionCount = countMatches(misconceptions, /^\s*[-*+]\s+/gm);
-    const testCount = countMatches(tests, /^\s*\d+[.)]\s+/gm);
-    const codeBlockCount = countMatches(doc.markdown, /~~~[a-z0-9_-]*\s+[\s\S]*?~~~/gi);
-    const tableRowCount = countMatches(doc.markdown, /^\|.*\|$/gm);
-    const hasConcreteArtifact = codeBlockCount > 0 || tableRowCount >= 4;
     const scenarioHasPlaceholder = /将场景转换为明确输入|逐项检查本节核心要求|请拆分对象、执行和访问边界/.test(scenario);
     const testsHaveTemplate = /如何在实际系统中验证|不成立时，最可能需要检查哪些边界和证据|回答时需要给出判断依据/.test(tests);
-    const coreParagraphs = paragraphs(core);
-    const uniqueCoreParagraphs = new Set(coreParagraphs.map((item) => item.normalized));
+    const genericReference = doc.refs.some((reference) =>
+      /核对.+涉及的产品行为、配置边界和工程机制|用于核对本综合教程涉及的产品行为、配置边界和工程机制|用于核对本教程涉及的产品行为、配置边界和工程机制/.test(reference.relevance ?? ''),
+    );
+    const codeBlockCount = countMatches(doc.markdown, /~~~[a-z0-9_-]*\\s+[\\s\\S]*?~~~/gi);
+    const tableRowCount = countMatches(doc.markdown, /^\\|.*\\|$/gm);
+    const hasInspectableExample = codeBlockCount > 0 || tableRowCount >= 3
+      || /例如|假设|样例|一笔订单|一条记录|输入为|输出为/.test(core + scenario);
     const checks = [
-      [problem.length >= 70, '问题定义少于 70 字符'],
-      [core.length >= 450 && h3Count >= 2, `核心机制不足（${core.length} 字符，${h3Count} 个小节）`],
-      [uniqueCoreParagraphs.size >= 3, `核心知识段落重复或过少（${uniqueCoreParagraphs.size} 段有效内容）`],
-      [steps.length >= 300 && stepCount >= 4, `实施步骤不足（${steps.length} 字符，${stepCount} 项）`],
-      [scenario.length >= 220 && !scenarioHasPlaceholder, `场景分析过短或仍是模板（${scenario.length} 字符）`],
-      [hasConcreteArtifact, '缺少可复现的 SQL、代码、数据表或配置样例'],
-      [misconceptionCount >= 2, `常见误区不足（${misconceptionCount} 项）`],
-      [testCount >= 3 && !testsHaveTemplate, `自测题不足或仍是模板句式（${testCount} 题）`],
+      [problem.trim().length > 0, '没有说明本节要解决的具体问题'],
+      [core.trim().length > 0, '核心知识章节没有实质内容'],
+      [steps.trim().length > 0, '没有说明可执行的工程实施方法'],
+      [scenario.trim().length > 0 && !scenarioHasPlaceholder, '场景分析缺失或仍是模板'],
+      [tests.trim().length > 0 && !testsHaveTemplate, '自测缺失或仍是模板句式'],
+      [misconceptions.trim().length > 0, '没有解释本主题的常见错误或边界'],
       [doc.refs.length >= 1 && doc.refs.every((reference) => reference.verifiedAt !== '待核验'), '缺少已核验来源引用'],
+      [!genericReference, '参考资料说明仍是通用模板，未说明与本篇的具体关系'],
     ];
+    for (const [passed, message] of checks) {
+      if (!passed) qualityProblems.push({ id: doc.id, path: doc.path, problem: message });
+    }
+    if (!hasInspectableExample) {
+      reviewNotes.push({ id: doc.id, path: doc.path, problem: '未检测到具体样例；请人工确认是否有可复核的机制解释或决策案例（不要求每篇都使用代码或表格）' });
+    }
+    for (const [name, pattern] of boilerplatePatterns) {
+      if (pattern.test(doc.markdown)) qualityProblems.push({ id: doc.id, path: doc.path, problem: `模板残留：${name}` });
+    }
+  }
+
     for (const [passed, message] of checks) {
       if (!passed) qualityProblems.push({ id: doc.id, path: doc.path, problem: message });
     }
@@ -246,13 +254,17 @@ const duplicates = [...paragraphIndex.values()]
   }))
   .sort((a, b) => b.ids.length - a.ids.length || a.heading.localeCompare(b.heading));
 
-console.log(`学习内容审计：${targets.length} 篇教程；${duplicates.length} 组重复段落（含同篇复用）；${structureProblems.length} 处结构问题；${qualityProblems.length} 处内容质量问题；${pendingSources.length} 篇含待核验来源；${sourceMissing.length} 篇缺少来源元数据。`);
+console.log(`学习内容审计：${targets.length} 篇教程；${duplicates.length} 组重复段落（含同篇复用）；${structureProblems.length} 处结构问题；${qualityProblems.length} 处质量问题；${reviewNotes.length} 条内容复核提示；${pendingSources.length} 篇含待核验来源；${sourceMissing.length} 篇缺少来源元数据。`);
+：${targets.length} 篇教程；${duplicates.length} 组重复段落（含同篇复用）；${structureProblems.length} 处结构问题；${qualityProblems.length} 处内容质量问题；${pendingSources.length} 篇含待核验来源；${sourceMissing.length} 篇缺少来源元数据。`);
 for (const item of duplicates.slice(0, 20)) {
   console.log(`  ${item.repeatedWithinArticle ? '同篇重复' : '跨篇重复'} [${item.kind} / ${item.heading}] · ${item.ids.length} 篇 / ${item.occurrences} 次：${item.ids.slice(0, 8).join(', ')}`);
   console.log(`    ${item.paragraph.replace(/\n/g, ' ').slice(0, 180)}`);
 }
 for (const item of structureProblems.slice(0, 30)) {
   console.log(`  内容结构 [${item.id}]：${item.problem}`);
+}
+for (const item of reviewNotes.slice(0, 30)) {
+  console.log(`  内容复核 [${item.id}]：${item.problem}`);
 }
 for (const item of qualityProblems.slice(0, 50)) {
   console.log(`  内容质量 [${item.id}]：${item.problem}`);
