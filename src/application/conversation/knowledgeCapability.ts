@@ -200,11 +200,13 @@ export function retrieveForCopilot(
   const scope = planRetrievalScope(input);
   const mode = planRetrievalMode(input);
   // P0-2：knowledgeId 按 scope 解析，不再恒等于 activeQuestion.topic。
-  // - current_question：用当前题自身知识点，并透传 questionId 锁定"这道题"
+  // - current_question：课程题优先使用精确 knowledgeId；旧题回退 topic=nodeId
   // - 显式 topic / query 命中其它节点：用该节点，避免被当前题 topic 限制
   // - 其它（global/knowledge）：不传 knowledgeId，由 query 词面 + graph 决定
   let knowledgeId: string | undefined;
-  if (scope === 'current_question') knowledgeId = input.activeQuestion?.topic ?? undefined;
+  if (scope === 'current_question') {
+    knowledgeId = input.activeQuestion?.knowledgeId ?? input.activeQuestion?.topic ?? undefined;
+  }
   else if (input.topic) knowledgeId = input.topic;
   else knowledgeId = detectQueryTopic(input.query ?? '') ?? undefined;
   const questionId = scope === 'current_question' ? input.activeQuestion?.id ?? undefined : undefined;
