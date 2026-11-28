@@ -120,11 +120,11 @@ export default function StudyPage({ nodes, questions, onGoTrain }: Props) {
     });
   // The selected node is the navigation boundary; progress changes are handled by the completion action.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedNode?.id, selectedPack]);
+  }, [selectedNode?.id, selectedPack, selectedProgress?.lastArticleId]);
 
   const treeData = useMemo<DataNode[]>(() => {
     const knownTopics = new Set(SNOWFLAKE_COURSE_TOPICS.map((topic) => topic.id));
-    const grouped = SNOWFLAKE_COURSE_TOPICS.map((topic) => {
+    const grouped: DataNode[] = SNOWFLAKE_COURSE_TOPICS.map((topic) => {
       const topicNodes = nodes
         .filter((node) => node.topic === topic.id)
         .sort((a, b) => (a.priority === b.priority ? a.name.localeCompare(b.name) : a.priority === 'P0' ? -1 : b.priority === 'P0' ? 1 : a.priority === 'P1' ? -1 : 1));
