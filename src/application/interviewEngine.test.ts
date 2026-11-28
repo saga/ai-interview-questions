@@ -368,6 +368,27 @@ describe('自适应选题：无概念层后仅按 (topic, angle) 推进', () => 
     expect(step!.question.question.tests).toBeUndefined(); // 概念层已移除
   });
 
+  it('自适应下一题继续限制在指定 KnowledgeNode', async () => {
+    const scopedBank = {
+      categories: [],
+      questions: [
+        ...plain(['tool-a', 'tool-b']).questions,
+        ...plain(['memory-a']).questions.map((question) => ({ ...question, topic: 'memory' })),
+      ].map((question) => ({ ...question, topic: question.id.startsWith('memory') ? 'memory' : 'tools' })),
+    };
+    const first = await buildSession(
+      scopedBank,
+      { ...def(false, ['choice']), topic: 'tools', count: 2, adaptive: true },
+      undefined,
+    );
+    expect(first.questions).toHaveLength(1);
+    expect(first.questions[0].question.topic).toBe('tools');
+
+    const next = await nextAdaptiveStep(scopedBank, first, []);
+    expect(next).not.toBeNull();
+    expect(next!.question.question.topic).toBe('tools');
+  });
+
   it('题池耗尽返回 null，不报错', async () => {
     const bank = plain(['a']);
     const first = await buildSession(bank, { ...def(false, ['choice']), count: 3, adaptive: true }, undefined);
