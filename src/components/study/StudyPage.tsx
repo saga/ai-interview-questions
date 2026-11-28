@@ -29,6 +29,7 @@ import '@ant-design/x-markdown/themes/light.css';
 import type { KnowledgeNode } from '../../schemas/knowledge';
 import type { Question } from '../../schemas/question';
 import { SNOWFLAKE_COURSE_TOPICS } from '../../data/learningTracks';
+import { IntegratedTutorialsSection } from './IntegratedTutorialsSection';
 import {
   SNOWFLAKE_LEARNING_ARTICLES,
   SNOWFLAKE_LEARNING_CONTENT,
@@ -243,6 +244,8 @@ export default function StudyPage({ nodes, questions, onGoTrain }: Props) {
           </Card>
         </Col>
       </Row>
+
+      <IntegratedTutorialsSection nodes={nodes} onSelectNode={setSelectedNodeId} />
 
       <Row gutter={[16, 16]} align="top">
         <Col xs={24} md={9} xl={7}>

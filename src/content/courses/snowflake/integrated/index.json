@@ -1,0 +1,411 @@
+{
+  "schemaVersion": 1,
+  "kind": "integrated-engineering-tutorials",
+  "description": "跨多个 KnowledgeNode 的端到端工程教程。独立于 194 篇一对一节点主教程，不注册为 KnowledgeNode，也不计入节点教材阅读进度。",
+  "count": 8,
+  "tutorials": [
+    {
+      "id": "integrated-enterprise-data-platform",
+      "title": "从业务系统到分析平台：企业数据平台端到端架构",
+      "description": "以 PostgreSQL、SaaS 和文件数据为源，串联接入、分层加工、治理和指标服务，明确事务系统与分析平台的职责边界。",
+      "level": "foundation",
+      "scenario": "订单系统运行在 PostgreSQL，CRM 和支付服务提供 API，其他数据以批量文件到达。管理层需要统一经营分析，运营团队关注订单状态，审计团队要求能追溯来源、回补数据并控制访问。目标不是把所有系统搬进一个数据库，而是建立职责清楚、可恢复、可治理的数据链路。",
+      "estimatedMinutes": 50,
+      "linkedKnowledgeNodeIds": [
+        "snowflake-architecture",
+        "snowflake-core-objects",
+        "enterprise-data-zones",
+        "dimensional-modeling",
+        "snowflake-data-loading",
+        "postgresql-basics-connection",
+        "postgresql-wal-replication-ha",
+        "data-observability-lineage",
+        "object-access-governance"
+      ],
+      "references": [
+        {
+          "id": "integrated-enterprise-data-platform-ref-1",
+          "type": "official",
+          "title": "Snowflake 架构与核心概念",
+          "url": "https://docs.snowflake.com/en/user-guide/intro-key-concepts",
+          "publisher": "Snowflake Documentation",
+          "relevance": "用于核对本综合教程涉及的产品行为、配置边界和工程机制。",
+          "verifiedAt": "待核验"
+        },
+        {
+          "id": "integrated-enterprise-data-platform-ref-2",
+          "type": "official",
+          "title": "PostgreSQL 逻辑复制",
+          "url": "https://www.postgresql.org/docs/current/logical-replication.html",
+          "publisher": "PostgreSQL Documentation",
+          "relevance": "用于核对本综合教程涉及的产品行为、配置边界和工程机制。",
+          "verifiedAt": "待核验"
+        },
+        {
+          "id": "integrated-enterprise-data-platform-ref-3",
+          "type": "official",
+          "title": "Snowflake 数据管道概览",
+          "url": "https://docs.snowflake.com/en/user-guide/data-pipelines-intro",
+          "publisher": "Snowflake Documentation",
+          "relevance": "用于核对本综合教程涉及的产品行为、配置边界和工程机制。",
+          "verifiedAt": "待核验"
+        }
+      ],
+      "file": "integrated-enterprise-data-platform.md"
+    },
+    {
+      "id": "integrated-reliable-elt-pipeline",
+      "title": "构建可靠的 ELT 数据管道：从文件接入到可验证的数据集",
+      "description": "串联 Stage、COPY INTO、转换、质量检查、增量刷新、回补与发布，重点解决重复投递、迟到数据和任务失败。",
+      "level": "intermediate",
+      "scenario": "订单系统每天输出增量文件，营销系统持续投递客户事件。分析团队需要统一订单事实表和客户维度。真正的难点不是写出一条 COPY INTO，而是重复投递、坏文件、字段变化和任务失败后结果仍可解释、可恢复。",
+      "estimatedMinutes": 55,
+      "linkedKnowledgeNodeIds": [
+        "snowflake-stages-file-formats",
+        "snowpipe-file-ingestion",
+        "copy-into-file-format-validation",
+        "sql-transformations-basics",
+        "incremental-pipeline-reliability",
+        "data-quality-testing",
+        "snowflake-guide-dynamic-tables",
+        "snowflake-coco-dbt-modeling",
+        "sql-release-engineering",
+        "data-observability-lineage"
+      ],
+      "references": [
+        {
+          "id": "integrated-reliable-elt-pipeline-ref-1",
+          "type": "official",
+          "title": "Data Loading Overview",
+          "url": "https://docs.snowflake.com/en/user-guide/data-load-overview",
+          "publisher": "Snowflake Documentation",
+          "relevance": "用于核对本综合教程涉及的产品行为、配置边界和工程机制。",
+          "verifiedAt": "待核验"
+        },
+        {
+          "id": "integrated-reliable-elt-pipeline-ref-2",
+          "type": "official",
+          "title": "Dynamic Tables",
+          "url": "https://docs.snowflake.com/en/user-guide/dynamic-tables/overview",
+          "publisher": "Snowflake Documentation",
+          "relevance": "用于核对本综合教程涉及的产品行为、配置边界和工程机制。",
+          "verifiedAt": "待核验"
+        },
+        {
+          "id": "integrated-reliable-elt-pipeline-ref-3",
+          "type": "official",
+          "title": "Streams and Tasks",
+          "url": "https://docs.snowflake.com/en/user-guide/data-pipelines-intro",
+          "publisher": "Snowflake Documentation",
+          "relevance": "用于核对本综合教程涉及的产品行为、配置边界和工程机制。",
+          "verifiedAt": "待核验"
+        }
+      ],
+      "file": "integrated-reliable-elt-pipeline.md"
+    },
+    {
+      "id": "integrated-cdc-real-time-pipeline",
+      "title": "构建 CDC 实时数据链路：PostgreSQL 到 Snowflake",
+      "description": "从 PostgreSQL WAL/逻辑复制出发，串联 CDC 连接器、目标端摄取和幂等应用，建立可恢复、可对账的低延迟链路。",
+      "level": "advanced",
+      "scenario": "订单系统运行在 PostgreSQL，运营看板希望在几分钟内看到订单状态和支付变化。全量抽取带来延迟和重复扫描。CDC 降低抽取延迟，但也引入复制槽、offset、事件顺序、schema 变化、重复投递和积压治理问题。",
+      "estimatedMinutes": 60,
+      "linkedKnowledgeNodeIds": [
+        "postgresql-wal-replication-ha",
+        "postgresql-transactions-mvcc",
+        "postgresql-locks-concurrency",
+        "change-capture-processing",
+        "snowpipe-streaming",
+        "snowflake-connectors-integrations",
+        "incremental-pipeline-reliability",
+        "snowflake-guide-reliability",
+        "snowflake-resource-monitoring-account-usage"
+      ],
+      "references": [
+        {
+          "id": "integrated-cdc-real-time-pipeline-ref-1",
+          "type": "official",
+          "title": "PostgreSQL Logical Replication",
+          "url": "https://www.postgresql.org/docs/current/logical-replication.html",
+          "publisher": "PostgreSQL Documentation",
+          "relevance": "用于核对本综合教程涉及的产品行为、配置边界和工程机制。",
+          "verifiedAt": "待核验"
+        },
+        {
+          "id": "integrated-cdc-real-time-pipeline-ref-2",
+          "type": "official",
+          "title": "Snowpipe Streaming Overview",
+          "url": "https://docs.snowflake.com/en/user-guide/snowpipe-streaming/data-load-snowpipe-streaming-overview",
+          "publisher": "Snowflake Documentation",
+          "relevance": "用于核对本综合教程涉及的产品行为、配置边界和工程机制。",
+          "verifiedAt": "待核验"
+        },
+        {
+          "id": "integrated-cdc-real-time-pipeline-ref-3",
+          "type": "official",
+          "title": "Dynamic Tables Decision Guide",
+          "url": "https://docs.snowflake.com/en/user-guide/dynamic-tables/decision-guide",
+          "publisher": "Snowflake Documentation",
+          "relevance": "用于核对本综合教程涉及的产品行为、配置边界和工程机制。",
+          "verifiedAt": "待核验"
+        }
+      ],
+      "file": "integrated-cdc-real-time-pipeline.md"
+    },
+    {
+      "id": "integrated-data-governance-security",
+      "title": "企业数据治理与访问控制：从数据库权限到数据消费契约",
+      "description": "把 PostgreSQL 与 Snowflake 的身份、角色、数据分级、行列级控制、血缘、审计和语义指标治理放入同一套企业治理流程。",
+      "level": "advanced",
+      "scenario": "平台包含客户身份、订单、支付和运营指标。数据工程师需要排障，分析师需要查询，合作伙伴可能只应看到脱敏数据。治理要回答：谁因什么业务目的访问哪些数据、能看到什么粒度、访问是否被记录。",
+      "estimatedMinutes": 55,
+      "linkedKnowledgeNodeIds": [
+        "object-access-governance",
+        "data-governance-access-control",
+        "snowflake-guide-security",
+        "snowflake-guide-least-privilege",
+        "snowflake-authentication-methods",
+        "snowflake-role-hierarchy-grants",
+        "snowflake-masking-tagging-policies",
+        "semantic-metric-governance",
+        "semantic-layer-design",
+        "postgresql-roles-privileges"
+      ],
+      "references": [
+        {
+          "id": "integrated-data-governance-security-ref-1",
+          "type": "official",
+          "title": "Snowflake Access Control Overview",
+          "url": "https://docs.snowflake.com/en/user-guide/security-access-control-overview",
+          "publisher": "Snowflake Documentation",
+          "relevance": "用于核对本综合教程涉及的产品行为、配置边界和工程机制。",
+          "verifiedAt": "待核验"
+        },
+        {
+          "id": "integrated-data-governance-security-ref-2",
+          "type": "official",
+          "title": "Snowflake Masking Policies",
+          "url": "https://docs.snowflake.com/en/user-guide/security-column-intro",
+          "publisher": "Snowflake Documentation",
+          "relevance": "用于核对本综合教程涉及的产品行为、配置边界和工程机制。",
+          "verifiedAt": "待核验"
+        },
+        {
+          "id": "integrated-data-governance-security-ref-3",
+          "type": "official",
+          "title": "PostgreSQL Row Security Policies",
+          "url": "https://www.postgresql.org/docs/current/ddl-rowsecurity.html",
+          "publisher": "PostgreSQL Documentation",
+          "relevance": "用于核对本综合教程涉及的产品行为、配置边界和工程机制。",
+          "verifiedAt": "待核验"
+        }
+      ],
+      "file": "integrated-data-governance-security.md"
+    },
+    {
+      "id": "integrated-performance-finops",
+      "title": "分析平台性能与 FinOps：从查询诊断到容量和成本治理",
+      "description": "组合 Snowflake Query Profile、仓库隔离、微分区裁剪与成本监控，以及 PostgreSQL EXPLAIN、索引、统计信息和 vacuum，建立证据驱动的优化流程。",
+      "level": "intermediate",
+      "scenario": "月末报表变慢，分析平台成本持续增加。团队怀疑仓库太小，准备扩大计算资源；但真正原因可能是扫描范围、连接基数、并发排队、数据分布、重复计算或模型设计问题。优化应从执行证据开始。",
+      "estimatedMinutes": 50,
+      "linkedKnowledgeNodeIds": [
+        "virtual-warehouse",
+        "snowflake-micro-partitions",
+        "snowflake-caching",
+        "snowflake-query-optimization-services",
+        "warehouse-query-diagnostics",
+        "warehouse-cost-optimization",
+        "snowflake-query-history",
+        "snowflake-resource-monitoring-account-usage",
+        "postgresql-explain-plans-statistics",
+        "postgresql-index-strategies",
+        "postgresql-vacuum-bloat",
+        "postgresql-memory-parallelism",
+        "postgresql-connection-pooling"
+      ],
+      "references": [
+        {
+          "id": "integrated-performance-finops-ref-1",
+          "type": "official",
+          "title": "Snowflake Query Profile",
+          "url": "https://docs.snowflake.com/en/user-guide/ui-query-profile",
+          "publisher": "Snowflake Documentation",
+          "relevance": "用于核对本综合教程涉及的产品行为、配置边界和工程机制。",
+          "verifiedAt": "待核验"
+        },
+        {
+          "id": "integrated-performance-finops-ref-2",
+          "type": "official",
+          "title": "Warehouse Cost Controls",
+          "url": "https://docs.snowflake.com/en/user-guide/cost-controlling-controls",
+          "publisher": "Snowflake Documentation",
+          "relevance": "用于核对本综合教程涉及的产品行为、配置边界和工程机制。",
+          "verifiedAt": "待核验"
+        },
+        {
+          "id": "integrated-performance-finops-ref-3",
+          "type": "official",
+          "title": "PostgreSQL EXPLAIN",
+          "url": "https://www.postgresql.org/docs/current/sql-explain.html",
+          "publisher": "PostgreSQL Documentation",
+          "relevance": "用于核对本综合教程涉及的产品行为、配置边界和工程机制。",
+          "verifiedAt": "待核验"
+        }
+      ],
+      "file": "integrated-performance-finops.md"
+    },
+    {
+      "id": "integrated-lakehouse-iceberg",
+      "title": "Lakehouse 生产实践：围绕 Apache Iceberg 设计开放数据架构",
+      "description": "串联对象存储、Iceberg 元数据、Catalog、计算引擎、Schema/Partition Evolution、并发写入和迁移验证，明确运行责任。",
+      "level": "advanced",
+      "scenario": "平台希望多个计算引擎共享开放表格式，降低被单一引擎锁定的风险，同时继续使用 Snowflake 做分析。采用 Iceberg 后，团队仍须决定对象存储、Catalog、写入引擎、快照保留、文件维护和并发冲突由谁负责。",
+      "estimatedMinutes": 55,
+      "linkedKnowledgeNodeIds": [
+        "iceberg-open-table-format",
+        "iceberg-schema-partition-evolution",
+        "iceberg-maintenance-concurrency",
+        "iceberg-managed-external-basics",
+        "iceberg-metadata-refresh-basics",
+        "iceberg-external-catalog-integration",
+        "iceberg-metadata-files-manifests",
+        "iceberg-write-mode-conflict",
+        "iceberg-migration-validation",
+        "snowflake-table-types"
+      ],
+      "references": [
+        {
+          "id": "integrated-lakehouse-iceberg-ref-1",
+          "type": "official",
+          "title": "Snowflake Apache Iceberg Tables",
+          "url": "https://docs.snowflake.com/en/user-guide/tables-iceberg",
+          "publisher": "Snowflake Documentation",
+          "relevance": "用于核对本综合教程涉及的产品行为、配置边界和工程机制。",
+          "verifiedAt": "待核验"
+        },
+        {
+          "id": "integrated-lakehouse-iceberg-ref-2",
+          "type": "official",
+          "title": "Manage Apache Iceberg Tables",
+          "url": "https://docs.snowflake.com/en/user-guide/tables-iceberg-manage",
+          "publisher": "Snowflake Documentation",
+          "relevance": "用于核对本综合教程涉及的产品行为、配置边界和工程机制。",
+          "verifiedAt": "待核验"
+        },
+        {
+          "id": "integrated-lakehouse-iceberg-ref-3",
+          "type": "official",
+          "title": "Apache Iceberg Documentation",
+          "url": "https://iceberg.apache.org/docs/latest/",
+          "publisher": "Apache Iceberg",
+          "relevance": "用于核对本综合教程涉及的产品行为、配置边界和工程机制。",
+          "verifiedAt": "待核验"
+        }
+      ],
+      "file": "integrated-lakehouse-iceberg.md"
+    },
+    {
+      "id": "integrated-data-products-sharing",
+      "title": "把数据做成产品：语义指标、共享、应用和消费契约",
+      "description": "从 Curated 数据集建立语义指标、权限隔离、跨账户共享、应用交付和版本化消费契约，让数据被其他团队稳定复用。",
+      "level": "intermediate",
+      "scenario": "数据团队已有订单、客户和财务主题数据。其他部门和合作伙伴需要复用；若每个消费者自行复制数据、重写指标和管理权限，就会出现指标口径不一致、数据延迟不同和权限难以回收的问题。",
+      "estimatedMinutes": 50,
+      "linkedKnowledgeNodeIds": [
+        "snowflake-data-products",
+        "snowflake-data-sharing-reader-accounts",
+        "snowflake-marketplace-native-apps",
+        "snowflake-guide-streamlit-runtime",
+        "snowflake-guide-interactive-bi",
+        "semantic-view-basics",
+        "semantic-metric-governance",
+        "semantic-layer-design",
+        "snowflake-declarative-change-management",
+        "data-observability-lineage"
+      ],
+      "references": [
+        {
+          "id": "integrated-data-products-sharing-ref-1",
+          "type": "official",
+          "title": "Secure Data Sharing",
+          "url": "https://docs.snowflake.com/en/user-guide/data-sharing-intro",
+          "publisher": "Snowflake Documentation",
+          "relevance": "用于核对本综合教程涉及的产品行为、配置边界和工程机制。",
+          "verifiedAt": "待核验"
+        },
+        {
+          "id": "integrated-data-products-sharing-ref-2",
+          "type": "official",
+          "title": "Semantic Views",
+          "url": "https://docs.snowflake.com/en/user-guide/views-semantic",
+          "publisher": "Snowflake Documentation",
+          "relevance": "用于核对本综合教程涉及的产品行为、配置边界和工程机制。",
+          "verifiedAt": "待核验"
+        },
+        {
+          "id": "integrated-data-products-sharing-ref-3",
+          "type": "official",
+          "title": "Snowflake Native Apps",
+          "url": "https://docs.snowflake.com/en/developer-guide/native-apps/about-native-apps",
+          "publisher": "Snowflake Documentation",
+          "relevance": "用于核对本综合教程涉及的产品行为、配置边界和工程机制。",
+          "verifiedAt": "待核验"
+        }
+      ],
+      "file": "integrated-data-products-sharing.md"
+    },
+    {
+      "id": "integrated-enterprise-ai-data-app",
+      "title": "构建企业 AI 数据应用：RAG、Text-to-SQL 与 Agent 的组合架构",
+      "description": "组合非结构化文档检索、结构化指标问答和 Agent 工具编排，并加入权限传递、查询防护、评测、审计和人工确认。",
+      "level": "advanced",
+      "scenario": "员工希望用自然语言查询经营指标、查阅政策文档并生成摘要。结构化数据需要正确指标语义和查询约束；非结构化资料需要检索、引用和版本管理。Agent 可以协调工具，但不应绕过权限，也不能把生成结果当成已验证事实。",
+      "estimatedMinutes": 65,
+      "linkedKnowledgeNodeIds": [
+        "cortex-search-rag",
+        "cortex-analyst-semantic-sql",
+        "cortex-llm-functions",
+        "cortex-document-functions",
+        "semantic-view-basics",
+        "cortex-sql-generation-guardrails",
+        "cortex-embedding-model-evaluation",
+        "cortex-analyst-test-suite",
+        "cortex-agent-orchestration",
+        "cortex-agent-permission-boundary",
+        "cortex-agent-evaluation",
+        "cortex-agent-observability-mcp"
+      ],
+      "references": [
+        {
+          "id": "integrated-enterprise-ai-data-app-ref-1",
+          "type": "official",
+          "title": "Cortex Search",
+          "url": "https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-search/cortex-search-overview",
+          "publisher": "Snowflake Documentation",
+          "relevance": "用于核对本综合教程涉及的产品行为、配置边界和工程机制。",
+          "verifiedAt": "待核验"
+        },
+        {
+          "id": "integrated-enterprise-ai-data-app-ref-2",
+          "type": "official",
+          "title": "Cortex Analyst",
+          "url": "https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-analyst",
+          "publisher": "Snowflake Documentation",
+          "relevance": "用于核对本综合教程涉及的产品行为、配置边界和工程机制。",
+          "verifiedAt": "待核验"
+        },
+        {
+          "id": "integrated-enterprise-ai-data-app-ref-3",
+          "type": "official",
+          "title": "Cortex Agents",
+          "url": "https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-agents",
+          "publisher": "Snowflake Documentation",
+          "relevance": "用于核对本综合教程涉及的产品行为、配置边界和工程机制。",
+          "verifiedAt": "待核验"
+        }
+      ],
+      "file": "integrated-enterprise-ai-data-app.md"
+    }
+  ]
+}

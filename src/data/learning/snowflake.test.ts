@@ -4,6 +4,7 @@ import {
   SNOWFLAKE_LEARNING_ARTICLES,
   SNOWFLAKE_LEARNING_CONTENT,
   SNOWFLAKE_LEARNING_OVERVIEW,
+  SNOWFLAKE_INTEGRATED_TUTORIALS,
 } from './snowflake';
 
 describe('Snowflake one-to-one course tutorials', () => {
@@ -74,6 +75,33 @@ describe('Snowflake one-to-one course tutorials', () => {
         expect(reference.url).toMatch(/^https:\/\//);
         expect(reference.relevance.length).toBeGreaterThan(10);
       }
+    }
+  });
+});
+
+
+describe('Snowflake integrated engineering tutorials', () => {
+  it('keeps eight end-to-end tutorials separate from the 194 one-to-one node tutorials', () => {
+    expect(SNOWFLAKE_INTEGRATED_TUTORIALS).toHaveLength(8);
+    expect(SNOWFLAKE_LEARNING_ARTICLES).toHaveLength(194);
+    expect(SNOWFLAKE_LEARNING_CONTENT).toHaveLength(194);
+    expect(new Set(SNOWFLAKE_INTEGRATED_TUTORIALS.map((tutorial) => tutorial.id)).size).toBe(8);
+
+    const knownNodeIds = new Set(knowledgeNodes
+      .filter((node) => node.courseId === 'snowflake' || (!node.courseId && node.area === 'data-platform'))
+      .map((node) => node.id));
+
+    for (const tutorial of SNOWFLAKE_INTEGRATED_TUTORIALS) {
+      expect(tutorial.id).toMatch(/^integrated-/);
+      expect(tutorial.content.length, tutorial.id).toBeGreaterThan(1200);
+      for (const heading of ['## 场景与目标', '## 架构与数据流', '## 实施步骤', '## 关键取舍', '## 验收清单', '## 关联知识点', '## 参考资料']) {
+        expect(tutorial.content, tutorial.id).toContain(heading);
+      }
+      expect(tutorial.linkedKnowledgeNodeIds.length).toBeGreaterThan(0);
+      expect(new Set(tutorial.linkedKnowledgeNodeIds).size).toBe(tutorial.linkedKnowledgeNodeIds.length);
+      for (const nodeId of tutorial.linkedKnowledgeNodeIds) expect(knownNodeIds.has(nodeId), nodeId).toBe(true);
+      expect(tutorial.references.length).toBeGreaterThan(0);
+      for (const reference of tutorial.references) expect(reference.url).toMatch(/^https:\\/\\//);
     }
   });
 });

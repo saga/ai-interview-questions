@@ -1,4 +1,5 @@
 import manifest from '../../content/courses/snowflake/index.json';
+import integratedManifest from '../../content/courses/snowflake/integrated/index.json';
 import { knowledgeNodes } from '../knowledgeMap';
 
 export type LearningArticleKind = 'core' | 'deep-dive' | 'case-study';
@@ -122,3 +123,65 @@ export const SNOWFLAKE_LEARNING_CONTENT: KnowledgeLearningPack[] = courseNodes.m
     references: entry.references,
   };
 });
+
+
+export interface IntegratedLearningTutorial {
+  id: string;
+  title: string;
+  description: string;
+  level: LearningArticleLevel;
+  estimatedMinutes: number;
+  linkedKnowledgeNodeIds: string[];
+  references: LearningReference[];
+  content: string;
+}
+
+interface IntegratedTutorialManifestEntry extends Omit<IntegratedLearningTutorial, 'content'> {
+  file: string;
+}
+
+interface IntegratedLearningManifest {
+  schemaVersion: number;
+  kind: 'integrated-engineering-tutorials';
+  description: string;
+  count: number;
+  tutorials: IntegratedTutorialManifestEntry[];
+}
+
+const typedIntegratedManifest = integratedManifest as IntegratedLearningManifest;
+if (typedIntegratedManifest.schemaVersion !== 1 || typedIntegratedManifest.kind !== 'integrated-engineering-tutorials') {
+  throw new Error('综合工程教程索引版本无效');
+}
+
+const integratedMarkdownModules = import.meta.glob('../../content/courses/snowflake/integrated/*.md', {
+  eager: true,
+  query: '?raw',
+  import: 'default',
+}) as Record<string, string>;
+
+const integratedIds = new Set(typedIntegratedManifest.tutorials.map((tutorial) => tutorial.id));
+if (integratedIds.size !== typedIntegratedManifest.tutorials.length ||
+    typedIntegratedManifest.count !== typedIntegratedManifest.tutorials.length ||
+    typedIntegratedManifest.tutorials.length !== 8) {
+  throw new Error('综合工程教程数量或 ID 存在问题');
+}
+
+const knownKnowledgeNodeIds = new Set(courseNodes.map((node) => node.id));
+export const SNOWFLAKE_INTEGRATED_TUTORIALS: IntegratedLearningTutorial[] =
+  typedIntegratedManifest.tutorials.map((entry) => {
+    if (!entry.id.startsWith('integrated-') || !entry.title || !entry.description ||
+        entry.linkedKnowledgeNodeIds.length === 0 ||
+        new Set(entry.linkedKnowledgeNodeIds).size !== entry.linkedKnowledgeNodeIds.length ||
+        entry.linkedKnowledgeNodeIds.some((id) => !knownKnowledgeNodeIds.has(id))) {
+      throw new Error(`综合教程元数据或关联知识点无效：${entry.id}`);
+    }
+    const key = `../../content/courses/snowflake/integrated/${entry.file}`;
+    const content = integratedMarkdownModules[key];
+    if (typeof content !== 'string' || content.length < 1200) {
+      throw new Error(`综合工程教程内容缺失或过短：${entry.file}`);
+    }
+    if (entry.references.length === 0 || entry.references.some((reference) => !/^https:\\/\\//.test(reference.url))) {
+      throw new Error(`综合工程教程参考资料无效：${entry.id}`);
+    }
+    return { ...entry, content };
+  });

@@ -345,3 +345,21 @@ flowchart TD
 ## 14. 一对一 Markdown 教材（2026-11-28）
 
 课程教材采用严格一对一模型：194 个 KnowledgeNode 对应 194 篇独立 Markdown 主教程。每篇 Article ID 与 KnowledgeNode ID 完全一致，不共享主题文章。详细统计见 [教材一对一映射复核](./snowflake-learning-article-coverage.md)。
+
+
+## 16. 综合工程教程：把节点知识放进真实项目（2026-11-28）
+
+在 194 篇 KnowledgeNode 一对一主教程之外，增加 8 篇独立综合工程教程。节点教程解释单项知识；综合教程围绕端到端场景组织架构、实施步骤、关键取舍和验收方式。
+
+| 综合教程 | 工程主线 |
+| --- | --- |
+| 企业数据平台端到端架构 | PostgreSQL、SaaS 与文件进入分析平台，经分层加工和治理后服务消费者 |
+| 可靠 ELT 数据管道 | Stage、COPY INTO/Snowpipe、转换、质量门禁、增量刷新和回补 |
+| CDC 实时数据链路 | PostgreSQL WAL/逻辑复制、CDC Connector、目标端摄取和幂等应用 |
+| 企业数据治理与访问控制 | 身份、角色、数据分级、行列控制、审计和指标语义 |
+| 性能与 FinOps | Query Profile、Warehouse、成本监控以及 PostgreSQL 执行计划和索引 |
+| Lakehouse 生产实践 | Iceberg、Catalog、对象存储、演进、并发和迁移验证 |
+| 数据产品交付 | 语义指标、Secure Sharing、应用交付和消费者契约 |
+| 企业 AI 数据应用 | Cortex Search、Analyst、RAG、Agent 工具、权限与评测 |
+
+综合教程以 `integrated-*` 独立 ID 存储在 `src/content/courses/snowflake/integrated/`，通过单独索引加载。它们不创建 KnowledgeNode，不合并节点文章，也不计入 194 篇节点教材阅读进度。每篇都保留指向原节点教程的关联入口。
