@@ -166,9 +166,9 @@ for (const doc of docs) {
     const h3Count = countMatches(core, /^###\s+/gm);
     const stepCount = countMatches(steps, /^\s*\d+[.)]\s+/gm);
     const misconceptionCount = countMatches(misconceptions, /^\s*[-*+]\s+/gm);
-    const testCount = countMatches(tests, /^\\s*\\d+[.)]\\s+/gm);
-    const codeBlockCount = countMatches(doc.markdown, /~~~[a-z0-9_-]*\\s+[\\s\\S]*?~~~/gi);
-    const tableRowCount = countMatches(doc.markdown, /^\\|.*\\|$/gm);
+    const testCount = countMatches(tests, /^\s*\d+[.)]\s+/gm);
+    const codeBlockCount = countMatches(doc.markdown, /~~~[a-z0-9_-]*\s+[\s\S]*?~~~/gi);
+    const tableRowCount = countMatches(doc.markdown, /^\|.*\|$/gm);
     const hasConcreteArtifact = codeBlockCount > 0 || tableRowCount >= 4;
     const scenarioHasPlaceholder = /将场景转换为明确输入|逐项检查本节核心要求|请拆分对象、执行和访问边界/.test(scenario);
     const testsHaveTemplate = /如何在实际系统中验证|不成立时，最可能需要检查哪些边界和证据|回答时需要给出判断依据/.test(tests);
