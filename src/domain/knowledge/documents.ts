@@ -106,6 +106,7 @@ export function questionSensitiveText(q: Question): string {
 export function questionDocument(q: Question): KnowledgeDocument {
   const metadata: KnowledgeDocumentMetadata = {
     knowledgeId: q.knowledgeId ?? q.topic,
+    topic: q.topic,
     questionId: q.id,
     difficulty: q.difficulty,
     tags: q.tags,
