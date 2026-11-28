@@ -107,13 +107,13 @@ let openOnlyCount = 0;
 
 for (const question of incoming) {
   if (existingIds.has(question.id)) errors.push(`${question.id}: id 已存在`);
-  if (nodeIds.has(question.topic) && question.angle && !existingCells.has(`${question.topic}\u0000${question.angle}`)) {
-    newlyCovered.add(`${question.topic} × ${question.angle}`);
-  }
   const topicCandidates = nodes.filter((node) =>
     (node.topic === question.topic || node.id === question.topic)
     && (!question.courseId || node.courseId === question.courseId),
   );
+  if (question.angle && !existingCells.has(`${question.topic}\u0000${question.angle}`)) {
+    newlyCovered.add(`${question.topic} × ${question.angle}`);
+  }
   if (topicCandidates.length === 0) {
     errors.push(`${question.id}: topic "${question.topic}" 在指定课程范围内没有匹配的知识节点`);
   }
