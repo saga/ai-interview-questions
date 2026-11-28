@@ -12,11 +12,12 @@ Streamlit in Snowflake 有 Warehouse Runtime 和 Container Runtime 两种运行�
 | --- | --- | --- |
 | 应用代码在哪里运行 | Virtual Warehouse | Snowpark Container Services Compute Pool |
 | 用户访问实例 | 每个查看者创建个人实例 | 查看者共享一个长运行应用实例 |
-| SQL 查询 | 使用应用指定的 Warehouse | 应用代码运行在 Compute Pool，SQL 仍使用独立 Warehouse |
-| 生命周期 | 按需运行，空闲后与 Warehouse 生命周期相关 | 长运行服务，需考虑 Compute Pool 容量与服务状态 |
-| 更适合 | 对个人实例隔离、简单计算和 Warehouse 管理有要求的应用 | 希望共享服务、使用更灵活依赖或长运行应用的场景 |
+| SQL 查询 | 默认与应用代码共用 Warehouse；代码可切换到另一个 Warehouse | 应用代码运行在 Compute Pool，SQL 通过独立 Warehouse 执行 |
+| 查看者之间的资源 | 不共享磁盘、计算和内存；每个查看者有个人实例 | 共享磁盘、计算和内存；一个长运行实例服务所有查看者 |
+| 缓存 | 不支持跨查看者共享缓存 | 支持 Streamlit 缓存，缓存键必须考虑用户和授权范围 |
+| 更适合 | 需要个人实例隔离、依赖简单的应用 | 需要长运行共享服务、较灵活依赖或外部集成的应用 |
 
-CREATE STREAMLIT 通过 RUNTIME_NAME 指定运行时，Container Runtime 还需要 COMPUTE_POOL；QUERY_WAREHOUSE 指定应用发起 SQL 时使用的 Warehouse。
+CREATE STREAMLIT 通过 RUNTIME_NAME 指定运行时，Container Runtime 还需要 COMPUTE_POOL。QUERY_WAREHOUSE 的含义随 Runtime 改变：Container Runtime 用它指定应用内 SQL 查询所用的 Warehouse；Warehouse Runtime 用它指定运行 Python 应用代码的 Warehouse。Warehouse Runtime 默认也用同一个 Warehouse 执行 SQL，除非应用代码主动切换。
 
 ~~~sql
 CREATE STREAMLIT ANALYTICS_DB.APP_SCHEMA.SALES_DASHBOARD
@@ -31,17 +32,17 @@ CREATE STREAMLIT ANALYTICS_DB.APP_SCHEMA.SALES_DASHBOARD
 
 ## Container Runtime 的“共享”不是用户数据隔离
 
-Container Runtime 的一个长运行实例服务多个查看者。不要把用户筛选条件、客户 ID 或授权结果保存到进程级全局变量，再假设每个访问者都会得到独立的 Python 内存。
+Container Runtime 的一个长运行实例服务多个查看者，会共享磁盘、计算和内存。Streamlit 缓存因此可以跨查看者复用，但进程级全局变量、文件和缓存内容也可能被其他会话观察到。不要把客户 ID、权限结果、查询结果或用户筛选条件放入没有授权分区的全局对象；缓存键必须包含真正影响结果的用户/租户范围，或只缓存与身份无关的公开数据。
 
-应用应把每个请求的身份和筛选条件作为请求级输入；数据访问仍由 Snowflake 的 Role、对象授权、Owner's Rights/Caller’s Rights 和 Row Access Policy 等机制控制。隐藏按钮或在 Python 中过滤列表，不构成数据库安全边界。
+Streamlit 的 session state 适合保存当前会话的交互状态，但不能充当数据库授权。数据访问仍由 Snowflake Role、对象权限、Owner's Rights/Caller’s Rights 和 Row Access Policy 等机制控制。隐藏按钮或在 Python 中过滤列表，不构成数据库安全边界。
 
-同样，Warehouse Runtime 的每个查看者拥有个人应用实例，也不意味着数据权限自动隔离。两种 Runtime 都必须测试实际调用者能够查询什么数据，不能用实例分配方式替代 RBAC。
+Warehouse Runtime 为每个查看者创建个人应用实例，不共享磁盘、计算和内存，因此不支持跨会话缓存；但这也不意味着数据权限自动正确。两种 Runtime 都必须测试实际调用者能够查询什么数据，不能用实例分配方式替代 RBAC。
 
 ## Runtime 与应用权限是两套独立配置
 
-使用 Container Runtime 时，应用代码的 Compute Pool 和 SQL 的 Warehouse 是两种不同资源。授予 USAGE on Warehouse，不代表应用能使用 Compute Pool；反之亦然。还要检查应用的 Owner’s Rights 或 Caller’s Rights 设置以及访问外部 API 所需的 External Access Integration。
+Container Runtime 中，应用代码在 Compute Pool，QUERY_WAREHOUSE 指向应用内部 SQL 所使用的 Warehouse。Warehouse Runtime 中，QUERY_WAREHOUSE 指向 Python 应用代码运行的 Warehouse；如果应用要把复杂 SQL 放到更大的查询仓库执行，应在代码中显式切换会话 Warehouse。两种资源都要授予相应 USAGE，不能用 Warehouse 权限代替 Compute Pool 权限。
 
-排查时分开观察应用实例/容器状态与 SQL Query History。若页面启动失败，先看 Runtime、Compute Pool、包和服务权限；若页面能打开但查询失败，再看 Query Warehouse、Role、Database/Schema 和对象授权。
+两种 Runtime 默认都使用 Owner's Rights 执行查询；Container Runtime 还支持 Restricted Caller’s Rights（Preview）等受限选项。访问外部 API 时还要检查 External Access Integration。排查时分开观察应用实例/容器状态与 SQL Query History：页面启动失败先看 Runtime、Compute Pool、包和服务权限；页面能打开但查询失败，再看当前查询 Warehouse、Role、Database/Schema 和对象授权。
 
 ## 选择建议
 
@@ -54,7 +55,8 @@ Container Runtime 的一个长运行实例服务多个查看者。不要把用�
 
 - Container Runtime 的应用代码运行在 Compute Pool，SQL 仍使用 Warehouse。
 - Warehouse Runtime 的个人实例不代表数据库对象权限自动隔离。
-- Container Runtime 的共享实例不应保存未经隔离的用户级数据。
+- Container Runtime 会跨查看者共享内存、磁盘和计算；缓存必须按身份/租户范围隔离。
+- QUERY_WAREHOUSE 在 Container Runtime 中指 SQL 查询仓库，在 Warehouse Runtime 中指应用代码仓库。
 - 运行时默认值可能随行为变更包改变，部署时应显式写出配置。
 - 依赖包和运行时支持范围应按目标 Runtime 验证，不能从本地 Streamlit 直接推断。
 

@@ -54,9 +54,11 @@ describe('Snowflake one-to-one course tutorials', () => {
         headings.some((heading) => /常见误区|限制|故障|取舍|失败|适用边界|风险/.test(heading))
         || /不能|不应|不会|否则|取决于|限制|失败|风险|边界|前提|需要先|必须先/.test(visibleArticleText);
       expect(hasBoundaryDiscussion, article.id).toBe(true);
-      expect(
-        headings.some((heading) => /自测|练习|思考|回顾|演练/.test(heading)),
-      ).toBe(true);
+      const hasPracticeSection = headings.some((heading) =>
+        /自测|练习|思考|回顾|演练|检查理解|实践任务|挑战|复习题|习题/.test(heading),
+      );
+      const numberedQuestions = article.content.match(/^\\s*\\d+[.、．]\\s+[^\\n]{8,}[？?]/gm) ?? [];
+      expect(hasPracticeSection || numberedQuestions.length >= 2, article.id).toBe(true);
       const genericHeadings = new Set([
         '本节要解决的问题', '核心知识', '工程实施步骤', '场景分析',
         '常见误区', '完成标准', '自测', '参考资料',

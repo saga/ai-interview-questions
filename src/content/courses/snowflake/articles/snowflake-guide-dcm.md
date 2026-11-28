@@ -15,7 +15,7 @@ DCM Project 管理的是目标状态，不是简单执行一串 SQL 脚本。项
 - Jinja 可以将环境差异参数化，避免复制 DEV、QA、PROD 三份近似定义。
 - 项目文件可放在 Git、Snowflake Workspace 或本地目录，使用 Snowflake CLI、Snowsight、SQL 或 Cortex Code 管理。
 
-DCM Projects 已于 2026 年 8 月 7 日 GA。不要把旧的 Preview 状态当作当前产品状态；但也不能把所有相关能力都说成 GA。当前仍处于 Preview 的相关能力包括 TEST/PREVIEW 命令、GitHub Actions for DCM Projects、DEFINE PIPE、DEFINE STREAM、Masking/Row Access Policy 定义、ATTACH TAG 以及部分继承授权定义。
+DCM Projects 已于 2026 年 8 月 7 日 GA。但项目功能 GA 不代表每个辅助能力都已 GA：例如独立的 PLAN privilege 在当前文档中仍标记为 Preview。审查权限和 CI 设计时，应以具体功能页面的状态为准，不要从产品总状态推断所有子功能已经正式发布。
 
 ## PLAN 是必须审查的差异，不是部署前的形式步骤
 
@@ -30,16 +30,22 @@ DCM 的 PLAN 会渲染模板，比较定义与目标环境现状，并展示将�
 基础命令：
 
 ~~~sql
-EXECUTE DCM PROJECT ANALYTICS_PROJECT PLAN;
+EXECUTE DCM PROJECT DCM_DEMO.PROJECTS.DCM_PROJECT_DEV
+  PLAN
+FROM
+  'snow://workspace/USER$.PUBLIC.DEFAULT$/versions/live/Quickstarts/DCM_Project_Quickstart_1';
+
+EXECUTE DCM PROJECT DCM_DEMO.PROJECTS.DCM_PROJECT_DEV
+  DEPLOY
+FROM
+  'snow://workspace/USER$.PUBLIC.DEFAULT$/versions/live/Quickstarts/DCM_Project_Quickstart_1';
 ~~~
 
-计划通过后再部署：
+SQL 命令需要指向包含 manifest 和定义文件的来源路径；在 CLI 中也可以从本地 Git 工作目录执行 Snowflake CLI 的 DCM 命令。不要把示例 Project 名称和 Workspace 路径原样用于生产。
 
-~~~sql
-EXECUTE DCM PROJECT ANALYTICS_PROJECT DEPLOY;
-~~~
+PLAN 只渲染模板、比较目标状态并生成变更计划，不执行 DDL。它尽量模拟 DEPLOY，但不能保证部署阶段绝不失败。PLAN 之后若有人在目标账号手工修改对象，DEPLOY 重新计算的差异可能不同；部署中途失败也可能已经应用部分变更。因此 CI 应保存 PLAN 输出，部署身份执行前再做一次完整 PLAN，并在维护窗口中发布。PLAN DELTA 只检查自上次部署以来变化的定义及其依赖，不会发现所有外部漂移，不能代替完整 PLAN。
 
-CI 中可以让开发角色只拥有 DCM Project 的 PLAN 权限，不拥有 DEPLOY 权限。这样自动化流程能生成并审查计划，但不能自行把变化写入账号。部署由受控发布身份完成。
+CI 中可以让开发角色只拥有 DCM Project 的 PLAN 权限，不拥有 DEPLOY 权限。这样自动化流程能生成并审查计划，但不能自行把变化写入账号。独立 PLAN privilege 当前仍标记为 Preview；在拥有 Project OWNERSHIP 的角色下运行 PLAN 则不需要将 DEPLOY 权限授予普通开发者。部署由受控发布身份完成。
 
 ## 一个项目不能当作多个环境配置的并行实例
 
