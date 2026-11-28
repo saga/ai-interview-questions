@@ -6,14 +6,20 @@
     "area": "data-platform",
     "topic": "data-engineering",
     "priority": "P0",
-    "summary": "将对象定义纳入 Git，通过审查、部署和漂移检测交付。",
+    "summary": "对 Snowflake 数据库对象和有状态数据迁移实行版本化发布，使用不可变迁移、校验和、兼容变更与前向修复控制生产状态。",
     "required": [
-      "区分对象 DDL 与有状态迁移，设计发布与恢复方案。",
-      "密钥不入库，发布身份使用最小权限。"
+      "区分对象定义 DDL、数据迁移 DML、权限变更和发布验证，分别管理其执行/恢复语义。",
+      "为迁移版本保存脚本校验和、环境、执行身份、Query ID、状态和并发锁，已应用迁移不可随意改写。",
+      "解释 Snowflake DDL 隐式提交对事务和 ROLLBACK 的影响，并评估 CREATE OR REPLACE 对数据、权限、依赖和 Stream 的风险。",
+      "使用 Expand-Migrate-Contract 管理字段/表结构变更，并用业务键、来源版本和幂等 MERGE 做回填。",
+      "设计失败后的继续执行、前向修复或补偿步骤，不将 Git Revert 当作数据库状态回滚。"
     ],
     "misconceptions": [
-      "以手工生产状态代替版本历史。",
-      "将生产凭据提交到仓库。"
+      "把多条 DDL/DML 当成一个可以整体 ROLLBACK 的事务",
+      "用 IF NOT EXISTS 替代结构迁移",
+      "将 CREATE OR REPLACE TABLE 当成无副作用的安全重跑",
+      "修改已执行的迁移脚本以掩盖历史错误",
+      "认为 Git Revert 会撤销已提交数据库变更"
     ],
     "angles": [
       "comparison",
