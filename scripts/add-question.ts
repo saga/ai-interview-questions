@@ -107,21 +107,32 @@ let openOnlyCount = 0;
 
 for (const question of incoming) {
   if (existingIds.has(question.id)) errors.push(`${question.id}: id 已存在`);
-  const topicNode = nodes.find((node) =>
-    node.id === question.topic
+  const topicCandidates = nodes.filter((node) =>
+    (node.topic === question.topic || node.id === question.topic)
     && (!question.courseId || node.courseId === question.courseId),
   );
+  const topicNode = question.courseId
+    ? nodes.find((node) => node.id === question.topic && node.courseId === question.courseId)
+    : undefined;
   if (question.angle && nodeIds.has(question.topic) && !existingCells.has(`${question.topic}\\u0000${question.angle}`)) {
     newlyCovered.add(`${question.topic} × ${question.angle}`);
   }
-  if (!topicNode) {
-    errors.push(`${question.id}: topic "${question.topic}" 必须是指定课程中的 KnowledgeNode.id，不能使用 KnowledgeNode.topic 分组值`);
-  }
-  if (question.courseId && !question.knowledgeId) {
-    errors.push(`${question.id}: 课程题必须填写精确的 knowledgeId`);
-  }
-  if (question.courseId && question.knowledgeId !== question.topic) {
-    errors.push(`${question.id}: 课程题的 topic 与 knowledgeId 必须指向同一个 KnowledgeNode.id`);
+  if (question.courseId) {
+    if (!topicNode) {
+      errors.push(`${question.id}: 课程题 topic 必须是该课程中的 KnowledgeNode.id，不能使用 KnowledgeNode.topic 分组值`);
+    }
+    if (!question.knowledgeId) {
+      errors.push(`${question.id}: 课程题必须填写精确的 knowledgeId`);
+    }
+    if (question.knowledgeId && question.knowledgeId !== question.topic) {
+      errors.push(`${question.id}: 课程题的 topic 与 knowledgeId 必须指向同一个 KnowledgeNode.id`);
+    }
+  } else if (topicCandidates.length === 0) {
+    errors.push(`${question.id}: topic "${question.topic}" 在题库知识节点中没有匹配`);
+  } else if (topicCandidates.length > 1 && !hasKnowledgeTarget(question, nodes)) {
+    errors.push(
+      `${question.id}: topic "${question.topic}" 对应多个 KnowledgeNode，必须通过 knowledgeId、concepts 或 subtopic 明确关联；候选：${topicCandidates.map((node) => node.id).join(', ')}`,
+    );
   }
   if (question.courseId === 'snowflake') {
     if (!question.source?.section?.trim()) errors.push(`${question.id}: Snowflake 课程题缺 source.section`);
