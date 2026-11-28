@@ -80,7 +80,7 @@ export function IntegratedTutorialsSection({ nodes, onSelectNode }: Props) {
             </Typography.Paragraph>
             <div className="study-article">
               <XMarkdown
-                content={activeTutorial.content.replace(/^#\\s+[^\\r\\n]+(?:\\r?\\n)+/, '')}
+                content={activeTutorial.content.replace(/^#\s+[^\r\n]+(?:\r?\n)+/, '')}
                 components={MARKDOWN_COMPONENTS}
                 className="x-markdown-light"
               />
