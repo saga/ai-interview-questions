@@ -4476,16 +4476,52 @@
       "file": "cortex-agent-failure-recovery.md",
       "topic": "snowflake-agent-ml",
       "priority": "P1",
-      "summary": "处理超时、部分成功、重复调用和不可逆副作用，定义安全重试与人工升级路径。",
+      "summary": "按 Agent/API、工具和外部副作用区分失败，设计有界重试、执行状态查询、业务幂等键、Saga 补偿和人工接管，避免超时后重复执行不可逆操作。",
       "references": [
         {
           "id": "cortex-agent-failure-recovery-ref-1",
           "type": "official",
-          "title": "Introduction to data pipelines",
-          "url": "https://docs.snowflake.com/en/user-guide/data-pipelines-intro",
           "publisher": "Snowflake Documentation",
-          "relevance": "核对“Agent 工具失败、补偿、幂等与人工接管”涉及的产品行为、配置边界或工程机制。",
-          "verifiedAt": "待核验"
+          "verifiedAt": "2026-11-28",
+          "title": "Cortex Agent SDK reference — errors and retries",
+          "url": "https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-agent-sdk/sdk-reference",
+          "relevance": "核对 SDK 错误类型、408/409/429/5xx 可重试范围、安全 HTTP 方法默认重试、写操作显式 retry policy、流式断线恢复与事件回放限制。"
+        },
+        {
+          "id": "cortex-agent-failure-recovery-ref-2",
+          "type": "official",
+          "publisher": "Snowflake Documentation",
+          "verifiedAt": "2026-11-28",
+          "title": "Cortex Agents Run API",
+          "url": "https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-agents-run",
+          "relevance": "核对 Agent Run 默认 15 分钟超时、background 最长运行时间、Thread 条件与 Stream Agent Run 恢复方式。"
+        },
+        {
+          "id": "cortex-agent-failure-recovery-ref-3",
+          "type": "official",
+          "publisher": "Snowflake Documentation",
+          "verifiedAt": "2026-11-28",
+          "title": "Cortex Agents overview and rate limits",
+          "url": "https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-agents",
+          "relevance": "核对 Agent REST API 429 限流和指数退避建议。"
+        },
+        {
+          "id": "cortex-agent-failure-recovery-ref-4",
+          "type": "reference",
+          "publisher": "AWS Prescriptive Guidance",
+          "verifiedAt": "2026-11-28",
+          "title": "Retry with backoff pattern",
+          "url": "https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/retry-backoff.html",
+          "relevance": "支持瞬时故障退避、幂等要求、有限重试和非瞬时错误快速失败的通用分布式系统模式。"
+        },
+        {
+          "id": "cortex-agent-failure-recovery-ref-5",
+          "type": "reference",
+          "publisher": "AWS Prescriptive Guidance",
+          "verifiedAt": "2026-11-28",
+          "title": "Saga patterns",
+          "url": "https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/saga-patterns.html",
+          "relevance": "支持跨服务局部事务的前向恢复、补偿事务、编排与事件协调模式。"
         }
       ]
     },
