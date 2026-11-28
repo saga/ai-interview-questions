@@ -408,7 +408,7 @@ export default function StudyPage({ trackId, nodes, questions, onGoTrain, onAskT
           <Drawer
             title="课程目录"
             placement="left"
-            width={340}
+            width="min(88vw, 360px)"
             open={directoryOpen}
             onClose={() => setDirectoryOpen(false)}
             styles={{ body: { padding: 12 } }}
