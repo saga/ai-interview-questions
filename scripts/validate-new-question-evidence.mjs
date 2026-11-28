@@ -48,6 +48,15 @@ for (const path of changedFiles) {
     changedQuestions++;
     if (!question.cognitiveTask) errors.push(`${path} / ${question.id}: 缺 cognitiveTask`);
     if (!question.source?.materialId?.trim()) errors.push(`${path} / ${question.id}: 缺 source.materialId`);
+    if (question.courseId && !question.knowledgeId) {
+      errors.push(`${path} / ${question.id}: 课程题缺精确 knowledgeId`);
+    }
+    if (question.courseId === 'snowflake') {
+      if (!question.source?.section?.trim()) errors.push(`${path} / ${question.id}: Snowflake 课程题缺 source.section`);
+      if (!question.source?.relatedMaterials?.length) {
+        errors.push(`${path} / ${question.id}: Snowflake 课程题缺 source.relatedMaterials`);
+      }
+    }
   }
 }
 console.log(`新题来源门禁：检查 ${changedQuestions} 道新增或修改的题目。`);
@@ -55,4 +64,4 @@ if (errors.length) {
   errors.forEach((error) => console.error('✗ ' + error));
   process.exit(1);
 }
-console.log('✓ 本次新增/修改题目均声明 cognitiveTask 和 source.materialId。');
+console.log('✓ 本次新增/修改题目均声明 cognitiveTask、source.materialId，并满足课程节点与来源字段要求。');
