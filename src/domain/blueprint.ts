@@ -44,7 +44,8 @@ export function blueprintFromSuggestion(
   const node = nodes.find((n) => n.id === s.nodeId);
   if (!node) return null;
   return {
-    topic: s.nodeId,
+    topic: node.id,
+    ...(node.courseId ? { courseId: node.courseId, knowledgeId: node.id } : {}),
     angle: s.angle,
     difficulty: s.difficulty,
     format: s.format,
@@ -81,6 +82,12 @@ export type BlueprintCheck = { ok: true } | { ok: false; reason: string };
  */
 export function validateAgainstBlueprint(q: Question, bp: QuestionBlueprint): BlueprintCheck {
   if (q.topic !== bp.topic) return { ok: false, reason: `topic 不一致：期望 ${bp.topic}，实际 ${q.topic}` };
+  if (bp.courseId && q.courseId !== bp.courseId) {
+    return { ok: false, reason: `courseId 不一致：期望 ${bp.courseId}，实际 ${q.courseId ?? '未填写'}` };
+  }
+  if (bp.knowledgeId && q.knowledgeId !== bp.knowledgeId) {
+    return { ok: false, reason: `knowledgeId 不一致：期望 ${bp.knowledgeId}，实际 ${q.knowledgeId ?? '未填写'}` };
+  }
   if (q.angle !== bp.angle) return { ok: false, reason: `angle 不一致：期望 ${bp.angle}，实际 ${String(q.angle)}` };
   if (q.difficulty !== bp.difficulty)
     return { ok: false, reason: `difficulty 不一致：期望 ${bp.difficulty}，实际 ${q.difficulty}` };
